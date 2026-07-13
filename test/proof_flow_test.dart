@@ -166,6 +166,7 @@ void main() {
     expect(completed, isA<CompletionRecorded>());
     final completion = (completed as CompletionRecorded).completion;
 
+    expect(capture.callCount, 1); // a clean occurrence captures exactly once
     expect(compressor.callCount, 1);
     expect(store.saved, hasLength(1));
     expect(store.deleted, isEmpty);
@@ -280,5 +281,146 @@ void main() {
 
     expect(store.saved, hasLength(1));
     expect(store.deleted, store.saved);
+  });
+
+  test(
+      'attempts cap already exhausted: the precheck rejects before '
+      'PhotoCapture is ever called', () async {
+    final rejectingVerifier =
+        FakeProofVerifier((_) => const VerdictReceived(_rejectingVerdict));
+    final completionRepo =
+        CompletionRepository(db, clock, verifier: rejectingVerifier);
+    final task = await makeTask();
+
+    for (var i = 0; i < 3; i++) {
+      final r = await completionRepo.completeWithProof(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+        proof: ProofData(imageBytes: Uint8List.fromList([1, 2, 3])),
+      );
+      expect(r, isA<CompletionRejectedByVerifier>());
+    }
+
+    final capture = _FakePhotoCapture((source) => CapturedPhoto(
+          tempPath: '/tmp/photo.jpg',
+          source: source,
+          takenAtMillis: clock.nowEpochMillis(),
+        ));
+    final compressor = _FakeImageCompressor();
+    final store = _FakeProofPhotoStore();
+    final flow = ProofFlowService(
+      capture: capture,
+      compressor: compressor,
+      store: store,
+      completionRepository: completionRepo,
+    );
+
+    final result = await flow.completeWithProof(
+      taskId: task.id,
+      occurrenceDate: d(2026, 7, 10),
+      source: ProofSource.camera,
+    );
+
+    final completed = (result as ProofFlowCompleted).result;
+    expect(completed, isA<CompletionRejectedAttemptsExhausted>());
+    expect(capture.callCount, 0); // never opened the camera
+    expect(compressor.callCount, 0);
+    expect(store.saved, isEmpty);
+  });
+
+  test(
+      'daily cap already reached: the precheck rejects before PhotoCapture '
+      'is ever called', () async {
+    final verifier =
+        FakeProofVerifier((_) => const VerdictReceived(_passingVerdict));
+    final completionRepo = CompletionRepository(db, clock, verifier: verifier);
+
+    for (var i = 0; i < 5; i++) {
+      final t = await taskRepo.createTask(
+        title: 'T$i',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      final r = await completionRepo.completeWithProof(
+        taskId: t.id,
+        occurrenceDate: d(2026, 7, 10),
+        proof: ProofData(imageBytes: Uint8List.fromList([1, 2, 3])),
+      );
+      expect(r, isA<CompletionRecorded>());
+    }
+
+    final sixthTask = await taskRepo.createTask(
+      title: 'T-sixth',
+      recurrenceType: RecurrenceType.daily,
+      startDate: d(2026, 7, 1),
+    );
+
+    final capture = _FakePhotoCapture((source) => CapturedPhoto(
+          tempPath: '/tmp/photo.jpg',
+          source: source,
+          takenAtMillis: clock.nowEpochMillis(),
+        ));
+    final compressor = _FakeImageCompressor();
+    final store = _FakeProofPhotoStore();
+    final flow = ProofFlowService(
+      capture: capture,
+      compressor: compressor,
+      store: store,
+      completionRepository: completionRepo,
+    );
+
+    final result = await flow.completeWithProof(
+      taskId: sixthTask.id,
+      occurrenceDate: d(2026, 7, 10),
+      source: ProofSource.camera,
+    );
+
+    final completed = (result as ProofFlowCompleted).result;
+    expect(completed, isA<CompletionRejectedDailyCapReached>());
+    expect(capture.callCount, 0); // never opened the camera
+    expect(compressor.callCount, 0);
+    expect(store.saved, isEmpty);
+  });
+
+  test(
+      'an already-completed slot: the precheck rejects before PhotoCapture '
+      'is ever called', () async {
+    final verifier =
+        FakeProofVerifier((_) => const VerdictReceived(_passingVerdict));
+    final completionRepo = CompletionRepository(db, clock, verifier: verifier);
+    final task = await makeTask();
+
+    final first = await completionRepo.completeWithProof(
+      taskId: task.id,
+      occurrenceDate: d(2026, 7, 10),
+      proof: ProofData(imageBytes: Uint8List.fromList([1, 2, 3])),
+    );
+    expect(first, isA<CompletionRecorded>());
+
+    final capture = _FakePhotoCapture((source) => CapturedPhoto(
+          tempPath: '/tmp/photo.jpg',
+          source: source,
+          takenAtMillis: clock.nowEpochMillis(),
+        ));
+    final compressor = _FakeImageCompressor();
+    final store = _FakeProofPhotoStore();
+    final flow = ProofFlowService(
+      capture: capture,
+      compressor: compressor,
+      store: store,
+      completionRepository: completionRepo,
+    );
+
+    final result = await flow.completeWithProof(
+      taskId: task.id,
+      occurrenceDate: d(2026, 7, 10),
+      source: ProofSource.camera,
+    );
+
+    final completed = (result as ProofFlowCompleted).result;
+    expect(completed, isA<CompletionRejectedAlreadyCompleted>());
+    expect(capture.callCount, 0); // never opened the camera
+    expect(compressor.callCount, 0);
+    expect(store.saved, isEmpty);
   });
 }

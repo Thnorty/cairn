@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +11,7 @@ import '../providers.dart';
 import '../repo/completion_repository.dart';
 import '../services/points_service.dart';
 import '../services/proof_flow.dart';
+import '../services/proof_retry_service.dart';
 import 'new_task_dialog.dart';
 
 /// Phase 1 debug screen: no design system, just enough to exercise the data
@@ -28,6 +31,7 @@ class _TaskRow {
   final Set<int> completedSlotsToday;
   final int currentStreak;
   final int longestStreak;
+  final int attemptsUsedToday;
 
   _TaskRow({
     required this.task,
@@ -35,6 +39,7 @@ class _TaskRow {
     required this.completedSlotsToday,
     required this.currentStreak,
     required this.longestStreak,
+    required this.attemptsUsedToday,
   });
 }
 
@@ -43,11 +48,73 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   List<_TaskRow> _rows = [];
   int _totalAltitude = 0;
   Rank? _rank;
+  int _proofsUsedToday = 0;
+  StreamSubscription<PendingRetryReport>? _retryReportsSubscription;
+
+  /// Set for the duration of [_completeWithProof]'s call into
+  /// [ProofFlowService], which spans opening the camera/gallery picker
+  /// through verification. Returning from the picker activity fires
+  /// AppLifecycleListener.onResume, which runs an auto-retry batch; that
+  /// batch's snackbar must not clobber the proof outcome snackbar the user
+  /// is actually waiting for, so [_onAutoRetryReport] checks this flag and
+  /// stays silent while it's set.
+  bool _proofFlowInProgress = false;
 
   @override
   void initState() {
     super.initState();
     _reload();
+    // proofRetryServiceProvider rebuilds whenever its own dependencies do
+    // (e.g. the debug verifier mode), which would otherwise leave a stream
+    // subscription pointed at a stale service instance whose stream has
+    // stopped emitting. listenManual re-runs the callback (and so
+    // re-subscribes) on every rebuild of the provider, not just once here at
+    // initState time.
+    ref.listenManual<ProofRetryService>(
+      proofRetryServiceProvider,
+      (previous, next) => _subscribeToRetryReports(next),
+      fireImmediately: true,
+    );
+  }
+
+  void _subscribeToRetryReports(ProofRetryService service) {
+    unawaited(_retryReportsSubscription?.cancel());
+    _retryReportsSubscription = service.reports.listen(_onAutoRetryReport);
+  }
+
+  /// Surfaces a retry batch that ran without the user pressing the manual
+  /// button (foreground resume or a real reconnect), which would otherwise
+  /// be invisible. The manual "Retry pending" button below keeps its own
+  /// direct snackbar too, so a manual press may show both.
+  ///
+  /// Stays silent (but still reloads) when the batch was a no-op: returning
+  /// from the camera/gallery picker fires onResume, which runs a retry batch
+  /// that almost always has nothing to do, and an empty "verified 0,
+  /// rejected 0, still pending 0, skipped 0" snackbar was drowning out the
+  /// actual proof outcome. Also stays silent while a proof flow is in
+  /// progress ([_proofFlowInProgress]), so that outcome snackbar always wins
+  /// even when the same resume-triggered batch *does* do something.
+  void _onAutoRetryReport(PendingRetryReport report) {
+    if (!mounted) return;
+    final didAnything = report.verified > 0 ||
+        report.rejected > 0 ||
+        report.stillPending > 0 ||
+        report.skipped > 0;
+    if (didAnything && !_proofFlowInProgress) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          'Auto-retry: verified ${report.verified}, rejected ${report.rejected}, '
+          'still pending ${report.stillPending}, skipped ${report.skipped}',
+        ),
+      ));
+    }
+    unawaited(_reload());
+  }
+
+  @override
+  void dispose() {
+    unawaited(_retryReportsSubscription?.cancel());
+    super.dispose();
   }
 
   Future<void> _reload() async {
@@ -76,6 +143,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
         for (final c in allCompletions)
           if (c.occurrenceDate == today) c.slot,
       };
+      final attemptsToday = await completionRepo.attemptsUsedToday(task.id);
       rows.add(_TaskRow(
         task: task,
         todayOccurrences: generator.occurrencesFor(task, DateRange(today, today)),
@@ -90,16 +158,19 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
           today,
           (date, slot) => doneSet.contains((date, slot)),
         ),
+        attemptsUsedToday: attemptsToday,
       ));
     }
 
     final altitude = await completionRepo.totalAltitude();
+    final proofsToday = await completionRepo.successfulProofsToday();
 
     if (!mounted) return;
     setState(() {
       _rows = rows;
       _totalAltitude = altitude;
       _rank = points.rankFor(altitude);
+      _proofsUsedToday = proofsToday;
       _loading = false;
     });
   }
@@ -136,12 +207,18 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
     final clock = ref.read(clockProvider);
     final proofFlow = ref.read(proofFlowServiceProvider);
 
-    final flowResult = await proofFlow.completeWithProof(
-      taskId: task.id,
-      occurrenceDate: clock.today(),
-      slot: occ.slot,
-      source: source,
-    );
+    final ProofFlowResult flowResult;
+    _proofFlowInProgress = true;
+    try {
+      flowResult = await proofFlow.completeWithProof(
+        taskId: task.id,
+        occurrenceDate: clock.today(),
+        slot: occ.slot,
+        source: source,
+      );
+    } finally {
+      _proofFlowInProgress = false;
+    }
 
     if (mounted) {
       switch (flowResult) {
@@ -254,6 +331,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
 
   Widget _buildAltitudeCard() {
     final rank = _rank;
+    final dailyCap = ref.read(proofPolicyProvider).dailyCap;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -267,6 +345,8 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                 : rank.metresToNext == null
                     ? '${rank.tier.label} (top rank)'
                     : '${rank.tier.label} (${rank.metresToNext} m to next)'),
+            const SizedBox(height: 4),
+            Text('Proofs today: $_proofsUsedToday/$dailyCap'),
           ],
         ),
       ),
@@ -274,6 +354,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   }
 
   Widget _buildTaskCard(_TaskRow row) {
+    final attemptsCap = ref.read(proofPolicyProvider).attemptsPerTaskPerDay;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -297,6 +378,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
             Text(
               'Streak: ${row.currentStreak}   ·   Longest: ${row.longestStreak}',
             ),
+            Text('Attempts today: ${row.attemptsUsedToday}/$attemptsCap'),
             const SizedBox(height: 4),
             if (row.todayOccurrences.isEmpty)
               const Text('Not scheduled today')

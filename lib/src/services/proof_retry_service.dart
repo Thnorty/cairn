@@ -16,13 +16,23 @@ import 'photo_capture.dart';
 class ProofRetryService {
   final CompletionRepository _completionRepository;
   final ProofPhotoStore _photoStore;
+  final StreamController<PendingRetryReport> _reportsController =
+      StreamController<PendingRetryReport>.broadcast();
 
   ProofRetryService(this._completionRepository, this._photoStore);
 
-  Future<PendingRetryReport> runOnce() {
-    return _completionRepository.retryPendingVerifications(
+  /// Emits the report from every [runOnce] call, whoever triggered it (the
+  /// connectivity/foreground trigger, or a manual button), so a background
+  /// retry that would otherwise be invisible can be surfaced by a listener
+  /// (e.g. the debug screen).
+  Stream<PendingRetryReport> get reports => _reportsController.stream;
+
+  Future<PendingRetryReport> runOnce() async {
+    final report = await _completionRepository.retryPendingVerifications(
       loadBytes: _loadBytes,
     );
+    _reportsController.add(report);
+    return report;
   }
 
   Future<Uint8List?> _loadBytes(Completion completion) async {
@@ -30,21 +40,66 @@ class ProofRetryService {
     if (path == null) return null;
     return _photoStore.load(path);
   }
+
+  /// Closes the report stream. Called from the owning provider's
+  /// `ref.onDispose`.
+  void dispose() {
+    unawaited(_reportsController.close());
+  }
 }
 
-/// Fires [ProofRetryService.runOnce] on app foreground and on regaining
-/// connectivity (any non-`none` result), while the app is running.
+/// Coarse connectivity classification used only to decide whether a
+/// connectivity update is a real transition into connectivity.
+/// Deliberately doesn't depend on connectivity_plus's own result type, so
+/// [isReconnectTransition] stays a pure, directly unit-testable function;
+/// [ProofRetryTrigger] is what translates a connectivity_plus emission into
+/// this before calling it.
+enum ConnectivityState { unknown, none, connected }
+
+/// True iff moving from [previous] to [current] is a transition *into*
+/// connectivity: the previously known state was none or unknown, and the
+/// new state is connected. False for every other case, in particular an
+/// unchanged connected state (which connectivity_plus can and does re-emit
+/// on its own), so a retry fires only on a genuine reconnect, not on every
+/// emission of the stream.
+///
+/// A pure function with no plugin dependency, so it's unit-testable without
+/// a platform channel.
+bool isReconnectTransition(
+  ConnectivityState previous,
+  ConnectivityState current,
+) {
+  if (current != ConnectivityState.connected) return false;
+  return previous != ConnectivityState.connected;
+}
+
+/// Fires [ProofRetryService.runOnce] once at [start] (so pendings from a
+/// previous session resolve at launch), on app foreground, and on a genuine
+/// transition into connectivity (see [isReconnectTransition]) while the app
+/// is running.
+///
+/// Takes a factory that resolves the current [ProofRetryService] at call
+/// time, rather than a fixed instance, so the trigger itself can be built
+/// once (e.g. by a provider with no watch dependency on anything the
+/// verifier depends on) and still always run against an up-to-date
+/// repository, without being torn down and rebuilt whenever that dependency
+/// chain changes. Rebuilding used to re-subscribe to connectivity_plus,
+/// whose Android stream emits the current network state immediately on
+/// subscribe, which could run a retry with a *just-changed* verifier before
+/// the caller expected it to; resolving the service lazily per call removes
+/// that rebuild entirely.
 ///
 /// An in-flight flag stops overlapping triggers (e.g. a foreground resume
 /// and a connectivity change landing back-to-back) from stacking concurrent
 /// retry batches.
 class ProofRetryTrigger {
-  final ProofRetryService _service;
+  final ProofRetryService Function() _resolveService;
   AppLifecycleListener? _lifecycleListener;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   bool _running = false;
+  ConnectivityState _lastKnownState = ConnectivityState.unknown;
 
-  ProofRetryTrigger(this._service);
+  ProofRetryTrigger(this._resolveService);
 
   /// Starts listening. Call once, typically at app start.
   ///
@@ -56,13 +111,25 @@ class ProofRetryTrigger {
   /// pending completion, so the foreground path alone is a fine fallback.
   void start() {
     _lifecycleListener = AppLifecycleListener(onResume: _runGuarded);
+
+    // Deliberate: resolve pendings from a previous session right away, at
+    // launch, regardless of what (or whether) connectivity_plus goes on to
+    // report. This is intentionally decoupled from the connectivity
+    // subscription below so it isn't at the mercy of the plugin's own
+    // subscribe-time emission.
+    _runGuarded();
+
     try {
       _connectivitySubscription =
           Connectivity().onConnectivityChanged.listen(
         (results) {
-          if (results.any((result) => result != ConnectivityResult.none)) {
+          final newState = results.any((r) => r != ConnectivityResult.none)
+              ? ConnectivityState.connected
+              : ConnectivityState.none;
+          if (isReconnectTransition(_lastKnownState, newState)) {
             _runGuarded();
           }
+          _lastKnownState = newState;
         },
         onError: (Object _, StackTrace _) {
           // Stream-level failure (e.g. MissingPluginException surfaced
@@ -79,7 +146,9 @@ class ProofRetryTrigger {
   void _runGuarded() {
     if (_running) return;
     _running = true;
-    unawaited(_service.runOnce().whenComplete(() => _running = false));
+    unawaited(
+      _resolveService().runOnce().whenComplete(() => _running = false),
+    );
   }
 
   /// Stops listening and releases the lifecycle/connectivity subscriptions.

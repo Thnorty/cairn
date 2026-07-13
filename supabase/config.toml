@@ -1,0 +1,15 @@
+# Supabase project configuration (files only: WO-4 does not run `supabase
+# link`, `db push`, or `functions deploy` - those are the human's job, see
+# the deploy instructions the implementer reported alongside this file).
+project_id = "cuerjdnznhsdgqbajgvv"
+
+[functions.verify-proof]
+enabled = true
+# The Supabase gateway verifies the caller's JWT and returns 401 before this
+# function ever runs when the token is missing or invalid. Anonymous users
+# are legitimate callers (that's the whole point of Phase 2b's anonymous
+# auth): this only rejects a request that isn't carrying a *valid* session
+# JWT at all, not a non-anonymous one. The function itself additionally
+# calls `auth.getUser()` for defense in depth and to recover the caller's
+# id for rate limiting; see index.ts.
+verify_jwt = true

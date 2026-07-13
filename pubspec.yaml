@@ -46,6 +46,8 @@ dependencies:
   photo_manager: ^3.10.0
   path_provider: ^2.1.5
   connectivity_plus: ^7.2.0
+  exif: ^3.3.0
+  supabase_flutter: ^2.16.0
 
 dev_dependencies:
   flutter_test:

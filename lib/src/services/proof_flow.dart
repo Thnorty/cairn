@@ -49,6 +49,22 @@ class ProofFlowService {
     int slot = 0,
     required ProofSource source,
   }) async {
+    // UX short-circuit only: CompletionRepository.precheckProof runs the
+    // read-only guards that don't need a photo (back-fill, scheduled,
+    // duplicate, attempts cap, daily cap), so a doomed attempt never opens
+    // the camera/gallery picker and burns a photo for nothing. This does NOT
+    // replace the repository's own guard chain inside completeWithProof
+    // below, which stays the actual enforcement point since state can
+    // change between this call and that one; do not delete either half.
+    final precheckRejection = await _completionRepository.precheckProof(
+      taskId: taskId,
+      occurrenceDate: occurrenceDate,
+      slot: slot,
+    );
+    if (precheckRejection != null) {
+      return ProofFlowCompleted(precheckRejection);
+    }
+
     final captured = await _capture.capture(source);
     if (captured == null) return const ProofFlowCancelled();
 

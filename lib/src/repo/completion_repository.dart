@@ -115,7 +115,13 @@ class CompletionRepository {
   final PointsService _points;
   final ProofVerifier _verifier;
   final ProofPolicy _policy;
+  final String? Function() _currentUserId;
 
+  /// [currentUserId] is read at every insert (completions and
+  /// verification_attempts alike) to stamp `user_id` (WO-4: Phase 2b
+  /// anonymous auth). Defaults to a getter that always returns null, so
+  /// tests and any caller that hasn't wired auth yet keep writing rows with
+  /// `user_id = NULL`, exactly as before this parameter existed.
   CompletionRepository(
     this._db,
     this._clock, {
@@ -125,12 +131,16 @@ class CompletionRepository {
     PointsService points = const PointsService(),
     required ProofVerifier verifier,
     ProofPolicy policy = const ProofPolicy(),
+    String? Function() currentUserId = _noCurrentUserId,
   })  : _uuid = uuid ?? const Uuid(),
         _generator = generator,
         _streaks = streaks,
         _points = points,
         _verifier = verifier,
-        _policy = policy;
+        _policy = policy,
+        _currentUserId = currentUserId;
+
+  static String? _noCurrentUserId() => null;
 
   Future<CompleteOccurrenceResult> completeOccurrence({
     required String taskId,
@@ -177,6 +187,7 @@ class CompletionRepository {
                 verificationStatus:
                     const Value(VerificationStatus.verified),
                 pointsAwarded: Value(points),
+                userId: Value(_currentUserId()),
                 updatedAt: now,
               ),
             );
@@ -315,6 +326,71 @@ class CompletionRepository {
     return rows.length;
   }
 
+  /// Live (non-tombstoned) verification_attempts rows recorded for [taskId]
+  /// today: how many of the day's [ProofPolicy.attemptsPerTaskPerDay] this
+  /// task has used. Read-only counter for the UI (the debug screen's
+  /// "Attempts today: n/3" line; Phase 3's Daily Limit screen needs the same
+  /// number, hence a proper public repository method rather than a
+  /// debug-screen-only query).
+  Future<int> attemptsUsedToday(String taskId) {
+    return _liveAttemptsCountToday(taskId, _clock.today());
+  }
+
+  /// Live completions today (verified or pending, across all tasks): how
+  /// many of the day's [ProofPolicy.dailyCap] have been used. Read-only
+  /// counter for the UI (the debug screen's "Proofs today: n/5" line; Phase
+  /// 3's Daily Limit screen needs the same number, hence a proper public
+  /// repository method rather than a debug-screen-only query).
+  Future<int> successfulProofsToday() {
+    return _liveDailyCapCountToday(_clock.today());
+  }
+
+  /// Read-only subset of [completeWithProof]'s guard chain that a caller can
+  /// run *before* capturing a photo, so a doomed attempt (already completed,
+  /// not scheduled, back-filled, or over either cap) never has to open the
+  /// camera/gallery picker first. Runs, in order: back-fill, task exists,
+  /// scheduled, live duplicate (all via [_checkCommonGuards], shared with
+  /// [completeWithProof] rather than duplicated), then the attempts cap,
+  /// then the daily cap. Deliberately does NOT check recency (there is no
+  /// photo yet to check) and does NOT write anything.
+  ///
+  /// This is a UX short-circuit, not the enforcement point: state can change
+  /// between this call and the [completeWithProof] call that follows it
+  /// (e.g. another attempt on a different slot lands in between), so
+  /// [completeWithProof] must keep running its own full guard chain
+  /// regardless of what this method returned. Do not delete either half
+  /// thinking the other makes it redundant.
+  ///
+  /// Returns the rejection to surface to the user, or null when capture
+  /// should proceed.
+  Future<CompleteOccurrenceResult?> precheckProof({
+    required String taskId,
+    required LocalDate occurrenceDate,
+    int slot = 0,
+  }) async {
+    final today = _clock.today();
+
+    final (_, commonRejection) = await _checkCommonGuards(
+      taskId: taskId,
+      occurrenceDate: occurrenceDate,
+      today: today,
+      slot: slot,
+    );
+    if (commonRejection != null) return commonRejection;
+
+    final attemptsSoFar = await _liveAttemptsCountToday(taskId, today);
+    if (attemptsSoFar >= _policy.attemptsPerTaskPerDay) {
+      return const CompletionRejectedAttemptsExhausted();
+    }
+
+    final dailyCountSoFar = await _liveDailyCapCountToday(today);
+    if (dailyCountSoFar >= _policy.dailyCap) {
+      return const CompletionRejectedDailyCapReached();
+    }
+
+    return null;
+  }
+
   /// Records a completion backed by an AI-verified (or pending) proof photo.
   ///
   /// Guards a-f, then the recency pre-filter, all run read-only before the
@@ -325,6 +401,12 @@ class CompletionRepository {
   /// Once the guards pass, the verifier is called outside any transaction
   /// (it's network I/O in the real implementation); the result is then
   /// written in a transaction.
+  ///
+  /// [precheckProof] runs the subset of these guards that don't need a photo
+  /// and is meant to be called first, as a UX short-circuit before the photo
+  /// picker even opens. It is not a substitute for this method's own guard
+  /// chain, which stays the actual enforcement point (state can change
+  /// between the two calls), so both must keep running independently.
   Future<CompleteOccurrenceResult> completeWithProof({
     required String taskId,
     required LocalDate occurrenceDate,
@@ -390,6 +472,7 @@ class CompletionRepository {
                   slot: Value(slot),
                   attemptedAt: now,
                   verdictMeta: Value(jsonEncode(verdict.toJson())),
+                  userId: Value(_currentUserId()),
                   updatedAt: now,
                 ),
               );
@@ -452,6 +535,7 @@ class CompletionRepository {
               verificationStatus: Value(status),
               verificationMeta: Value(verificationMeta),
               pointsAwarded: Value(points),
+              userId: Value(_currentUserId()),
               updatedAt: now,
             ),
           );
@@ -568,6 +652,7 @@ class CompletionRepository {
                   slot: Value(completion.slot),
                   attemptedAt: now,
                   verdictMeta: Value(jsonEncode(verdict.toJson())),
+                  userId: Value(_currentUserId()),
                   updatedAt: now,
                 ),
               );
@@ -593,5 +678,36 @@ class CompletionRepository {
           ..where((c) => c.deletedAt.isNull()))
         .get();
     return _points.totalAltitude(rows.map((c) => c.pointsAwarded));
+  }
+
+  /// One-time backfill for rows created before the first successful
+  /// anonymous sign-in (WO-4), covering both tables this repository owns:
+  /// completions and verification_attempts. See
+  /// [TaskRepository.backfillUserId] for the full rationale (Phase 4's
+  /// account upgrade carrying pre-auth history), which applies identically
+  /// here, including idempotency: only rows matching `user_id IS NULL` are
+  /// touched, so a second call (or a call on every launch) is a no-op once
+  /// every row has been stamped.
+  ///
+  /// Runs both updates in one transaction so a crash mid-backfill can't
+  /// leave completions stamped but attempts not (or vice versa). Returns
+  /// the number of completions rows updated.
+  Future<int> backfillUserId(String userId) {
+    return _db.transaction<int>(() async {
+      final now = _clock.nowEpochMillis();
+      final completionsUpdated =
+          await (_db.update(_db.completions)..where((c) => c.userId.isNull()))
+              .write(CompletionsCompanion(
+        userId: Value(userId),
+        updatedAt: Value(now),
+      ));
+      await (_db.update(_db.verificationAttempts)
+            ..where((a) => a.userId.isNull()))
+          .write(VerificationAttemptsCompanion(
+        userId: Value(userId),
+        updatedAt: Value(now),
+      ));
+      return completionsUpdated;
+    });
   }
 }

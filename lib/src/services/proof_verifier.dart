@@ -35,17 +35,21 @@ class VerifierUnavailable extends ProofVerifierResponse {
 
 /// Judges whether a proof photo shows the given task being done.
 ///
-/// The real implementation (a Supabase Edge Function holding the Gemini key)
-/// arrives in a later work order; until then [FakeProofVerifier] stands in.
+/// The real implementation, `SupabaseProofVerifier` (a Supabase Edge
+/// Function holding the Gemini key), landed in WO-4 (Phase 2b) and is the
+/// default in production. [FakeProofVerifier] remains in active use for
+/// tests and for the debug screen's pass/reject/offline override modes,
+/// which exist precisely so every branch of the pipeline can still be
+/// exercised on a device without burning a real Gemini call.
 abstract class ProofVerifier {
   Future<ProofVerifierResponse> verify(ProofRequest request);
 }
 
-/// In-memory verifier for tests and the Phase 2 debug screen.
-///
-/// Production-visible on purpose: the debug screen uses it until the real
-/// Supabase-backed verifier exists. The optional [handler] lets tests script
-/// arbitrary responses; without one, every request passes.
+/// In-memory verifier for tests, and for the Phase 2 debug screen's
+/// pass/reject/offline override modes (see `DebugVerifierMode` in
+/// `providers.dart`; its default `real` mode uses `SupabaseProofVerifier`
+/// instead). The optional [handler] lets tests script arbitrary responses;
+/// without one, every request passes.
 class FakeProofVerifier implements ProofVerifier {
   final ProofVerifierResponse Function(ProofRequest request)? _handler;
 

@@ -138,4 +138,46 @@ void main() {
     expect(rows.single.verificationStatus, VerificationStatus.pending);
     expect(rows.single.deletedAt, isNull);
   });
+
+  test('runOnce emits its report on the reports stream', () async {
+    final clock = FixedClock(d(2026, 7, 10));
+    final taskRepo = TaskRepository(db, clock);
+    final pendingVerifier =
+        FakeProofVerifier((_) => const VerifierUnavailable('offline'));
+    final setupRepo =
+        CompletionRepository(db, clock, verifier: pendingVerifier);
+
+    final task = await taskRepo.createTask(
+      title: 'Push-ups',
+      recurrenceType: RecurrenceType.daily,
+      startDate: d(2026, 7, 1),
+    );
+
+    await setupRepo.completeWithProof(
+      taskId: task.id,
+      occurrenceDate: d(2026, 7, 10),
+      proof: ProofData(
+        imageBytes: Uint8List.fromList([9]),
+        photoPath: '/fake/proofs/a.jpg',
+      ),
+    );
+
+    final store =
+        _FakeProofPhotoStore({'/fake/proofs/a.jpg': Uint8List.fromList([9])});
+    final retryVerifier =
+        FakeProofVerifier((_) => const VerdictReceived(_passingVerdict));
+    final retryRepo = CompletionRepository(db, clock, verifier: retryVerifier);
+    final retryService = ProofRetryService(retryRepo, store);
+
+    // Subscribed before runOnce fires, so delivery ordering can't race it.
+    final firstEmitted = retryService.reports.first;
+    final report = await retryService.runOnce();
+    final emitted = await firstEmitted;
+
+    expect(emitted.verified, report.verified);
+    expect(emitted.rejected, report.rejected);
+    expect(emitted.stillPending, report.stillPending);
+    expect(emitted.skipped, report.skipped);
+    expect(report.verified, 1);
+  });
 }

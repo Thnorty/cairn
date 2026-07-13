@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -7,6 +9,7 @@ import 'db/database.dart';
 import 'models/proof_verdict.dart';
 import 'repo/completion_repository.dart';
 import 'repo/task_repository.dart';
+import 'services/auth_service.dart';
 import 'services/occurrence_generator.dart';
 import 'services/photo_capture.dart';
 import 'services/points_service.dart';
@@ -14,6 +17,7 @@ import 'services/proof_flow.dart';
 import 'services/proof_retry_service.dart';
 import 'services/proof_verifier.dart';
 import 'services/streak_service.dart';
+import 'services/supabase_proof_verifier.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase(driftDatabase(name: 'cairn'));
@@ -35,14 +39,17 @@ final pointsServiceProvider =
 
 final proofPolicyProvider = Provider<ProofPolicy>((ref) => const ProofPolicy());
 
-/// Phase-2a-only debug affordance: lets the debug screen switch the fake
-/// verifier's behaviour on a real device without a network call. WO-4
-/// removes this, along with [FakeProofVerifier]'s production use, once the
-/// real Supabase-backed verifier lands.
-enum DebugVerifierMode { pass, reject, offline }
+/// Debug affordance: lets the debug screen switch the verifier's behaviour
+/// on a real device. `real` is the actual Supabase-backed verifier
+/// ([SupabaseProofVerifier]), landed in WO-4; `pass`/`reject`/`offline`
+/// stay as in-memory fakes so every branch of the pipeline (a clean pass, a
+/// rejection with attempts remaining, an unreachable verifier going
+/// pending) can still be exercised on a device without burning a real
+/// Gemini call.
+enum DebugVerifierMode { real, pass, reject, offline }
 
 final debugVerifierModeProvider =
-    StateProvider<DebugVerifierMode>((ref) => DebugVerifierMode.pass);
+    StateProvider<DebugVerifierMode>((ref) => DebugVerifierMode.real);
 
 const _debugPassVerdict = ProofVerdict(
   taskShown: true,
@@ -60,26 +67,39 @@ const _debugRejectVerdict = ProofVerdict(
   reason: 'Debug mode: reject',
 );
 
-// WO-4 swaps this for the Supabase-backed verifier (Phase 2b); until then the
-// fake verifier drives the debug screen so the pipeline is exercisable
-// end-to-end without a network call. Its behaviour follows
-// [debugVerifierModeProvider], also a Phase-2a-only debug affordance.
+/// Real by default (see [DebugVerifierMode]); the debug screen's menu can
+/// still switch to one of the fakes to exercise a specific branch on
+/// demand. Only the `real` case ever touches the network (and only when
+/// [ProofVerifier.verify] is actually called, not at construction time), so
+/// building this provider is always safe, including under test.
 final proofVerifierProvider = Provider<ProofVerifier>((ref) {
   final mode = ref.watch(debugVerifierModeProvider);
-  return FakeProofVerifier((request) {
-    switch (mode) {
-      case DebugVerifierMode.pass:
-        return const VerdictReceived(_debugPassVerdict);
-      case DebugVerifierMode.reject:
-        return const VerdictReceived(_debugRejectVerdict);
-      case DebugVerifierMode.offline:
-        return const VerifierUnavailable('Debug mode: offline');
-    }
-  });
+  switch (mode) {
+    case DebugVerifierMode.real:
+      return SupabaseProofVerifier();
+    case DebugVerifierMode.pass:
+      return FakeProofVerifier((_) => const VerdictReceived(_debugPassVerdict));
+    case DebugVerifierMode.reject:
+      return FakeProofVerifier((_) => const VerdictReceived(_debugRejectVerdict));
+    case DebugVerifierMode.offline:
+      return FakeProofVerifier((_) => const VerifierUnavailable('Debug mode: offline'));
+  }
 });
 
+/// Thin wrapper around Supabase anonymous auth (WO-4). Never touches the
+/// Supabase SDK at build time; see [SupabaseAuthService]'s doc comment.
+final authServiceProvider = Provider<AuthService>((ref) => SupabaseAuthService());
+
 final taskRepositoryProvider = Provider<TaskRepository>((ref) {
-  return TaskRepository(ref.watch(databaseProvider), ref.watch(clockProvider));
+  return TaskRepository(
+    ref.watch(databaseProvider),
+    ref.watch(clockProvider),
+    // ref.read, not ref.watch: the getter is only *called* at insert time,
+    // so this deliberately creates no build-time dependency edge on
+    // authServiceProvider (same rationale as proofRetryTriggerProvider's
+    // factory below).
+    currentUserId: () => ref.read(authServiceProvider).currentUserId,
+  );
 });
 
 final completionRepositoryProvider = Provider<CompletionRepository>((ref) {
@@ -91,11 +111,20 @@ final completionRepositoryProvider = Provider<CompletionRepository>((ref) {
     points: ref.watch(pointsServiceProvider),
     verifier: ref.watch(proofVerifierProvider),
     policy: ref.watch(proofPolicyProvider),
+    currentUserId: () => ref.read(authServiceProvider).currentUserId,
   );
 });
 
+// Photo-library metadata is tried first (its timestamp is harder to forge
+// than in-file EXIF); EXIF is the fallback for cases where the library
+// lookup can't resolve a match at all, e.g. Android 13+'s system Photo
+// Picker handing the app a copy of the asset under a name the library
+// lookup can't match (see ExifAssetTimeResolver's doc comment).
 final assetTimeResolverProvider = Provider<AssetTimeResolver>(
-  (ref) => const PhotoManagerAssetTimeResolver(),
+  (ref) => const ChainedAssetTimeResolver([
+    PhotoManagerAssetTimeResolver(),
+    ExifAssetTimeResolver(),
+  ]),
 );
 
 final photoCaptureProvider = Provider<PhotoCapture>((ref) {
@@ -121,19 +150,55 @@ final proofFlowServiceProvider = Provider<ProofFlowService>((ref) {
 });
 
 final proofRetryServiceProvider = Provider<ProofRetryService>((ref) {
-  return ProofRetryService(
+  final service = ProofRetryService(
     ref.watch(completionRepositoryProvider),
     ref.watch(proofPhotoStoreProvider),
   );
+  ref.onDispose(service.dispose);
+  return service;
 });
 
-/// Wires [ProofRetryTrigger] into the app lifecycle. Nothing constructs the
-/// trigger (and its lifecycle listener/connectivity subscription never
-/// starts) until something watches this provider, so the app root must watch
-/// it once at startup.
+/// Wires [ProofRetryTrigger] into the app lifecycle. Built with a factory
+/// (`() => ref.read(proofRetryServiceProvider)`) that resolves the current
+/// [ProofRetryService] at call time rather than a watched, fixed instance,
+/// so this provider has no dependency edge on [proofVerifierProvider] (or
+/// anything else [proofRetryServiceProvider] depends on): it is built once,
+/// for the life of the app, and its lifecycle listener/connectivity
+/// subscription is started exactly once. Watching the service directly used
+/// to rebuild this provider (and re-subscribe to connectivity_plus) every
+/// time the verifier changed, which is exactly the bug this factory avoids.
+/// Nothing constructs the trigger until something watches this provider, so
+/// the app root must watch it once at startup.
 final proofRetryTriggerProvider = Provider<ProofRetryTrigger>((ref) {
-  final trigger = ProofRetryTrigger(ref.watch(proofRetryServiceProvider));
+  final trigger = ProofRetryTrigger(() => ref.read(proofRetryServiceProvider));
   trigger.start();
   ref.onDispose(trigger.dispose);
   return trigger;
+});
+
+/// Kicks off anonymous sign-in (a no-op if a session already exists) and
+/// then the one-time `user_id` backfill (WO-4), exactly once for the life
+/// of the app. Built the same way as [proofRetryTriggerProvider]: resolves
+/// [authServiceProvider] and the two repositories via `ref.read` inside the
+/// async body rather than `ref.watch`, so this provider has no build-time
+/// dependency edge on any of them and is never rebuilt by, say, a change to
+/// the debug verifier mode. Nothing runs until something watches this
+/// provider, so the app root must watch it once at startup.
+///
+/// Safe to (re)run on every launch without any separate "already ran"
+/// flag: [AuthService.ensureSignedIn] is a no-op once a session exists, and
+/// each repository's `backfillUserId` only touches rows still matching
+/// `user_id IS NULL`, so it becomes a no-op too once every row has been
+/// stamped once.
+final authBootstrapProvider = Provider<void>((ref) {
+  Future<void> run() async {
+    final auth = ref.read(authServiceProvider);
+    await auth.ensureSignedIn();
+    final userId = auth.currentUserId;
+    if (userId == null) return; // still offline/unauthenticated: nothing to backfill yet
+    await ref.read(taskRepositoryProvider).backfillUserId(userId);
+    await ref.read(completionRepositoryProvider).backfillUserId(userId);
+  }
+
+  unawaited(run());
 });

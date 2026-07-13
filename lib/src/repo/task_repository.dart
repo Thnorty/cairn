@@ -20,9 +20,21 @@ class TaskRepository {
   final AppDatabase _db;
   final Clock _clock;
   final Uuid _uuid;
+  final String? Function() _currentUserId;
 
-  TaskRepository(this._db, this._clock, {Uuid? uuid})
-      : _uuid = uuid ?? const Uuid();
+  /// [currentUserId] is read at every insert to stamp `user_id` (WO-4:
+  /// Phase 2b anonymous auth). Defaults to a getter that always returns
+  /// null, so tests and any caller that hasn't wired auth yet keep writing
+  /// rows with `user_id = NULL`, exactly as before this parameter existed.
+  TaskRepository(
+    this._db,
+    this._clock, {
+    Uuid? uuid,
+    String? Function() currentUserId = _noCurrentUserId,
+  })  : _uuid = uuid ?? const Uuid(),
+        _currentUserId = currentUserId;
+
+  static String? _noCurrentUserId() => null;
 
   Future<Task> createTask({
     required String title,
@@ -67,7 +79,7 @@ class TaskRepository {
       dueTimes: Value(dueTimes),
       startDate: startDate,
       endDate: Value(endDate),
-      userId: Value(userId),
+      userId: Value(userId ?? _currentUserId()),
       createdAt: now,
       updatedAt: now,
     );
@@ -249,5 +261,24 @@ class TaskRepository {
     return (_db.select(_db.tasks)
           ..where((t) => t.archived.equals(false) & t.deletedAt.isNull()))
         .get();
+  }
+
+  /// One-time backfill for rows created before the first successful
+  /// anonymous sign-in (WO-4): stamps `user_id` on every row where it is
+  /// currently NULL, so Phase 4's account upgrade carries the whole
+  /// pre-auth history instead of starting from a blank slate.
+  ///
+  /// Idempotent and safe to call on every launch without any separate
+  /// "already ran" flag: it only ever touches rows matching `user_id IS
+  /// NULL`, so a row that already carries a (possibly different) user_id is
+  /// never overwritten, and once every row has been stamped a second call
+  /// matches zero rows and changes nothing.
+  Future<int> backfillUserId(String userId) {
+    return (_db.update(_db.tasks)..where((t) => t.userId.isNull())).write(
+      TasksCompanion(
+        userId: Value(userId),
+        updatedAt: Value(_clock.nowEpochMillis()),
+      ),
+    );
   }
 }

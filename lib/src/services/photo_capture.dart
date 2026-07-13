@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:exif/exif.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -101,6 +102,129 @@ class PhotoManagerAssetTimeResolver implements AssetTimeResolver {
     final normalized = path.replaceAll('\\', '/');
     final idx = normalized.lastIndexOf('/');
     return idx == -1 ? normalized : normalized.substring(idx + 1);
+  }
+}
+
+/// EXIF's placeholder for "no timestamp known", written by some cameras
+/// instead of omitting the tag.
+const _exifZeroDateTime = '0000:00:00 00:00:00';
+
+/// EXIF date/time format: "YYYY:MM:DD HH:MM:SS" (colons in the date part
+/// too, not dashes). No timezone is carried, ever.
+final RegExp _exifDateTimePattern =
+    RegExp(r'^(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})$');
+
+/// Parses an EXIF `DateTimeOriginal`/`DateTimeDigitized`/`DateTime` value
+/// ("YYYY:MM:DD HH:MM:SS") into epoch millis. EXIF timestamps carry no
+/// timezone, so the value is interpreted as device-*local* time (i.e.
+/// whatever `DateTime(...)` without a `.utc` gives on this device).
+///
+/// A pure, top-level function (no plugin/IO dependency) so it's directly
+/// unit-testable. Returns null, rather than throwing, for:
+/// - an empty (or all-whitespace) string,
+/// - a string that doesn't match the expected shape,
+/// - a string that matches the shape but isn't a real calendar date/time
+///   (e.g. month 13), since [DateTime]'s constructor silently normalizes
+///   overflowing components instead of throwing,
+/// - the all-zeroes placeholder some cameras write when they have no clock
+///   set.
+int? parseExifDateTime(String raw) {
+  final value = raw.trim();
+  if (value.isEmpty || value == _exifZeroDateTime) return null;
+
+  final match = _exifDateTimePattern.firstMatch(value);
+  if (match == null) return null;
+
+  final year = int.parse(match.group(1)!);
+  final month = int.parse(match.group(2)!);
+  final day = int.parse(match.group(3)!);
+  final hour = int.parse(match.group(4)!);
+  final minute = int.parse(match.group(5)!);
+  final second = int.parse(match.group(6)!);
+
+  final parsed = DateTime(year, month, day, hour, minute, second);
+  // DateTime normalizes out-of-range components (e.g. month 13 rolls into
+  // the next year) instead of throwing, so a round-trip mismatch is the
+  // only signal that the input wasn't a real date/time.
+  if (parsed.year != year ||
+      parsed.month != month ||
+      parsed.day != day ||
+      parsed.hour != hour ||
+      parsed.minute != minute ||
+      parsed.second != second) {
+    return null;
+  }
+  return parsed.millisecondsSinceEpoch;
+}
+
+/// [AssetTimeResolver] fallback backed by in-file EXIF metadata
+/// (`DateTimeOriginal`, falling back to `DateTimeDigitized`, then
+/// `DateTime`). EXIF is trivial to strip or forge client-side, which is why
+/// [PhotoManagerAssetTimeResolver]'s photo-library lookup is tried first and
+/// stays authoritative; this only fires when that lookup returns null, e.g.
+/// on Android 13+ where the system Photo Picker hands the app a *copy* of
+/// the asset (in the app's own cache dir, under a name the library lookup
+/// can't match) even though the copy's bytes still carry the original
+/// EXIF block.
+///
+/// A screenshot typically carries no `DateTimeOriginal` (or any capture
+/// timestamp) at all, so this resolves to null for one too, same as the
+/// photo-library lookup, and recency fails open. That's deliberate:
+/// screenshot detection is the verifier's job
+/// ([ProofVerdict.isScreenshotOrScreen]), not recency's.
+class ExifAssetTimeResolver implements AssetTimeResolver {
+  /// EXIF tag keys to check, in priority order, as returned by
+  /// `readExifFromBytes` (each key is `"<IFD name> <tag name>"`).
+  static const _tagKeys = [
+    'EXIF DateTimeOriginal',
+    'EXIF DateTimeDigitized',
+    'Image DateTime',
+  ];
+
+  const ExifAssetTimeResolver();
+
+  @override
+  Future<int?> takenAtFor(String pickedPath) async {
+    try {
+      final bytes = await File(pickedPath).readAsBytes();
+      final tags = await readExifFromBytes(bytes);
+      for (final key in _tagKeys) {
+        final tag = tags[key];
+        if (tag == null) continue;
+        final parsed = parseExifDateTime(tag.printable);
+        if (parsed != null) return parsed;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+/// [AssetTimeResolver] that tries a list of resolvers in order and returns
+/// the first non-null result.
+///
+/// A resolver that throws is treated exactly like one that returns null: it
+/// must not break the chain, since every resolver here is already a
+/// best-effort lookup ([AssetTimeResolver.takenAtFor] documents "never
+/// throws", but this chain doesn't rely on that promise being honoured by
+/// every implementation).
+class ChainedAssetTimeResolver implements AssetTimeResolver {
+  final List<AssetTimeResolver> _resolvers;
+
+  const ChainedAssetTimeResolver(this._resolvers);
+
+  @override
+  Future<int?> takenAtFor(String pickedPath) async {
+    for (final resolver in _resolvers) {
+      try {
+        final result = await resolver.takenAtFor(pickedPath);
+        if (result != null) return result;
+      } catch (_) {
+        // Fall through to the next resolver.
+      }
+    }
+    return null;
   }
 }
 
