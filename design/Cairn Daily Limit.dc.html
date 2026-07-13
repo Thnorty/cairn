@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  a { color: #6e8156; text-decoration: none; }
+  a:hover { color: #5a6b44; }
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:44px 24px;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 80% at 50% -10%, rgba(140,120,95,.14), transparent 55%), repeating-radial-gradient(circle at 76% 8%, transparent 0 30px, rgba(90,78,58,.045) 30px 31px);">
+
+  <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+    <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;background-image:radial-gradient(130% 50% at 50% -8%, rgba(150,131,104,.2), transparent 62%);">
+
+      <div style="position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:repeating-radial-gradient(circle at 50% -6%, transparent 0 26px, rgba(70,60,44,.05) 26px 27px);"></div>
+
+      <!-- status bar -->
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 30px 4px;color:#33302b;font-weight:600;font-size:15px;letter-spacing:.3px;">
+        <span>7:24</span>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="display:flex;align-items:flex-end;gap:2px;height:11px;">
+            <div style="width:3px;height:5px;background:#33302b;border-radius:1px;"></div>
+            <div style="width:3px;height:7px;background:#33302b;border-radius:1px;"></div>
+            <div style="width:3px;height:9px;background:#33302b;border-radius:1px;"></div>
+            <div style="width:3px;height:11px;background:#33302b;border-radius:1px;"></div>
+          </div>
+          <div style="width:16px;height:11px;border:1.5px solid #33302b;border-radius:3px;position:relative;padding:1.5px;"><div style="width:70%;height:100%;background:#33302b;border-radius:1px;"></div><div style="position:absolute;right:-3px;top:3px;width:2px;height:4px;background:#33302b;border-radius:0 1px 1px 0;"></div></div>
+        </div>
+      </div>
+
+      <!-- close -->
+      <div style="position:relative;display:flex;justify-content:flex-end;padding:8px 22px 0;">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(120,108,88,.14);display:flex;align-items:center;justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a453c" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </div>
+      </div>
+
+      <!-- body -->
+      <div style="position:relative;flex:1;overflow:hidden;padding:6px 30px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+
+        <!-- cairn with a stone waiting -->
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <!-- hovering stone -->
+          <div style="width:32px;height:15px;border-radius:48% 52% 45% 55%/62% 58% 42% 38%;background:linear-gradient(158deg,#dcd5c7,#b6ad9c);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 14px -6px rgba(60,50,35,.5);transform:rotate(-4deg);"></div>
+          <!-- gap + ghost slot -->
+          <div style="width:36px;height:15px;border-radius:48% 52% 45% 55%/62% 58% 42% 38%;border:1.6px dashed rgba(120,108,88,.5);margin-top:14px;margin-bottom:2px;"></div>
+          <!-- cairn below -->
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
+            <div style="width:40px;height:14px;border-radius:50% 50% 45% 55%/60% 58% 42% 40%;background:linear-gradient(158deg,#d6cfc0,#b1a796);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(2deg);margin-bottom:-3px;"></div>
+            <div style="width:48px;height:15px;border-radius:47% 53% 46% 54%/60% 55% 45% 40%;background:linear-gradient(158deg,#ded7c9,#b5ac9b);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(-2deg);margin-bottom:-3px;"></div>
+            <div style="width:56px;height:16px;border-radius:49% 51% 46% 54%/60% 55% 45% 40%;background:linear-gradient(158deg,#d8d1c2,#aea491);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(1deg);"></div>
+            <div style="width:60px;height:10px;border-radius:50%;background:radial-gradient(ellipse,rgba(50,42,30,.24),transparent 70%);margin-top:4px;filter:blur(.6px);"></div>
+          </div>
+        </div>
+
+        <div style="font-family:'Zilla Slab',serif;font-weight:600;font-size:27px;color:#2c2924;margin-top:34px;line-height:1.15;">That's today's five</div>
+        <div style="font-size:14.5px;line-height:1.55;color:#5f5647;margin-top:12px;max-width:270px;">You've used all <strong style="color:#42402c;font-weight:600;">5 free AI proofs</strong> for today. This stone is ready — it'll settle onto your cairn as soon as your proofs reset.</div>
+
+        <!-- reset pill -->
+        <div style="display:inline-flex;align-items:center;gap:8px;margin-top:20px;background:rgba(120,108,88,.13);padding:9px 16px;border-radius:20px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6a6153" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5V12l3 2"></path></svg>
+          <span style="font-size:13.5px;font-weight:600;color:#5f5647;">Resets at midnight</span>
+        </div>
+
+      </div>
+
+      <!-- footer -->
+      <div style="position:relative;flex-shrink:0;padding:14px 30px 30px;display:flex;flex-direction:column;gap:10px;">
+        <button style="width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:linear-gradient(155deg,#c07a54,#a6603d);color:#f6efe6;border:none;padding:17px;border-radius:26px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 10px 20px -8px rgba(140,74,42,.6),inset 0 1px 0 rgba(255,255,255,.3);">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f6efe6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M4 19l6-10 4 6 3-4 3 8z"></path></svg>
+          Go unlimited
+        </button>
+        <button style="width:100%;background:transparent;color:#6a6153;border:none;padding:6px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:14.5px;cursor:pointer;">Maybe later</button>
+      </div>
+
+      <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);"></div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:940}}"></script>
+</body>
+</html>

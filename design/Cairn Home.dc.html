@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  a { color: #6e8156; text-decoration: none; }
+  a:hover { color: #5a6b44; }
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:44px 24px;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 80% at 50% -10%, rgba(140,120,95,.14), transparent 55%), repeating-radial-gradient(circle at 76% 8%, transparent 0 30px, rgba(90,78,58,.045) 30px 31px);">
+
+  <!-- ===== DEVICE ===== -->
+  <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+
+    <!-- ===== SCREEN ===== -->
+    <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;background-image:radial-gradient(130% 55% at 18% -8%, rgba(150,131,104,.22), transparent 60%), radial-gradient(90% 40% at 100% 0%, rgba(150,166,120,.14), transparent 65%);">
+
+      <!-- topographic contour wash -->
+      <div style="position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:repeating-radial-gradient(circle at 84% 4%, transparent 0 26px, rgba(70,60,44,.05) 26px 27px);"></div>
+
+      <!-- status bar -->
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 30px 4px;color:#33302b;font-weight:600;font-size:15px;letter-spacing:.3px;">
+        <span>7:14</span>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="display:flex;align-items:flex-end;gap:2px;height:11px;">
+            <div style="width:3px;height:5px;background:#33302b;border-radius:1px;"></div>
+            <div style="width:3px;height:7px;background:#33302b;border-radius:1px;"></div>
+            <div style="width:3px;height:9px;background:#33302b;border-radius:1px;"></div>
+            <div style="width:3px;height:11px;background:#33302b;border-radius:1px;"></div>
+          </div>
+          <div style="width:16px;height:11px;border:1.5px solid #33302b;border-radius:3px;position:relative;padding:1.5px;"><div style="width:70%;height:100%;background:#33302b;border-radius:1px;"></div><div style="position:absolute;right:-3px;top:3px;width:2px;height:4px;background:#33302b;border-radius:0 1px 1px 0;"></div></div>
+        </div>
+      </div>
+
+      <!-- scroll body -->
+      <div style="position:relative;flex:1;overflow:hidden;padding:8px 22px 0;">
+
+        <!-- brand + avatar row -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <!-- cairn app mark -->
+            <div style="width:34px;height:38px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
+              <div style="width:11px;height:8px;border-radius:50% 50% 45% 55%/60% 60% 40% 40%;background:#3a362f;margin-bottom:-1px;"></div>
+              <div style="width:17px;height:9px;border-radius:48% 52% 45% 55%/60% 55% 45% 40%;background:#4a453c;margin-bottom:-1px;"></div>
+              <div style="width:24px;height:10px;border-radius:48% 52% 45% 55%/60% 55% 45% 40%;background:#33302b;"></div>
+            </div>
+            <span style="font-family:'Zilla Slab',serif;font-weight:700;font-size:22px;color:#33302b;letter-spacing:.2px;">Cairn</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button style="display:inline-flex;align-items:center;gap:6px;background:rgba(166,96,61,.12);color:#9a5636;border:1.5px solid rgba(166,96,61,.3);padding:7px 13px 7px 11px;border-radius:20px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:12.5px;cursor:pointer;white-space:nowrap;">
+              <span style="font-size:15px;line-height:1;margin-top:-1px;">+</span>New habit
+            </button>
+            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(150deg,#c9c0b0,#a99f8c);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 6px rgba(60,50,35,.2);display:flex;align-items:center;justify-content:center;font-weight:600;color:#453f35;font-size:14px;">S</div>
+          </div>
+        </div>
+
+        <!-- greeting -->
+        <div style="margin-bottom:6px;">
+          <div style="font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#9c917e;margin-bottom:6px;">Wednesday · Jul 11</div>
+          <div style="font-family:'Zilla Slab',serif;font-weight:600;font-size:34px;line-height:1.05;color:#2c2924;">Good morning, Sam</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;color:#6f685b;font-size:14px;margin-bottom:26px;">
+          <span><strong style="color:#40796b;color:#5f7a4e;font-weight:600;">1</strong> of 3 done</span>
+          <span style="width:4px;height:4px;border-radius:50%;background:#c4bbaa;"></span>
+          <span><strong style="color:#453f35;font-weight:600;">17</strong> stones this week</span>
+        </div>
+
+        <div style="font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#9c917e;margin-bottom:14px;">Today</div>
+
+        <!-- ===== CARD 1 — completed ===== -->
+        <div style="position:relative;background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:34px 32px 34px 33px;padding:20px 20px 18px;margin-bottom:16px;box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 16px 24px -16px rgba(60,50,35,.45),0 4px 8px -4px rgba(60,50,35,.22);border:1px solid rgba(255,255,255,.35);">
+          <div style="display:flex;gap:16px;">
+            <!-- mini cairn (9) -->
+            <div style="width:60px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex-shrink:0;">
+              <div style="width:20px;height:11px;border-radius:48% 52% 45% 55%/62% 58% 42% 38%;background:linear-gradient(158deg,#96a776,#6d8056);box-shadow:0 0 0 3px rgba(122,141,96,.18),inset 0 1px 0 rgba(255,255,255,.4),0 2px 4px rgba(60,50,35,.2);transform:rotate(-3deg);margin-bottom:-3px;"></div>
+              <div style="width:25px;height:11px;border-radius:50% 50% 45% 55%/60% 58% 42% 40%;background:linear-gradient(158deg,#dcd5c7,#b9b0a0);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(2deg);margin-bottom:-3px;"></div>
+              <div style="width:23px;height:11px;border-radius:47% 53% 46% 54%/60% 55% 45% 40%;background:linear-gradient(158deg,#d6cfc0,#b3a999);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(-4deg);margin-bottom:-3px;"></div>
+              <div style="width:30px;height:12px;border-radius:49% 51% 45% 55%/60% 58% 42% 40%;background:linear-gradient(158deg,#dcd5c7,#b6ad9c);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(3deg);margin-bottom:-3px;"></div>
+              <div style="width:27px;height:11px;border-radius:48% 52% 46% 54%/60% 55% 45% 40%;background:linear-gradient(158deg,#d4cdbd,#b0a695);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(-2deg);margin-bottom:-3px;"></div>
+              <div style="width:34px;height:12px;border-radius:49% 51% 45% 55%/60% 58% 42% 40%;background:linear-gradient(158deg,#ded7c9,#b8af9e);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(2deg);margin-bottom:-3px;"></div>
+              <div style="width:31px;height:12px;border-radius:48% 52% 46% 54%/60% 55% 45% 40%;background:linear-gradient(158deg,#d6cfc0,#b1a796);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(-3deg);margin-bottom:-3px;"></div>
+              <div style="width:39px;height:13px;border-radius:49% 51% 45% 55%/60% 58% 42% 40%;background:linear-gradient(158deg,#ddd6c8,#b5ac9b);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(1deg);margin-bottom:-3px;"></div>
+              <div style="width:44px;height:13px;border-radius:49% 51% 46% 54%/60% 55% 45% 40%;background:linear-gradient(158deg,#d8d1c2,#aea491);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(-1deg);"></div>
+              <div style="width:48px;height:9px;border-radius:50%;background:radial-gradient(ellipse,rgba(50,42,30,.26),transparent 70%);margin-top:3px;filter:blur(.5px);"></div>
+            </div>
+            <!-- info -->
+            <div style="flex:1;min-width:0;padding-top:2px;">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+                <div style="font-family:'Zilla Slab',serif;font-weight:600;font-size:19px;color:#2c2924;line-height:1.15;">Morning workout</div>
+                <!-- proof thumb -->
+                <div style="width:46px;height:46px;border-radius:14px;flex-shrink:0;background-image:repeating-linear-gradient(135deg,#cfc6b4 0 6px,#c4baa7 6px 12px);box-shadow:inset 0 0 0 1px rgba(70,60,44,.12),0 2px 4px rgba(60,50,35,.18);position:relative;overflow:hidden;">
+                  <div style="position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:7px;font-family:ui-monospace,monospace;color:#5c5344;letter-spacing:.3px;">proof</div>
+                </div>
+              </div>
+              <div style="display:inline-flex;align-items:center;gap:6px;margin-top:9px;background:rgba(122,141,96,.16);padding:5px 11px 5px 8px;border-radius:20px;">
+                <span style="width:16px;height:16px;border-radius:50%;background:#6d8056;display:flex;align-items:center;justify-content:center;color:#f2efe6;font-size:10px;font-weight:700;">✓</span>
+                <span style="font-size:12.5px;font-weight:600;color:#566c44;">Verified · 7:14 AM</span>
+              </div>
+              <div style="margin-top:12px;font-size:12.5px;color:#6a6153;">Cairn 2 · <span style="color:#524a3c;font-weight:600;">9 stones</span> · new stone placed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== CARD 2 — due now ===== -->
+        <div style="position:relative;background:linear-gradient(165deg,#f2ede2,#e3dbca);border-radius:32px 34px 33px 34px;padding:20px;margin-bottom:16px;box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 16px 24px -16px rgba(60,50,35,.45),0 4px 8px -4px rgba(60,50,35,.22);border:1px solid rgba(255,255,255,.35);">
+          <div style="display:flex;gap:16px;align-items:center;">
+            <!-- mini cairn (4) -->
+            <div style="width:60px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex-shrink:0;">
+              <div style="width:24px;height:11px;border-radius:48% 52% 45% 55%/62% 58% 42% 38%;background:linear-gradient(158deg,#dcd5c7,#b9b0a0);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(-3deg);margin-bottom:-3px;"></div>
+              <div style="width:31px;height:12px;border-radius:50% 50% 45% 55%/60% 58% 42% 40%;background:linear-gradient(158deg,#d6cfc0,#b3a999);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(3deg);margin-bottom:-3px;"></div>
+              <div style="width:35px;height:12px;border-radius:49% 51% 45% 55%/60% 58% 42% 40%;background:linear-gradient(158deg,#ded7c9,#b6ad9c);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(-2deg);margin-bottom:-3px;"></div>
+              <div style="width:42px;height:13px;border-radius:49% 51% 46% 54%/60% 55% 45% 40%;background:linear-gradient(158deg,#d8d1c2,#aea491);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(1deg);"></div>
+              <div style="width:46px;height:9px;border-radius:50%;background:radial-gradient(ellipse,rgba(50,42,30,.26),transparent 70%);margin-top:3px;filter:blur(.5px);"></div>
+            </div>
+            <!-- info -->
+            <div style="flex:1;min-width:0;">
+              <div style="font-family:'Zilla Slab',serif;font-weight:600;font-size:19px;color:#2c2924;line-height:1.15;">Read 20 pages</div>
+              <div style="margin-top:4px;font-size:13px;color:#6a6153;">Due today · Cairn 1 · 4 stones</div>
+              <button style="margin-top:14px;display:inline-flex;align-items:center;gap:8px;background:linear-gradient(155deg,#c07a54,#a6603d);color:#f6efe6;border:none;padding:11px 18px;border-radius:22px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:0 6px 13px -5px rgba(140,74,42,.6),inset 0 1px 0 rgba(255,255,255,.3);">
+                <span style="display:inline-flex;width:15px;height:13px;border:1.6px solid #f6efe6;border-radius:4px;position:relative;box-sizing:border-box;"><span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:5px;height:5px;border:1.4px solid #f6efe6;border-radius:50%;"></span><span style="position:absolute;top:-3px;left:3px;width:5px;height:3px;background:#a6603d;border:1.6px solid #f6efe6;border-bottom:none;border-radius:2px 2px 0 0;"></span></span>
+                Prove it
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== CARD 3 — scheduled ===== -->
+        <div style="position:relative;background:linear-gradient(165deg,#ece6da,#ddd4c2);border-radius:34px 32px 34px 33px;padding:20px;box-shadow:0 1px 0 rgba(255,255,255,.55) inset,0 10px 18px -14px rgba(60,50,35,.4);border:1px solid rgba(255,255,255,.25);opacity:.92;">
+          <div style="display:flex;gap:16px;align-items:center;">
+            <!-- mini cairn (6) -->
+            <div style="width:60px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex-shrink:0;opacity:.75;">
+              <div style="width:22px;height:11px;border-radius:48% 52% 45% 55%/62% 58% 42% 38%;background:linear-gradient(158deg,#d3ccbd,#b0a695);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 2px 3px rgba(60,50,35,.14);transform:rotate(-3deg);margin-bottom:-3px;"></div>
+              <div style="width:26px;height:11px;border-radius:50% 50% 45% 55%/60% 58% 42% 40%;background:linear-gradient(158deg,#cfc8b8,#aca291);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 2px 3px rgba(60,50,35,.14);transform:rotate(3deg);margin-bottom:-3px;"></div>
+              <div style="width:30px;height:12px;border-radius:49% 51% 45% 55%/60% 58% 42% 40%;background:linear-gradient(158deg,#d3ccbc,#ada391);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 2px 3px rgba(60,50,35,.14);transform:rotate(-2deg);margin-bottom:-3px;"></div>
+              <div style="width:33px;height:12px;border-radius:48% 52% 46% 54%/60% 55% 45% 40%;background:linear-gradient(158deg,#cfc8b8,#a99f8d);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 2px 3px rgba(60,50,35,.14);transform:rotate(2deg);margin-bottom:-3px;"></div>
+              <div style="width:37px;height:12px;border-radius:49% 51% 45% 55%/60% 58% 42% 40%;background:linear-gradient(158deg,#d1cabai,#aaa08e);background:linear-gradient(158deg,#d1caba,#aaa08e);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 2px 3px rgba(60,50,35,.14);transform:rotate(-1deg);margin-bottom:-3px;"></div>
+              <div style="width:42px;height:13px;border-radius:49% 51% 46% 54%/60% 55% 45% 40%;background:linear-gradient(158deg,#cdc6b6,#a59b89);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 2px 3px rgba(60,50,35,.14);transform:rotate(1deg);"></div>
+              <div style="width:44px;height:9px;border-radius:50%;background:radial-gradient(ellipse,rgba(50,42,30,.22),transparent 70%);margin-top:3px;filter:blur(.5px);"></div>
+            </div>
+            <!-- info -->
+            <div style="flex:1;min-width:0;">
+              <div style="font-family:'Zilla Slab',serif;font-weight:600;font-size:19px;color:#453f35;line-height:1.15;">Water the plants</div>
+              <div style="margin-top:4px;font-size:13px;color:#6a6153;">Cairn 1 · 6 stones</div>
+              <div style="margin-top:13px;display:inline-flex;align-items:center;gap:7px;color:#6a6153;font-size:13px;font-weight:500;border:1.5px solid rgba(120,108,88,.4);padding:8px 14px;border-radius:22px;">
+                <span style="width:11px;height:11px;border:1.5px solid #7a7062;border-radius:50%;position:relative;box-sizing:border-box;"><span style="position:absolute;left:50%;top:50%;width:1.5px;height:4px;background:#7a7062;transform:translate(-50%,-90%);"></span></span>
+                Scheduled · 8:00 PM
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== TAB BAR ===== -->
+      <div style="position:relative;flex-shrink:0;padding:12px 40px 26px;background:linear-gradient(0deg,#e9e1d3 60%,rgba(233,225,211,0));display:flex;align-items:flex-end;justify-content:space-between;">
+        <!-- today (home) -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:48px;color:#33302b;">
+          <svg width="23" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h14V9.5"></path></svg>
+          <span style="font-size:10.5px;font-weight:600;color:#33302b;">Today</span>
+        </div>
+        <!-- trail (winding path) -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:48px;color:#a19785;">
+          <svg width="23" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21c0-3.5 4-3.5 4-7s-4-3.5-4-7 4-3.5 4-4"></path><circle cx="10" cy="3" r="0.6" fill="currentColor" stroke="none"></circle><path d="M14 3c0 3.5 4 3.5 4 7s-4 3.5-4 7 3 3 4 4"></path></svg>
+          <span style="font-size:10.5px;font-weight:500;color:#a19785;">Trail</span>
+        </div>
+        <!-- stats (bar chart) -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:48px;color:#a19785;">
+          <svg width="23" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"></path><path d="M12 20V4"></path><path d="M20 20v-7"></path></svg>
+          <span style="font-size:10.5px;font-weight:500;color:#a19785;">Stats</span>
+        </div>
+        <!-- you (person) -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:48px;color:#a19785;">
+          <svg width="23" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"></circle><path d="M5.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path></svg>
+          <span style="font-size:10.5px;font-weight:500;color:#a19785;">You</span>
+        </div>
+      </div>
+
+      <!-- home indicator -->
+      <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);"></div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:940}}"></script>
+</body>
+</html>

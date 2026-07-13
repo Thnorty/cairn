@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  a { color: #6e8156; text-decoration: none; }
+  a:hover { color: #5a6b44; }
+  .nhscroll::-webkit-scrollbar { width: 0; }
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:44px 24px;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 80% at 50% -10%, rgba(140,120,95,.14), transparent 55%), repeating-radial-gradient(circle at 76% 8%, transparent 0 30px, rgba(90,78,58,.045) 30px 31px);">
+
+  <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+    <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;background-image:radial-gradient(130% 55% at 18% -8%, rgba(150,131,104,.2), transparent 60%);">
+
+      <!-- topo wash -->
+      <div style="position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:repeating-radial-gradient(circle at 84% 4%, transparent 0 26px, rgba(70,60,44,.05) 26px 27px);"></div>
+
+      <!-- ===== header ===== -->
+      <div style="position:relative;z-index:5;background:linear-gradient(180deg,#ece5d7 82%,rgba(236,229,215,0));padding-bottom:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 30px 4px;color:#33302b;font-weight:600;font-size:15px;letter-spacing:.3px;">
+          <span>7:22</span>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="display:flex;align-items:flex-end;gap:2px;height:11px;">
+              <div style="width:3px;height:5px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:7px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:9px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:11px;background:#33302b;border-radius:1px;"></div>
+            </div>
+            <div style="width:16px;height:11px;border:1.5px solid #33302b;border-radius:3px;position:relative;padding:1.5px;"><div style="width:70%;height:100%;background:#33302b;border-radius:1px;"></div><div style="position:absolute;right:-3px;top:3px;width:2px;height:4px;background:#33302b;border-radius:0 1px 1px 0;"></div></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 22px 0;">
+          <div style="width:40px;height:40px;border-radius:50%;background:rgba(120,108,88,.14);display:flex;align-items:center;justify-content:center;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4a453c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+          </div>
+          <span style="font-family:'Zilla Slab',serif;font-weight:600;font-size:19px;color:#2c2924;">New habit</span>
+          <div style="width:40px;"></div>
+        </div>
+      </div>
+
+      <!-- ===== scroll body ===== -->
+      <div class="nhscroll" style="position:relative;flex:1;overflow-y:auto;padding:12px 22px 20px;">
+
+        <!-- habit name -->
+        <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9c917e;margin-bottom:9px;">What are you proving?</div>
+        <div style="background:linear-gradient(165deg,#f4efe4,#e6decb);border-radius:22px;padding:16px 18px;box-shadow:inset 0 2px 5px rgba(80,66,46,.1),0 1px 0 rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.4);display:flex;align-items:center;gap:12px;">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;opacity:.8;">
+            <div style="width:9px;height:4px;border-radius:50%;background:#6d8056;margin-bottom:-.5px;"></div>
+            <div style="width:14px;height:5px;border-radius:50%;background:#b1a796;margin-bottom:-.5px;"></div>
+            <div style="width:18px;height:5px;border-radius:50%;background:#aea491;"></div>
+          </div>
+          <span style="font-family:'Zilla Slab',serif;font-size:19px;color:#2c2924;">Read 20 pages</span>
+        </div>
+
+        <!-- recurrence -->
+        <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9c917e;margin:22px 0 9px;">How often?</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+          <div style="text-align:center;padding:13px;border-radius:20px;background:linear-gradient(165deg,#f2ede2,#e5ddcc);color:#6a6153;font-weight:600;font-size:14px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">Once</div>
+          <div style="text-align:center;padding:13px;border-radius:20px;background:linear-gradient(165deg,#f2ede2,#e5ddcc);color:#6a6153;font-weight:600;font-size:14px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">Daily</div>
+          <div style="text-align:center;padding:13px;border-radius:20px;background:linear-gradient(165deg,#f2ede2,#e5ddcc);color:#6a6153;font-weight:600;font-size:14px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">Weekly</div>
+          <div style="text-align:center;padding:13px;border-radius:20px;background:#33302b;color:#f0ece1;font-weight:600;font-size:14px;box-shadow:0 8px 15px -7px rgba(45,38,26,.55),inset 0 1px 0 rgba(255,255,255,.14);">Monthly</div>
+        </div>
+
+        <!-- monthly picker (active) -->
+        <div style="margin-top:16px;background:rgba(122,141,96,.1);border-radius:24px;padding:16px;border:1px solid rgba(122,141,96,.18);">
+          <!-- toggle -->
+          <div style="display:flex;gap:7px;background:rgba(120,108,88,.12);padding:4px;border-radius:18px;margin-bottom:16px;">
+            <div style="flex:1;text-align:center;padding:9px;border-radius:14px;background:transparent;color:#8a8072;font-weight:600;font-size:13px;">On the 31st</div>
+            <div style="flex:1;text-align:center;padding:9px;border-radius:14px;background:linear-gradient(155deg,#f5f1e7,#e8e0d0);color:#2c2924;font-weight:600;font-size:13px;box-shadow:0 3px 7px -4px rgba(60,50,35,.4);">On the 3rd Friday</div>
+          </div>
+          <!-- day-of-month grid -->
+          <div style="font-size:12px;color:#5f6b4c;font-weight:600;margin-bottom:10px;">Which week</div>
+          <div style="display:flex;gap:6px;margin-bottom:16px;">
+            <div style="flex:1;text-align:center;padding:10px 4px;border-radius:14px;background:linear-gradient(155deg,#f3eee3,#e2dac9);color:#8a8072;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.5);">1st</div>
+            <div style="flex:1;text-align:center;padding:10px 4px;border-radius:14px;background:linear-gradient(155deg,#f3eee3,#e2dac9);color:#8a8072;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.5);">2nd</div>
+            <div style="flex:1;text-align:center;padding:10px 4px;border-radius:14px;background:linear-gradient(155deg,#96a776,#6d8056);color:#f4f0e6;font-weight:600;font-size:13px;box-shadow:0 4px 8px -4px rgba(90,110,60,.6),inset 0 1px 0 rgba(255,255,255,.35);">3rd</div>
+            <div style="flex:1;text-align:center;padding:10px 4px;border-radius:14px;background:linear-gradient(155deg,#f3eee3,#e2dac9);color:#8a8072;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.5);">4th</div>
+            <div style="flex:1;text-align:center;padding:10px 4px;border-radius:14px;background:linear-gradient(155deg,#f3eee3,#e2dac9);color:#8a8072;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.5);">Last</div>
+          </div>
+          <div style="font-size:12px;color:#5f6b4c;font-weight:600;margin-bottom:10px;">Which day</div>
+          <div style="display:flex;gap:6px;">
+            <div style="flex:1;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(155deg,#f3eee3,#e2dac9);color:#8a8072;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.5);">M</div>
+            <div style="flex:1;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(155deg,#f3eee3,#e2dac9);color:#8a8072;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.5);">T</div>
+            <div style="flex:1;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(155deg,#f3eee3,#e2dac9);color:#8a8072;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.5);">W</div>
+            <div style="flex:1;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(155deg,#f3eee3,#e2dac9);color:#8a8072;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.5);">T</div>
+            <div style="flex:1;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(155deg,#96a776,#6d8056);color:#f4f0e6;font-weight:600;font-size:13px;box-shadow:0 4px 8px -4px rgba(90,110,60,.6),inset 0 1px 0 rgba(255,255,255,.35);">F</div>
+            <div style="flex:1;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(155deg,#f3eee3,#e2dac9);color:#8a8072;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.5);">S</div>
+            <div style="flex:1;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(155deg,#f3eee3,#e2dac9);color:#8a8072;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.5);">S</div>
+          </div>
+        </div>
+
+        <!-- reminder times -->
+        <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9c917e;margin:22px 0 4px;">Times of day</div>
+        <div style="font-size:12px;color:#6a6153;line-height:1.4;margin-bottom:11px;">Each time is one proof — two times means a twice-a-day habit.</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <!-- slot 1 -->
+          <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(165deg,#f4efe4,#e6decb);border-radius:20px;padding:14px 16px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+            <div style="display:flex;align-items:center;gap:11px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a7062" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5V12l3 2"></path></svg>
+              <span style="font-family:'Zilla Slab',serif;font-weight:600;font-size:18px;color:#2c2924;">8:00 AM</span>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a19785" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </div>
+          <!-- slot 2 -->
+          <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(165deg,#f4efe4,#e6decb);border-radius:20px;padding:14px 16px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+            <div style="display:flex;align-items:center;gap:11px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a7062" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5V12l3 2"></path></svg>
+              <span style="font-family:'Zilla Slab',serif;font-weight:600;font-size:18px;color:#2c2924;">8:00 PM</span>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a19785" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </div>
+          <!-- add time -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:20px;border:1.5px dashed rgba(120,108,88,.4);color:#6a6153;font-weight:600;font-size:14px;">
+            <span style="width:20px;height:20px;border-radius:50%;background:rgba(120,108,88,.16);display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;">+</span>
+            Add a time
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== footer ===== -->
+      <div style="position:relative;z-index:5;flex-shrink:0;padding:14px 22px 30px;background:linear-gradient(0deg,#e9e1d3 66%,rgba(233,225,211,0));">
+        <button style="width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:linear-gradient(155deg,#c07a54,#a6603d);color:#f6efe6;border:none;padding:17px;border-radius:26px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 10px 20px -8px rgba(140,74,42,.6),inset 0 1px 0 rgba(255,255,255,.3);">Create habit</button>
+      </div>
+
+      <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);z-index:6;"></div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:940}}"></script>
+</body>
+</html>

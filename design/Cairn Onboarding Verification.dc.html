@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  a { color: #6e8156; text-decoration: none; }
+  a:hover { color: #5a6b44; }
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:44px 24px;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 80% at 50% -10%, rgba(140,120,95,.14), transparent 55%), repeating-radial-gradient(circle at 76% 8%, transparent 0 30px, rgba(90,78,58,.045) 30px 31px);">
+
+  <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+    <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;background-image:radial-gradient(135% 46% at 50% -6%, rgba(150,166,120,.24), transparent 62%);">
+
+      <div style="position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:repeating-radial-gradient(circle at 50% -4%, transparent 0 30px, rgba(90,100,72,.05) 30px 31px);"></div>
+
+      <!-- status bar -->
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 30px 4px;color:#33302b;font-weight:600;font-size:15px;letter-spacing:.3px;">
+        <span>7:10</span>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="display:flex;align-items:flex-end;gap:2px;height:11px;">
+            <div style="width:3px;height:5px;background:#33302b;border-radius:1px;"></div>
+            <div style="width:3px;height:7px;background:#33302b;border-radius:1px;"></div>
+            <div style="width:3px;height:9px;background:#33302b;border-radius:1px;"></div>
+            <div style="width:3px;height:11px;background:#33302b;border-radius:1px;"></div>
+          </div>
+          <div style="width:16px;height:11px;border:1.5px solid #33302b;border-radius:3px;position:relative;padding:1.5px;"><div style="width:70%;height:100%;background:#33302b;border-radius:1px;"></div><div style="position:absolute;right:-3px;top:3px;width:2px;height:4px;background:#33302b;border-radius:0 1px 1px 0;"></div></div>
+        </div>
+      </div>
+
+      <!-- progress dots + back -->
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:10px 24px 0;">
+        <div style="width:36px;height:36px;border-radius:50%;background:rgba(120,108,88,.14);display:flex;align-items:center;justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a453c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:rgba(120,108,88,.3);"></div>
+          <div style="width:18px;height:7px;border-radius:4px;background:#6d8056;"></div>
+          <div style="width:7px;height:7px;border-radius:50%;background:rgba(120,108,88,.3);"></div>
+        </div>
+        <div style="width:36px;"></div>
+      </div>
+
+      <!-- body -->
+      <div style="position:relative;flex:1;overflow:hidden;padding:14px 30px 0;display:flex;flex-direction:column;">
+
+        <!-- shield / verify emblem -->
+        <div style="display:flex;justify-content:center;margin-top:8px;">
+          <div style="position:relative;width:78px;height:78px;">
+            <svg width="78" height="78" viewBox="0 0 24 24" fill="none" stroke="#6d8056" stroke-width="1.4" stroke-linejoin="round"><path d="M12 2.5l7.5 3v6.2c0 4.6-3.2 7.9-7.5 9.3-4.3-1.4-7.5-4.7-7.5-9.3V5.5z" fill="rgba(122,141,96,.14)"></path></svg>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+              <span style="position:relative;width:26px;height:21px;border:2.2px solid #5f7a45;border-radius:6px;box-sizing:border-box;display:inline-flex;">
+                <span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:9px;height:9px;border:2.2px solid #5f7a45;border-radius:50%;box-sizing:border-box;"></span>
+                <span style="position:absolute;top:-6px;left:6px;width:9px;height:6px;background:#e9e1d3;border:2.2px solid #5f7a45;border-bottom:none;border-radius:3px 3px 0 0;box-sizing:border-box;"></span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- title -->
+        <div style="text-align:center;margin-top:18px;">
+          <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:28px;color:#2c2924;line-height:1.12;">How verification works</div>
+          <div style="font-size:14px;color:#5f5647;margin-top:10px;line-height:1.5;">A quick check keeps every stone honest — here's exactly what happens to your photo.</div>
+        </div>
+
+        <!-- points -->
+        <div style="margin-top:24px;display:flex;flex-direction:column;gap:11px;">
+          <div style="display:flex;align-items:flex-start;gap:13px;background:linear-gradient(165deg,#f3eee3,#e5ddcc);border-radius:22px;padding:14px 16px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+            <span style="width:32px;height:32px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.16);display:flex;align-items:center;justify-content:center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5f7a45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"></path></svg></span>
+            <div><div style="font-size:14.5px;font-weight:600;color:#2c2924;">Sent only to be checked</div><div style="font-size:12.5px;color:#5f5647;margin-top:2px;line-height:1.45;">Your photo is sent to an AI (Google Gemini) to confirm it matches your habit — nothing else.</div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:13px;background:linear-gradient(165deg,#f3eee3,#e5ddcc);border-radius:22px;padding:14px 16px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+            <span style="width:32px;height:32px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.16);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5f7a45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2.5"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg></span>
+            <div><div style="font-size:14.5px;font-weight:600;color:#2c2924;">Never stored in the cloud</div><div style="font-size:12.5px;color:#5f5647;margin-top:2px;line-height:1.45;">We don't keep your photos on our servers. They're checked, then discarded.</div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:13px;background:linear-gradient(165deg,#f3eee3,#e5ddcc);border-radius:22px;padding:14px 16px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+            <span style="width:32px;height:32px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.16);display:flex;align-items:center;justify-content:center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5f7a45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 9.2 3.8 3.8 0 0 1 16.5 17z"></path></svg></span>
+            <div><div style="font-size:14.5px;font-weight:600;color:#2c2924;">Your archive lives on your phone</div><div style="font-size:12.5px;color:#5f5647;margin-top:2px;line-height:1.45;">Proof photos are saved on your device. Cloud backup is optional with Premium.</div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- footer: permission primer -->
+      <div style="position:relative;flex-shrink:0;padding:14px 24px 28px;">
+        <div style="background:rgba(178,124,92,.1);border:1px solid rgba(178,124,92,.2);border-radius:24px;padding:16px;">
+          <div style="display:flex;align-items:center;gap:11px;">
+            <span style="width:36px;height:36px;flex-shrink:0;border-radius:12px;background:rgba(178,124,92,.16);display:flex;align-items:center;justify-content:center;">
+              <span style="position:relative;width:19px;height:15px;border:2px solid #a6603d;border-radius:5px;box-sizing:border-box;display:inline-flex;"><span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:7px;height:7px;border:1.8px solid #a6603d;border-radius:50%;"></span><span style="position:absolute;top:-4px;left:4px;width:6px;height:4px;background:#efe3d7;border:2px solid #a6603d;border-bottom:none;border-radius:2px 2px 0 0;"></span></span>
+            </span>
+            <div style="font-size:13px;color:#6b4a34;line-height:1.4;"><strong style="font-weight:600;color:#8f5636;">Cairn needs your camera</strong> to capture proof of each habit.</div>
+          </div>
+          <button style="width:100%;margin-top:13px;background:linear-gradient(155deg,#c07a54,#a6603d);color:#f6efe6;border:none;padding:15px;border-radius:22px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 9px 18px -8px rgba(140,74,42,.6),inset 0 1px 0 rgba(255,255,255,.3);">Allow camera</button>
+        </div>
+        <div style="text-align:center;margin-top:12px;"><a href="#" style="font-size:13px;font-weight:600;color:#6a6153;">Learn more about privacy</a></div>
+      </div>
+
+      <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);"></div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:940}}"></script>
+</body>
+</html>
