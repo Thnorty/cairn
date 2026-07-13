@@ -66,10 +66,25 @@ class ProofPolicy {
   /// across slots.
   final int attemptsPerTaskPerDay;
 
+  /// Recency pre-filter window: how old a proof photo's own capture
+  /// timestamp (from asset metadata, not in-file EXIF) may be before the
+  /// photo is rejected as stale without ever reaching the verifier.
+  final Duration recencyWindow;
+
+  /// Whether a photo with an unknown capture timestamp counts as recent.
+  /// Defaults to true (fail open): recency is only a cheap pre-filter ahead
+  /// of the real gate (Gemini judges the actual photo content), and
+  /// photo_manager lookups legitimately fail on limited-permission photo
+  /// libraries or cloud-only assets that haven't downloaded yet, so treating
+  /// "unknown" as "stale" would reject perfectly legitimate proofs.
+  final bool allowUnknownPhotoTime;
+
   const ProofPolicy({
     this.confidenceThreshold = 0.6,
     this.dailyCap = 5,
     this.attemptsPerTaskPerDay = 3,
+    this.recencyWindow = const Duration(minutes: 15),
+    this.allowUnknownPhotoTime = true,
   });
 
   /// Whether [v] passes as a verified proof under this policy.
@@ -77,6 +92,22 @@ class ProofPolicy {
       v.taskShown &&
       v.confidence >= confidenceThreshold &&
       (!v.isScreenshotOrScreen || v.screenIsPlausibleProof);
+
+  /// Whether a photo whose capture time (per asset metadata) was
+  /// [photoTakenAtMillis] epoch millis counts as recent as of [nowMillis].
+  ///
+  /// - A null timestamp falls back to [allowUnknownPhotoTime]: see its doc
+  ///   comment for why failing open is deliberate.
+  /// - A timestamp exactly [recencyWindow] old is still recent (inclusive
+  ///   boundary); one millisecond older is not.
+  /// - A timestamp in the future (device clock skew) always counts as
+  ///   recent: there's no cheating advantage to a photo claiming to be
+  ///   *newer* than now, only to one claiming to be older than it is.
+  bool isRecent(int? photoTakenAtMillis, int nowMillis) {
+    if (photoTakenAtMillis == null) return allowUnknownPhotoTime;
+    final ageMillis = nowMillis - photoTakenAtMillis;
+    return ageMillis <= recencyWindow.inMilliseconds;
+  }
 }
 
 /// The proof payload a caller submits with a completion attempt.

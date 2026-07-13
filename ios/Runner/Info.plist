@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Cairn uses the camera to take proof photos for verifying task completion.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Cairn uses your photo library to select proof photos for verifying task completion.</string>
 </dict>
 </plist>

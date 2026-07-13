@@ -8,6 +8,7 @@ import '../models/occurrence.dart';
 import '../providers.dart';
 import '../repo/completion_repository.dart';
 import '../services/points_service.dart';
+import '../services/proof_flow.dart';
 import 'new_task_dialog.dart';
 
 /// Phase 1 debug screen: no design system, just enough to exercise the data
@@ -124,10 +125,105 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
     await _reload();
   }
 
+  /// Phase 2a proof path: capture (camera or gallery), compress, persist,
+  /// verify. Reports the outcome in a snackbar; the Phase 1 checkbox path
+  /// above stays untouched.
+  Future<void> _completeWithProof(
+    Task task,
+    Occurrence occ,
+    ProofSource source,
+  ) async {
+    final clock = ref.read(clockProvider);
+    final proofFlow = ref.read(proofFlowServiceProvider);
+
+    final flowResult = await proofFlow.completeWithProof(
+      taskId: task.id,
+      occurrenceDate: clock.today(),
+      slot: occ.slot,
+      source: source,
+    );
+
+    if (mounted) {
+      switch (flowResult) {
+        case ProofFlowCancelled():
+          break; // user backed out of the picker; nothing to report
+        case ProofFlowCompleted(result: final completionResult):
+          _showProofOutcome(completionResult);
+      }
+    }
+
+    await _reload();
+  }
+
+  void _showProofOutcome(CompleteOccurrenceResult result) {
+    final message = switch (result) {
+      CompletionRecorded() => 'Verified',
+      CompletionPendingVerification() =>
+        'Pending (verifier unavailable, will retry)',
+      CompletionRejectedByVerifier(
+        :final verdict,
+        :final attemptsRemaining,
+      ) =>
+        'Rejected: ${verdict.reason} ($attemptsRemaining attempt(s) '
+            'remaining today)',
+      CompletionRejectedStalePhoto() => 'Rejected: photo too old',
+      CompletionRejectedAttemptsExhausted() =>
+        'Rejected: no attempts remaining today for this task',
+      CompletionRejectedDailyCapReached() =>
+        'Rejected: daily proof cap reached',
+      CompletionRejectedBackfill() => 'Rejected: cannot complete a past date',
+      CompletionRejectedNotScheduled() =>
+        'Rejected: not scheduled for this slot today',
+      CompletionRejectedTaskNotFound() => 'Rejected: task not found',
+      CompletionRejectedAlreadyCompleted() => 'Rejected: already completed',
+    };
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _retryPending() async {
+    final report = await ref.read(proofRetryServiceProvider).runOnce();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          'Retry: verified ${report.verified}, rejected ${report.rejected}, '
+          'still pending ${report.stillPending}, skipped ${report.skipped}',
+        ),
+      ));
+    }
+    await _reload();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final verifierMode = ref.watch(debugVerifierModeProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Cairn: Phase 1 debug')),
+      appBar: AppBar(
+        title: const Text('Cairn: Phase 1 debug'),
+        actions: [
+          PopupMenuButton<DebugVerifierMode>(
+            tooltip: 'Fake verifier mode',
+            initialValue: verifierMode,
+            onSelected: (mode) =>
+                ref.read(debugVerifierModeProvider.notifier).state = mode,
+            itemBuilder: (context) => DebugVerifierMode.values
+                .map((mode) => PopupMenuItem(
+                      value: mode,
+                      child: Text('Verifier: ${mode.name}'),
+                    ))
+                .toList(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Center(child: Text('Verifier: ${verifierMode.name}')),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Retry pending',
+            onPressed: _retryPending,
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await showNewTaskDialog(context, ref);
@@ -206,14 +302,48 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
               const Text('Not scheduled today')
             else
               for (final occ in row.todayOccurrences)
-                CheckboxListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  value: row.completedSlotsToday.contains(occ.slot),
-                  title: Text(occ.time ?? 'Slot ${occ.slot}'),
-                  onChanged: row.completedSlotsToday.contains(occ.slot)
-                      ? null
-                      : (_) => _complete(row.task, occ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CheckboxListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      value: row.completedSlotsToday.contains(occ.slot),
+                      title: Text(occ.time ?? 'Slot ${occ.slot}'),
+                      onChanged: row.completedSlotsToday.contains(occ.slot)
+                          ? null
+                          : (_) => _complete(row.task, occ),
+                    ),
+                    if (!row.completedSlotsToday.contains(occ.slot))
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Wrap(
+                          spacing: 8,
+                          children: [
+                            TextButton.icon(
+                              icon: const Icon(Icons.camera_alt_outlined,
+                                  size: 18),
+                              label: const Text('Proof (camera)'),
+                              onPressed: () => _completeWithProof(
+                                row.task,
+                                occ,
+                                ProofSource.camera,
+                              ),
+                            ),
+                            TextButton.icon(
+                              icon: const Icon(Icons.photo_library_outlined,
+                                  size: 18),
+                              label: const Text('Proof (gallery)'),
+                              onPressed: () => _completeWithProof(
+                                row.task,
+                                occ,
+                                ProofSource.gallery,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
           ],
         ),

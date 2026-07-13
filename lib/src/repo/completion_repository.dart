@@ -53,6 +53,18 @@ class CompletionRejectedDailyCapReached extends CompleteOccurrenceResult {
   const CompletionRejectedDailyCapReached();
 }
 
+/// The proof photo's own capture timestamp (asset metadata) fell outside
+/// [ProofPolicy.recencyWindow]. This is a cheap pre-filter checked before the
+/// verifier is ever called: no network call is made, and no
+/// verification_attempts row is written, so a stale photo does not burn the
+/// per-task attempts budget (only a verifier rejection does that).
+/// [photoAgeMillis] is null when the photo's capture time itself was unknown
+/// (only possible when [ProofPolicy.allowUnknownPhotoTime] is false).
+class CompletionRejectedStalePhoto extends CompleteOccurrenceResult {
+  final int? photoAgeMillis;
+  const CompletionRejectedStalePhoto(this.photoAgeMillis);
+}
+
 /// The verifier returned a verdict that failed [ProofPolicy.isVerified]. No
 /// completion is recorded; a verification_attempts row was written instead.
 class CompletionRejectedByVerifier extends CompleteOccurrenceResult {
@@ -305,11 +317,14 @@ class CompletionRepository {
 
   /// Records a completion backed by an AI-verified (or pending) proof photo.
   ///
-  /// Guards a-f all run read-only, before the verifier is ever called, so a
-  /// failed guard never costs a network call (verified by
-  /// [FakeProofVerifier.callCount] in tests). Once the guards pass, the
-  /// verifier is called outside any transaction (it's network I/O in the
-  /// real implementation); the result is then written in a transaction.
+  /// Guards a-f, then the recency pre-filter, all run read-only before the
+  /// verifier is ever called, so a failed guard never costs a network call
+  /// (verified by [FakeProofVerifier.callCount] in tests). A stale photo
+  /// (guard fails [ProofPolicy.isRecent]) is rejected without writing a
+  /// verification_attempts row, since staleness isn't a verifier rejection.
+  /// Once the guards pass, the verifier is called outside any transaction
+  /// (it's network I/O in the real implementation); the result is then
+  /// written in a transaction.
   Future<CompleteOccurrenceResult> completeWithProof({
     required String taskId,
     required LocalDate occurrenceDate,
@@ -335,6 +350,14 @@ class CompletionRepository {
     final dailyCountSoFar = await _liveDailyCapCountToday(today);
     if (dailyCountSoFar >= _policy.dailyCap) {
       return const CompletionRejectedDailyCapReached();
+    }
+
+    final nowForRecency = _clock.nowEpochMillis();
+    if (!_policy.isRecent(proof.photoTakenAt, nowForRecency)) {
+      final photoTakenAt = proof.photoTakenAt;
+      final age =
+          photoTakenAt == null ? null : nowForRecency - photoTakenAt;
+      return CompletionRejectedStalePhoto(age);
     }
 
     final response = await _verifier.verify(ProofRequest(
