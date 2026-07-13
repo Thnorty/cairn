@@ -21,7 +21,6 @@ const _validJson = {
   'task_shown': true,
   'confidence': 0.87,
   'is_screenshot_or_screen': false,
-  'screen_is_plausible_proof': false,
   'reason': 'clear photo of push-ups',
 };
 
@@ -40,7 +39,6 @@ void main() {
       expect(verdict.taskShown, true);
       expect(verdict.confidence, 0.87);
       expect(verdict.isScreenshotOrScreen, false);
-      expect(verdict.screenIsPlausibleProof, false);
       expect(verdict.reason, 'clear photo of push-ups');
     });
 

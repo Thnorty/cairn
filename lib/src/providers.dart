@@ -55,7 +55,6 @@ const _debugPassVerdict = ProofVerdict(
   taskShown: true,
   confidence: 1.0,
   isScreenshotOrScreen: false,
-  screenIsPlausibleProof: false,
   reason: 'Debug mode: pass',
 );
 
@@ -63,7 +62,6 @@ const _debugRejectVerdict = ProofVerdict(
   taskShown: false,
   confidence: 0.0,
   isScreenshotOrScreen: false,
-  screenIsPlausibleProof: false,
   reason: 'Debug mode: reject',
 );
 

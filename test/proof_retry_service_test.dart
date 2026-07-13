@@ -32,7 +32,6 @@ const _passingVerdict = ProofVerdict(
   taskShown: true,
   confidence: 0.95,
   isScreenshotOrScreen: false,
-  screenIsPlausibleProof: false,
   reason: 'clear photo',
 );
 

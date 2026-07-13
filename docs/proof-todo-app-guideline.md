@@ -103,13 +103,14 @@ Send the image + task text to Gemini and have it return **structured JSON** in o
 {
   "task_shown": true/false,
   "confidence": 0.0–1.0,
-  "is_screenshot_or_screen": true/false,   // catches photos-of-screens & screenshots
-  "screen_is_plausible_proof": true/false, // is a screen the natural evidence for THIS task?
+  "is_screenshot_or_screen": true/false,   // recorded metadata; does NOT reject on its own
   "reason": "short explanation"
 }
 ```
 
-Map that to `verification_status`: `verified` if `task_shown && confidence ≥ threshold && (!is_screenshot_or_screen || screen_is_plausible_proof)` (default threshold 0.6), else `rejected` (with the reason surfaced to the user). Screen content is a cheat vector (a fresh screenshot of an old photo defeats the recency filter), but for some tasks a screen *is* the natural evidence: a step counter for "walk 10,000 steps", a language-app streak, a bank-transfer confirmation. Blanket-rejecting screens would make those tasks permanently unverifiable, so Gemini also judges, from the task text, whether screen content is plausible proof for *this* task; a screenshot is rejected only when it isn't (e.g. a screenshot of a photo of a made bed). The recency pre-filter still applies to gallery-picked screenshots, so a stale step-counter screenshot is filtered before Gemini is ever called. Having Gemini flag screenshots/screens is what plugs the hole Layer A can't — it's why allowing gallery is workable.
+Map that to `verification_status`: `verified` if `task_shown && confidence ≥ threshold` (default threshold 0.6), else `rejected` (with the reason surfaced to the user).
+
+**Screens: decided 2026-07-14, they never reject on their own.** `is_screenshot_or_screen` is still returned and stored (it is useful signal, and Phase 3 may surface it), but it does not affect the verdict. An earlier design had Gemini also judge whether a screen was the *natural* evidence for the task (a step counter for "walk 10,000 steps", a language-app streak, a bank-transfer confirmation) and reject screens only when it wasn't. That was dropped: it asks the model to guess which proof methods are legitimate for a task, and users have valid ways to prove things via a screen that nobody anticipated. Rejecting an honest proof is worse than accepting a dishonest one here. The accepted cost is a known bypass: screenshot an old photo and its capture time looks fresh, so Layer A's recency filter passes it. That is consistent with this document's own position (see the Reality check below): the goal is friction, not a perfect lock, and no system stops a determined cheater who is willing to stage the shot anyway.
 
 **Security — important:** do **not** embed the Gemini API key in the app binary; it's extractable. Since you already run **Supabase**, put the key in a **Supabase Edge Function** (Deno/TypeScript) that holds the secret, checks the caller's Supabase Auth session, rate-limits, and forwards the image to Gemini — returning only the JSON verdict. The Flutter app never sees the key. Nothing is persisted server-side — the bytes pass through for verification and are discarded.
 
@@ -125,7 +126,7 @@ Gemini will reject sometimes — false rejections happen, and you're deliberatel
 Retries add a few extra Gemini calls beyond the "5 completions" baseline, but at ~150 KB downscaled images the cost is negligible; just note it eats a little more of the free-tier egress headroom.
 
 ### Reality check
-Every task allows **camera or gallery** — there is no per-task restriction. So the anti-cheat load falls entirely on recency + Gemini for all completions: recency filters lazy reuse of old photos, and Gemini catches semantic mismatch and screenshots/photos-of-screens (except where a screen is the task's natural evidence, per Layer B). No system stops a fully determined cheater (staging the shot), and that's fine — the goal is friction, not a perfect lock.
+Every task allows **camera or gallery** — there is no per-task restriction. So the anti-cheat load falls entirely on recency + Gemini for all completions: recency filters lazy reuse of old photos, and Gemini catches semantic mismatch (the photo simply not showing the task). Screens are flagged but never rejected on that basis alone (see Layer B), so screenshotting an old photo to refresh its timestamp is a known, accepted bypass. No system stops a fully determined cheater (staging the shot), and that's fine — the goal is friction, not a perfect lock.
 
 ### Storage & privacy — do you back photos up? (decided: no, for MVP)
 The photo's only essential job is to pass Gemini verification; what must survive is the **result** (`verification_status` + `verification_meta`), not the image. Keeping the image is only worth it for secondary reasons:

@@ -66,7 +66,6 @@ const _passingVerdict = ProofVerdict(
   taskShown: true,
   confidence: 0.9,
   isScreenshotOrScreen: false,
-  screenIsPlausibleProof: false,
   reason: 'looks right',
 );
 
@@ -74,7 +73,6 @@ const _rejectingVerdict = ProofVerdict(
   taskShown: false,
   confidence: 0.1,
   isScreenshotOrScreen: false,
-  screenIsPlausibleProof: false,
   reason: 'no evidence',
 );
 

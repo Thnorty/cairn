@@ -65,7 +65,6 @@ class FakeProofVerifier implements ProofVerifier {
     taskShown: true,
     confidence: 1.0,
     isScreenshotOrScreen: false,
-    screenIsPlausibleProof: false,
     reason: 'fake',
   );
 

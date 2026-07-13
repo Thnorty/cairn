@@ -12,12 +12,11 @@ class ProofVerdict {
   /// Verifier confidence in [taskShown], 0..1.
   final double confidence;
 
-  /// Whether the photo is a screenshot or a photo of a screen.
+  /// Whether the photo is a screenshot or a photo of a screen. Recorded
+  /// metadata only: it is persisted and may be surfaced in the UI, but it
+  /// never affects the verified/rejected outcome (see [ProofPolicy]'s doc
+  /// comment for why).
   final bool isScreenshotOrScreen;
-
-  /// Whether screen content is plausible evidence for this specific task
-  /// (e.g. a step-counter app for a walking task).
-  final bool screenIsPlausibleProof;
 
   /// Human-readable explanation from the verifier.
   final String reason;
@@ -26,7 +25,6 @@ class ProofVerdict {
     required this.taskShown,
     required this.confidence,
     required this.isScreenshotOrScreen,
-    required this.screenIsPlausibleProof,
     required this.reason,
   });
 
@@ -34,7 +32,6 @@ class ProofVerdict {
         'task_shown': taskShown,
         'confidence': confidence,
         'is_screenshot_or_screen': isScreenshotOrScreen,
-        'screen_is_plausible_proof': screenIsPlausibleProof,
         'reason': reason,
       };
 
@@ -42,18 +39,19 @@ class ProofVerdict {
         taskShown: json['task_shown'] as bool,
         confidence: (json['confidence'] as num).toDouble(),
         isScreenshotOrScreen: json['is_screenshot_or_screen'] as bool,
-        screenIsPlausibleProof: json['screen_is_plausible_proof'] as bool,
         reason: json['reason'] as String,
       );
 }
 
 /// Policy knobs for proof verification and its daily/per-task limits.
 ///
-/// Screens are a cheat vector: a fresh screenshot of an old photo defeats the
-/// recency check. But tasks whose natural evidence *is* a screen (a step
-/// counter, a language-learning app) must stay verifiable, so screen content
-/// is allowed when the verifier judges a screen plausible proof for the task
-/// text.
+/// The verified rule is exactly `taskShown && confidence >= confidenceThreshold`.
+/// `isScreenshotOrScreen` is recorded but never gates the outcome: judging
+/// whether a screen is the "natural" evidence for a task risks rejecting
+/// legitimate proof methods nobody anticipated. The accepted trade-off is
+/// that a fresh screenshot of an old photo can defeat the recency check;
+/// no anti-cheat here is perfect, and friction (not a lock) is the goal, per
+/// docs/proof-todo-app-guideline.md.
 class ProofPolicy {
   /// Minimum verifier confidence for a proof to count.
   final double confidenceThreshold;
@@ -89,9 +87,7 @@ class ProofPolicy {
 
   /// Whether [v] passes as a verified proof under this policy.
   bool isVerified(ProofVerdict v) =>
-      v.taskShown &&
-      v.confidence >= confidenceThreshold &&
-      (!v.isScreenshotOrScreen || v.screenIsPlausibleProof);
+      v.taskShown && v.confidence >= confidenceThreshold;
 
   /// Whether a photo whose capture time (per asset metadata) was
   /// [photoTakenAtMillis] epoch millis counts as recent as of [nowMillis].

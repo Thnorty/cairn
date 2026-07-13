@@ -90,11 +90,14 @@ function truncateForLogging(text: string): string {
 // PROMPT - human review requested before this ships (see the work order).
 // Keep this text and the comment above it together so a reviewer sees both.
 // Instructs Gemini to judge whether the photo shows the task done, report a
-// confidence, flag screenshots/photos-of-screens, and - the key anti-cheat
-// design point - judge from the task text alone whether a screen is the
-// *natural* evidence for this specific task (a step counter, a
-// language-learning app), so tasks whose natural evidence lives on a screen
-// stay verifiable while a screenshotted old photo doesn't.
+// confidence, and flag screenshots/photos-of-screens as recorded metadata
+// only. is_screenshot_or_screen must never lower task_shown or confidence:
+// judging whether a screen is the "natural" evidence for a task risks
+// rejecting legitimate proof methods nobody anticipated, so there is no
+// screen-plausibility gate here. The accepted trade-off is that a fresh
+// screenshot of an old photo can defeat the recency check; no anti-cheat
+// here is perfect, and friction (not a lock) is the goal, per
+// docs/proof-todo-app-guideline.md.
 // ============================================================================
 const SYSTEM_PROMPT = `You are a strict but fair verifier for a habit-tracking app called Cairn. Every time a user completes a personal task, they submit one photo as proof, and you decide whether that photo is genuine evidence the task was actually done.
 
@@ -110,13 +113,11 @@ Fill in these fields:
 
 - confidence (number, 0.0 to 1.0): how confident you are in your task_shown judgment. Use the full range; do not default to extreme values.
 
-- is_screenshot_or_screen (boolean): true if the image is a screenshot, or a photograph of a screen, monitor, phone, or TV displaying content, rather than a photo of the physical world.
-
-- screen_is_plausible_proof (boolean): only meaningful when is_screenshot_or_screen is true (set it to false whenever is_screenshot_or_screen is false). Judge, from the task's title and description alone, whether a screen is the NATURAL, expected form of evidence for this specific task. Set true for tasks like a step count or workout summary for a walking/running/exercise task, a lesson-complete screen for a language-learning task, a meditation app's session summary for a meditation task, or a banking/budgeting app screenshot for a "check my balance" or "pay a bill" task. Set false for tasks whose natural evidence is something physical in the real world (e.g. "clean my room", "go to the gym", "cook dinner"), even if the submitted photo happens to be a screenshot: a screenshot is not credible evidence for those.
+- is_screenshot_or_screen (boolean): true if the image is a screenshot, or a photograph of a screen, monitor, phone, or TV displaying content, rather than a photo of the physical world. This is recorded information only, not an automatic failure: report it factually and do not lower task_shown or confidence merely because the image is a screenshot. A screenshot that genuinely shows the task done (e.g. a step counter for a walking task, a lesson-complete screen for a language task) is legitimate evidence and should pass like any other photo.
 
 - reason (string, one sentence): a short, human-readable explanation of your task_shown and is_screenshot_or_screen judgments. Write it so it could be shown directly to the user if their proof is rejected.
 
-Be fair and not overly strict: most submissions are honest attempts, and an imperfect photo (bad lighting, an odd angle, a partial view) that still plausibly shows the task done should pass. Reserve a low confidence or task_shown: false for photos that are genuinely unrelated to the task, show no evidence at all, or use a screen where a screen is not plausible evidence for that task.`;
+Be fair and not overly strict: most submissions are honest attempts, and an imperfect photo (bad lighting, an odd angle, a partial view) that still plausibly shows the task done should pass. Reserve a low confidence or task_shown: false for photos that are genuinely unrelated to the task or show no evidence at all. Being a screenshot or a photo of a screen is never on its own a reason to lower confidence or set task_shown: false.`;
 
 function buildPrompt(taskTitle: string, taskDescription: string | null): string {
   return `${SYSTEM_PROMPT}
@@ -130,7 +131,6 @@ interface Verdict {
   task_shown: boolean;
   confidence: number;
   is_screenshot_or_screen: boolean;
-  screen_is_plausible_proof: boolean;
   reason: string;
 }
 
@@ -140,14 +140,12 @@ const VERDICT_SCHEMA = {
     task_shown: { type: 'boolean' },
     confidence: { type: 'number' },
     is_screenshot_or_screen: { type: 'boolean' },
-    screen_is_plausible_proof: { type: 'boolean' },
     reason: { type: 'string' },
   },
   required: [
     'task_shown',
     'confidence',
     'is_screenshot_or_screen',
-    'screen_is_plausible_proof',
     'reason',
   ],
 };
@@ -159,7 +157,6 @@ function isVerdictShape(value: unknown): value is Verdict {
     typeof v.task_shown === 'boolean' &&
     typeof v.confidence === 'number' &&
     typeof v.is_screenshot_or_screen === 'boolean' &&
-    typeof v.screen_is_plausible_proof === 'boolean' &&
     typeof v.reason === 'string'
   );
 }
