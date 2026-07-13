@@ -80,7 +80,7 @@ void main() {
       final c = FakeCompletions();
       c.complete(d(2026, 7, 8), 0);
       c.complete(d(2026, 7, 8), 1);
-      c.complete(d(2026, 7, 9), 0); // only slot 0 — day incomplete
+      c.complete(d(2026, 7, 9), 0); // only slot 0: day incomplete
       c.complete(d(2026, 7, 10), 0);
       c.complete(d(2026, 7, 10), 1);
       final today = d(2026, 7, 10);
@@ -114,7 +114,7 @@ void main() {
       // Run of 2: Jul 6-7.
       c.complete(d(2026, 7, 6));
       c.complete(d(2026, 7, 7));
-      // Jul 8 (today) left incomplete — pending, not a break.
+      // Jul 8 (today) left incomplete: pending, not a break.
       final today = d(2026, 7, 8);
       expect(service.longestStreak(task, today, c.call), 4);
       // Today is pending so the walk continues into the Jul 6-7 run.

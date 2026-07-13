@@ -455,7 +455,7 @@ class Task extends DataClass implements Insertable<Task> {
   /// ISO date; for once.
   final LocalDate? dueDate;
 
-  /// JSON array of "HH:mm" strings — the task's slots by index.
+  /// JSON array of "HH:mm" strings: the task's slots by index.
   /// `[]` = one untimed slot 0.
   final List<String> dueTimes;
   final LocalDate startDate;
@@ -471,7 +471,7 @@ class Task extends DataClass implements Insertable<Task> {
   final int createdAt;
   final int updatedAt;
 
-  /// Sync tombstone — rows are never hard-deleted.
+  /// Sync tombstone (rows are never hard-deleted).
   final int? deletedAt;
   const Task({
     required this.id,
@@ -1331,10 +1331,6 @@ class $CompletionsTable extends Completions
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [
-    {taskId, occurrenceDate, slot},
-  ];
   @override
   Completion map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';

@@ -4,7 +4,7 @@ import 'models/local_date.dart';
 
 /// Source of "now" and "today" for all domain logic.
 ///
-/// Domain code must never call `DateTime.now()` directly — it goes through a
+/// Domain code must never call `DateTime.now()` directly: it goes through a
 /// [Clock] so tests can pin the date and simulate non-UTC timezones. The day
 /// boundary is local midnight in whatever zone the clock represents.
 abstract class Clock {

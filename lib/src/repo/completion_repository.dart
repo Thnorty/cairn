@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:sqlite3/sqlite3.dart' show SqliteException;
+import 'package:sqlite3/sqlite3.dart' show SqlExtendedError, SqliteException;
 import 'package:uuid/uuid.dart';
 
 import '../clock.dart';
@@ -39,7 +39,7 @@ class CompletionRejectedAlreadyCompleted extends CompleteOccurrenceResult {
 
 /// Records completions with the no-back-fill guard and computes
 /// `points_awarded` (base + streak bonus + perfect-day bonus) at insert
-/// time. In Phase 1, completions are always inserted as `verified` — Gemini
+/// time. In Phase 1, completions are always inserted as `verified`: Gemini
 /// verification arrives in a later phase.
 class CompletionRepository {
   final AppDatabase _db;
@@ -119,10 +119,14 @@ class CompletionRepository {
                 updatedAt: now,
               ),
             );
-      } on SqliteException {
-        // Racing insert on the same (task, date, slot) tripped the UNIQUE
-        // constraint after our pre-check; surface it as a graceful result.
-        return const CompletionRejectedAlreadyCompleted();
+      } on SqliteException catch (e) {
+        // Racing insert on the same (task, date, slot) tripped the partial
+        // UNIQUE index after our pre-check; surface it as a graceful result.
+        // Any other SQLite error is unexpected and must not be swallowed.
+        if (e.extendedResultCode == SqlExtendedError.SQLITE_CONSTRAINT_UNIQUE) {
+          return const CompletionRejectedAlreadyCompleted();
+        }
+        rethrow;
       }
 
       final inserted = await (_db.select(_db.completions)
@@ -154,8 +158,8 @@ class CompletionRepository {
   }
 
   /// True iff every occurrence scheduled today across all active tasks,
-  /// other than (excludingTaskId, excludingSlot), is already complete — i.e.
-  /// this completion is the day's final scheduled occurrence.
+  /// other than (excludingTaskId, excludingSlot), is already complete (i.e.
+  /// this completion is the day's final scheduled occurrence).
   Future<bool> _isFinalOccurrenceOfDay({
     required String excludingTaskId,
     required int excludingSlot,
@@ -185,7 +189,7 @@ class CompletionRepository {
     return allOccurrences.every(doneToday.contains);
   }
 
-  /// Sync tombstone delete — rows are never hard-deleted.
+  /// Sync tombstone delete: rows are never hard-deleted.
   Future<void> tombstoneDelete(String completionId) async {
     final now = _clock.nowEpochMillis();
     await (_db.update(_db.completions)

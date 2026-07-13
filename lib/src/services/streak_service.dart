@@ -9,7 +9,7 @@ import 'occurrence_generator.dart';
 typedef IsSlotComplete = bool Function(LocalDate date, int slot);
 
 /// Computes streaks by walking scheduled dates backward from today. Streaks
-/// are never stored — always derived on read.
+/// are never stored: always derived on read.
 class StreakService {
   final OccurrenceGenerator _generator;
 

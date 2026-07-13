@@ -1,6 +1,6 @@
 /// A pure calendar date (no time, no timezone).
 ///
-/// All domain logic — occurrence dates, streaks, day boundaries — operates on
+/// All domain logic (occurrence dates, streaks, day boundaries) operates on
 /// the user's *local* calendar date. This type exists so that logic can never
 /// accidentally pick up a UTC date or a DST-shifted time component.
 class LocalDate implements Comparable<LocalDate> {
@@ -28,7 +28,7 @@ class LocalDate implements Comparable<LocalDate> {
   }
 
   /// This date at midnight UTC. Used to talk to the `rrule` package (which
-  /// requires UTC-flagged `DateTime`s) and for calendar arithmetic — UTC has
+  /// requires UTC-flagged `DateTime`s) and for calendar arithmetic: UTC has
   /// no DST transitions, so day arithmetic is always exact 24-hour steps.
   DateTime toUtcMidnight() => DateTime.utc(year, month, day);
 

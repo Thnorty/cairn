@@ -13,7 +13,7 @@ import 'new_task_dialog.dart';
 /// Phase 1 debug screen: no design system, just enough to exercise the data
 /// layer. Lists today's occurrences per task, lets you mark them complete,
 /// and shows per-task streak plus total altitude/rank. Real screens are
-/// implemented from `design/` in later phases — this one deliberately isn't.
+/// implemented from `design/` in later phases: this one deliberately isn't.
 class DebugScreen extends ConsumerStatefulWidget {
   const DebugScreen({super.key});
 
@@ -127,7 +127,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cairn — Phase 1 debug')),
+      appBar: AppBar(title: const Text('Cairn: Phase 1 debug')),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await showNewTaskDialog(context, ref);
@@ -170,7 +170,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                 ? '-'
                 : rank.metresToNext == null
                     ? '${rank.tier.label} (top rank)'
-                    : '${rank.tier.label} — ${rank.metresToNext} m to next'),
+                    : '${rank.tier.label} (${rank.metresToNext} m to next)'),
           ],
         ),
       ),

@@ -97,7 +97,7 @@ class Tasks extends Table {
   TextColumn get dueDate =>
       text().map(const LocalDateConverter()).nullable()();
 
-  /// JSON array of "HH:mm" strings — the task's slots by index.
+  /// JSON array of "HH:mm" strings: the task's slots by index.
   /// `[]` = one untimed slot 0.
   TextColumn get dueTimes => text()
       .map(const StringListConverter())
@@ -117,7 +117,7 @@ class Tasks extends Table {
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
 
-  /// Sync tombstone — rows are never hard-deleted.
+  /// Sync tombstone (rows are never hard-deleted).
   IntColumn get deletedAt => integer().nullable()();
 
   @override
@@ -157,11 +157,11 @@ class Completions extends Table {
   @override
   Set<Column> get primaryKey => {id};
 
-  /// One proof per slot per day — no double-completing.
-  @override
-  List<Set<Column>> get uniqueKeys => [
-        {taskId, occurrenceDate, slot},
-      ];
+  // One proof per slot per day is enforced by the partial unique index
+  // `completions_slot_unique` (see AppDatabase.migration), not a table-level
+  // UNIQUE constraint: a table-level constraint would count tombstoned rows,
+  // permanently blocking re-completion of a (task, date, slot) once any
+  // completion for it had ever been deleted.
 }
 
 @DriftDatabase(tables: [Tasks, Completions])
@@ -169,13 +169,30 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) => m.createAll(),
-        onUpgrade: (m, from, to) async {
-          // Future schema migrations go here, gated on `from`/`to`.
+        onCreate: (m) async {
+          await m.createAll();
+          await _createCompletionsSlotUniqueIndex();
         },
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            // Rebuild the table without the old table-level
+            // UNIQUE(task_id, occurrence_date, slot), which counted
+            // tombstoned rows and blocked re-completion after a delete.
+            await m.alterTable(TableMigration(completions));
+            await _createCompletionsSlotUniqueIndex();
+          }
+        },
+      );
+
+  /// Enforces one *live* proof per slot per day. Partial (WHERE deleted_at IS
+  /// NULL) so a tombstoned row frees its slot for a new completion.
+  Future<void> _createCompletionsSlotUniqueIndex() => customStatement(
+        'CREATE UNIQUE INDEX IF NOT EXISTS completions_slot_unique '
+        'ON completions (task_id, occurrence_date, slot) '
+        'WHERE deleted_at IS NULL;',
       );
 }

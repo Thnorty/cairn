@@ -88,6 +88,47 @@ void main() {
       expect(rows, hasLength(1));
     });
 
+    test(
+        'tombstoning a completion frees its slot for a new completion the '
+        'same day', () async {
+      final clock = FixedClock(d(2026, 7, 10));
+      final taskRepo = TaskRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock);
+
+      final task = await taskRepo.createTask(
+        title: 'Push-ups',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      final first = await completionRepo.completeOccurrence(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+      );
+      final firstCompletion = (first as CompletionRecorded).completion;
+
+      await completionRepo.tombstoneDelete(firstCompletion.id);
+
+      final second = await completionRepo.completeOccurrence(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+      );
+
+      expect(second, isA<CompletionRecorded>());
+      final secondCompletion = (second as CompletionRecorded).completion;
+      expect(secondCompletion.id, isNot(firstCompletion.id));
+
+      // The tombstoned row must not count toward total altitude, only the
+      // new live row should.
+      expect(
+        await completionRepo.totalAltitude(),
+        secondCompletion.pointsAwarded,
+      );
+
+      final rows = await db.select(db.completions).get();
+      expect(rows, hasLength(2));
+    });
+
     test('different slots of the same day both succeed', () async {
       final clock = FixedClock(d(2026, 7, 10));
       final taskRepo = TaskRepository(db, clock);

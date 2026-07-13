@@ -44,7 +44,7 @@ void main() {
       );
       expect(dates(task, d(2026, 1, 1), d(2026, 4, 30)), [
         d(2026, 1, 31),
-        d(2026, 2, 28), // 2026 is not a leap year — clamped, not skipped
+        d(2026, 2, 28), // 2026 is not a leap year: clamped, not skipped
         d(2026, 3, 31),
         d(2026, 4, 30),
       ]);
@@ -109,7 +109,7 @@ void main() {
         monthWeekday: DateTime.friday,
         startDate: d(2026, 1, 1),
       );
-      // May 2026 has five Fridays (1, 8, 15, 22, 29) — last is the 5th one.
+      // May 2026 has five Fridays (1, 8, 15, 22, 29): last is the 5th one.
       expect(dates(task, d(2026, 4, 1), d(2026, 6, 30)), [
         d(2026, 4, 24),
         d(2026, 5, 29),

@@ -6,7 +6,7 @@ import '../models/local_date.dart';
 import '../providers.dart';
 
 /// Minimal, ugly task-creation form for the Phase 1 debug screen. Not a
-/// real design — supports every recurrence type so occurrence generation can
+/// real design: supports every recurrence type so occurrence generation can
 /// be exercised end to end.
 Future<void> showNewTaskDialog(BuildContext context, WidgetRef ref) {
   return showDialog<void>(
@@ -31,8 +31,14 @@ class _NewTaskDialogState extends State<_NewTaskDialog> {
   MonthlyMode _monthlyMode = MonthlyMode.dayOfMonth;
   int _monthNth = 1;
   int _monthWeekday = DateTime.monday;
-  LocalDate _onceDate = LocalDate.of(DateTime.now());
+  late LocalDate _onceDate;
   bool _twiceDaily = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _onceDate = widget.ref.read(clockProvider).today();
+  }
 
   @override
   void dispose() {

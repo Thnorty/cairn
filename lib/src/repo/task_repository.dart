@@ -5,8 +5,17 @@ import '../clock.dart';
 import '../db/database.dart';
 import '../models/local_date.dart';
 
+/// Matches 24-hour "HH:mm", e.g. "08:00", "20:00".
+final RegExp _hhMmPattern = RegExp(r'^([01]\d|2[0-3]):[0-5]\d$');
+
+/// Valid values for `month_nth`: 1st..4th, or -1 for "Last".
+const List<int> _validMonthNths = [1, 2, 3, 4, -1];
+
 /// Creates, edits, archives, and tombstones tasks. All task writes go
-/// through here so `updated_at`/`deleted_at` stay correct for sync.
+/// through here so `updated_at`/`deleted_at` stay correct for sync, and so
+/// invalid recurrence data can never be persisted (e.g. a monthDay of 0 would
+/// silently generate an invalid occurrence date like "2026-07-00" downstream
+/// in the occurrence generator if it weren't rejected here).
 class TaskRepository {
   final AppDatabase _db;
   final Clock _clock;
@@ -30,6 +39,19 @@ class TaskRepository {
     LocalDate? endDate,
     String? userId,
   }) async {
+    _validate(
+      recurrenceType: recurrenceType,
+      weeklyDays: weeklyDays,
+      monthlyMode: monthlyMode,
+      monthDay: monthDay,
+      monthNth: monthNth,
+      monthWeekday: monthWeekday,
+      dueDate: dueDate,
+      dueTimes: dueTimes,
+      startDate: startDate,
+      endDate: endDate,
+    );
+
     final now = _clock.nowEpochMillis();
     final task = TasksCompanion.insert(
       id: _uuid.v7(),
@@ -55,10 +77,153 @@ class TaskRepository {
   }
 
   /// Applies a partial edit to a task, bumping `updated_at`.
+  ///
+  /// Loads the existing row (throwing [ArgumentError] if it doesn't exist or
+  /// is tombstoned), merges [changes] onto it (present values in [changes]
+  /// win over the existing row's values), and validates the merged result
+  /// before writing anything, so an edit can never leave a task with
+  /// inconsistent recurrence data.
   Future<void> editTask(String taskId, TasksCompanion changes) async {
+    final existing = await (_db.select(_db.tasks)
+          ..where((t) => t.id.equals(taskId) & t.deletedAt.isNull()))
+        .getSingleOrNull();
+    if (existing == null) {
+      throw ArgumentError.value(
+          taskId, 'taskId', 'task does not exist or is deleted');
+    }
+
+    final recurrenceType = changes.recurrenceType.present
+        ? changes.recurrenceType.value
+        : existing.recurrenceType;
+    final weeklyDays = changes.weeklyDays.present
+        ? changes.weeklyDays.value
+        : existing.weeklyDays;
+    final monthlyMode = changes.monthlyMode.present
+        ? changes.monthlyMode.value
+        : existing.monthlyMode;
+    final monthDay =
+        changes.monthDay.present ? changes.monthDay.value : existing.monthDay;
+    final monthNth =
+        changes.monthNth.present ? changes.monthNth.value : existing.monthNth;
+    final monthWeekday = changes.monthWeekday.present
+        ? changes.monthWeekday.value
+        : existing.monthWeekday;
+    final dueDate =
+        changes.dueDate.present ? changes.dueDate.value : existing.dueDate;
+    final dueTimes = changes.dueTimes.present
+        ? changes.dueTimes.value
+        : existing.dueTimes;
+    final startDate = changes.startDate.present
+        ? changes.startDate.value
+        : existing.startDate;
+    final endDate =
+        changes.endDate.present ? changes.endDate.value : existing.endDate;
+
+    _validate(
+      recurrenceType: recurrenceType,
+      weeklyDays: weeklyDays,
+      monthlyMode: monthlyMode,
+      monthDay: monthDay,
+      monthNth: monthNth,
+      monthWeekday: monthWeekday,
+      dueDate: dueDate,
+      dueTimes: dueTimes,
+      startDate: startDate,
+      endDate: endDate,
+    );
+
     await (_db.update(_db.tasks)..where((t) => t.id.equals(taskId))).write(
       changes.copyWith(updatedAt: Value(_clock.nowEpochMillis())),
     );
+  }
+
+  /// Validates only the fields the chosen [recurrenceType] actually uses;
+  /// extraneous fields for other recurrence types are ignored. Throws
+  /// [ArgumentError] naming the offending field on any violation.
+  void _validate({
+    required RecurrenceType recurrenceType,
+    List<int>? weeklyDays,
+    MonthlyMode? monthlyMode,
+    int? monthDay,
+    int? monthNth,
+    int? monthWeekday,
+    LocalDate? dueDate,
+    required List<String> dueTimes,
+    required LocalDate startDate,
+    LocalDate? endDate,
+  }) {
+    if (endDate != null && endDate.isBefore(startDate)) {
+      throw ArgumentError.value(
+          endDate, 'endDate', 'must not be before startDate');
+    }
+
+    switch (recurrenceType) {
+      case RecurrenceType.weekly:
+        if (weeklyDays == null || weeklyDays.isEmpty) {
+          throw ArgumentError.value(
+              weeklyDays, 'weeklyDays', 'is required for weekly recurrence');
+        }
+        if (weeklyDays.any((day) => day < 1 || day > 7)) {
+          throw ArgumentError.value(weeklyDays, 'weeklyDays',
+              'must contain only ISO weekdays in 1..7');
+        }
+        if (weeklyDays.toSet().length != weeklyDays.length) {
+          throw ArgumentError.value(
+              weeklyDays, 'weeklyDays', 'must not contain duplicates');
+        }
+        break;
+
+      case RecurrenceType.monthly:
+        if (monthlyMode == null) {
+          throw ArgumentError.value(monthlyMode, 'monthlyMode',
+              'is required for monthly recurrence');
+        }
+        switch (monthlyMode) {
+          case MonthlyMode.dayOfMonth:
+            if (monthDay == null || monthDay < 1 || monthDay > 31) {
+              throw ArgumentError.value(
+                  monthDay, 'monthDay', 'must be within 1..31');
+            }
+            break;
+          case MonthlyMode.nthWeekday:
+            if (!_validMonthNths.contains(monthNth)) {
+              throw ArgumentError.value(
+                  monthNth, 'monthNth', 'must be one of 1, 2, 3, 4, -1');
+            }
+            if (monthWeekday == null || monthWeekday < 1 || monthWeekday > 7) {
+              throw ArgumentError.value(
+                  monthWeekday, 'monthWeekday', 'must be within 1..7');
+            }
+            break;
+        }
+        break;
+
+      case RecurrenceType.once:
+        if (dueDate == null) {
+          throw ArgumentError.value(
+              dueDate, 'dueDate', 'is required for once recurrence');
+        }
+        if (dueDate.isBefore(startDate) ||
+            (endDate != null && dueDate.isAfter(endDate))) {
+          throw ArgumentError.value(
+              dueDate, 'dueDate', 'must be within [startDate, endDate]');
+        }
+        break;
+
+      case RecurrenceType.daily:
+        break;
+    }
+
+    for (final time in dueTimes) {
+      if (!_hhMmPattern.hasMatch(time)) {
+        throw ArgumentError.value(
+            time, 'dueTimes', 'must match 24-hour HH:mm format');
+      }
+    }
+    if (dueTimes.toSet().length != dueTimes.length) {
+      throw ArgumentError.value(
+          dueTimes, 'dueTimes', 'must not contain duplicates');
+    }
   }
 
   /// User-facing archive (hidden, not deleted).
@@ -71,7 +236,7 @@ class TaskRepository {
     );
   }
 
-  /// Sync tombstone delete — rows are never hard-deleted.
+  /// Sync tombstone delete: rows are never hard-deleted.
   Future<void> tombstoneDelete(String taskId) async {
     final now = _clock.nowEpochMillis();
     await (_db.update(_db.tasks)..where((t) => t.id.equals(taskId))).write(
