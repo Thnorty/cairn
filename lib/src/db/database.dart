@@ -164,12 +164,40 @@ class Completions extends Table {
   // completion for it had ever been deleted.
 }
 
-@DriftDatabase(tables: [Tasks, Completions])
+/// A rejected verification is an attempt, never a completion (the partial
+/// unique index on completions would block retries otherwise). Attempts feed
+/// the per-task-per-day cap; rejections never burn the daily completion cap.
+class VerificationAttempts extends Table {
+  /// Client-generated UUID v7.
+  TextColumn get id => text()();
+  TextColumn get taskId => text().references(Tasks, #id)();
+
+  /// The local date the attempt was for.
+  TextColumn get occurrenceDate => text().map(const LocalDateConverter())();
+
+  /// Index into the task's due_times (0 for untimed/single).
+  IntColumn get slot => integer().withDefault(const Constant(0))();
+
+  /// Epoch millis from the Clock.
+  IntColumn get attemptedAt => integer()();
+
+  /// JSON of the ProofVerdict that caused the rejection.
+  TextColumn get verdictMeta => text().nullable()();
+
+  TextColumn get userId => text().nullable()();
+  IntColumn get updatedAt => integer()();
+  IntColumn get deletedAt => integer().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [Tasks, Completions, VerificationAttempts])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -184,6 +212,9 @@ class AppDatabase extends _$AppDatabase {
             // tombstoned rows and blocked re-completion after a delete.
             await m.alterTable(TableMigration(completions));
             await _createCompletionsSlotUniqueIndex();
+          }
+          if (from < 3) {
+            await m.createTable(verificationAttempts);
           }
         },
       );

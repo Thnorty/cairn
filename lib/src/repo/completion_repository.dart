@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:sqlite3/sqlite3.dart' show SqlExtendedError, SqliteException;
 import 'package:uuid/uuid.dart';
@@ -5,8 +7,10 @@ import 'package:uuid/uuid.dart';
 import '../clock.dart';
 import '../db/database.dart';
 import '../models/local_date.dart';
+import '../models/proof_verdict.dart';
 import '../services/occurrence_generator.dart';
 import '../services/points_service.dart';
+import '../services/proof_verifier.dart';
 import '../services/streak_service.dart';
 
 sealed class CompleteOccurrenceResult {
@@ -37,10 +41,59 @@ class CompletionRejectedAlreadyCompleted extends CompleteOccurrenceResult {
   const CompletionRejectedAlreadyCompleted();
 }
 
+/// The per-task-per-day cap on rejected verification attempts was already
+/// hit before this call; the verifier is never invoked.
+class CompletionRejectedAttemptsExhausted extends CompleteOccurrenceResult {
+  const CompletionRejectedAttemptsExhausted();
+}
+
+/// The daily cap on successful (verified or pending) completions was already
+/// hit before this call; the verifier is never invoked.
+class CompletionRejectedDailyCapReached extends CompleteOccurrenceResult {
+  const CompletionRejectedDailyCapReached();
+}
+
+/// The verifier returned a verdict that failed [ProofPolicy.isVerified]. No
+/// completion is recorded; a verification_attempts row was written instead.
+class CompletionRejectedByVerifier extends CompleteOccurrenceResult {
+  final ProofVerdict verdict;
+  final int attemptsRemaining;
+  const CompletionRejectedByVerifier(this.verdict, this.attemptsRemaining);
+}
+
+/// The verifier could not be reached; a completion was recorded with
+/// verification_status = pending. It counts optimistically toward streaks,
+/// altitude and the daily cap until [CompletionRepository.retryPendingVerifications]
+/// resolves it.
+class CompletionPendingVerification extends CompleteOccurrenceResult {
+  final Completion completion;
+  const CompletionPendingVerification(this.completion);
+}
+
+/// Tally of outcomes from a [CompletionRepository.retryPendingVerifications]
+/// batch run.
+class PendingRetryReport {
+  final int verified;
+  final int rejected;
+  final int stillPending;
+  final int skipped;
+
+  const PendingRetryReport({
+    this.verified = 0,
+    this.rejected = 0,
+    this.stillPending = 0,
+    this.skipped = 0,
+  });
+}
+
+enum _RetryOutcome { verified, rejected, stillPending, skipped }
+
 /// Records completions with the no-back-fill guard and computes
 /// `points_awarded` (base + streak bonus + perfect-day bonus) at insert
-/// time. In Phase 1, completions are always inserted as `verified`: Gemini
-/// verification arrives in a later phase.
+/// time. [completeOccurrence] is the Phase 1 debug path (always inserts
+/// `verified`); [completeWithProof] is the real, AI-verified path, backed by
+/// a [ProofVerifier] and gated by a [ProofPolicy] (daily cap, per-task
+/// attempts cap).
 class CompletionRepository {
   final AppDatabase _db;
   final Clock _clock;
@@ -48,6 +101,8 @@ class CompletionRepository {
   final OccurrenceGenerator _generator;
   final StreakService _streaks;
   final PointsService _points;
+  final ProofVerifier _verifier;
+  final ProofPolicy _policy;
 
   CompletionRepository(
     this._db,
@@ -56,10 +111,14 @@ class CompletionRepository {
     OccurrenceGenerator generator = const OccurrenceGenerator(),
     StreakService streaks = const StreakService(),
     PointsService points = const PointsService(),
+    required ProofVerifier verifier,
+    ProofPolicy policy = const ProofPolicy(),
   })  : _uuid = uuid ?? const Uuid(),
         _generator = generator,
         _streaks = streaks,
-        _points = points;
+        _points = points,
+        _verifier = verifier,
+        _policy = policy;
 
   Future<CompleteOccurrenceResult> completeOccurrence({
     required String taskId,
@@ -72,27 +131,17 @@ class CompletionRepository {
     }
 
     return _db.transaction<CompleteOccurrenceResult>(() async {
-      final task = await (_db.select(_db.tasks)
-            ..where((t) => t.id.equals(taskId) & t.deletedAt.isNull()))
-          .getSingleOrNull();
-      if (task == null) return const CompletionRejectedTaskNotFound();
+      final (task, rejection) = await _checkCommonGuards(
+        taskId: taskId,
+        occurrenceDate: occurrenceDate,
+        today: today,
+        slot: slot,
+      );
+      if (rejection != null) return rejection;
+      final liveTask = task!;
 
-      final todaysOccurrences =
-          _generator.occurrencesFor(task, DateRange(today, today));
-      if (!todaysOccurrences.any((o) => o.slot == slot)) {
-        return const CompletionRejectedNotScheduled();
-      }
-
-      final existing = await (_db.select(_db.completions)
-            ..where((c) =>
-                c.taskId.equals(taskId) &
-                c.occurrenceDate.equalsValue(today) &
-                c.slot.equals(slot) &
-                c.deletedAt.isNull()))
-          .getSingleOrNull();
-      if (existing != null) return const CompletionRejectedAlreadyCompleted();
-
-      final streakLength = await _streakLengthIncludingThis(task, today, slot);
+      final streakLength =
+          await _streakLengthIncludingThis(liveTask, today, slot);
       final isPerfectDay = await _isFinalOccurrenceOfDay(
         excludingTaskId: taskId,
         excludingSlot: slot,
@@ -187,6 +236,321 @@ class CompletionRepository {
     };
 
     return allOccurrences.every(doneToday.contains);
+  }
+
+  /// Shared guards a-d of the completion guard chain: no back-fill, the task
+  /// must exist (and not be tombstoned), the (task, date, slot) triple must
+  /// actually be a scheduled occurrence, and no live completion may already
+  /// occupy that slot. Returns the live task on success, or the rejection to
+  /// return immediately.
+  Future<(Task?, CompleteOccurrenceResult?)> _checkCommonGuards({
+    required String taskId,
+    required LocalDate occurrenceDate,
+    required LocalDate today,
+    required int slot,
+  }) async {
+    if (occurrenceDate != today) {
+      return (null, const CompletionRejectedBackfill());
+    }
+
+    final task = await (_db.select(_db.tasks)
+          ..where((t) => t.id.equals(taskId) & t.deletedAt.isNull()))
+        .getSingleOrNull();
+    if (task == null) return (null, const CompletionRejectedTaskNotFound());
+
+    final todaysOccurrences =
+        _generator.occurrencesFor(task, DateRange(today, today));
+    if (!todaysOccurrences.any((o) => o.slot == slot)) {
+      return (null, const CompletionRejectedNotScheduled());
+    }
+
+    final existing = await (_db.select(_db.completions)
+          ..where((c) =>
+              c.taskId.equals(taskId) &
+              c.occurrenceDate.equalsValue(today) &
+              c.slot.equals(slot) &
+              c.deletedAt.isNull()))
+        .getSingleOrNull();
+    if (existing != null) {
+      return (null, const CompletionRejectedAlreadyCompleted());
+    }
+
+    return (task, null);
+  }
+
+  /// Live (non-tombstoned) verification_attempts rows for [taskId] on
+  /// [today], shared across all of the task's slots.
+  Future<int> _liveAttemptsCountToday(String taskId, LocalDate today) async {
+    final rows = await (_db.select(_db.verificationAttempts)
+          ..where((a) =>
+              a.taskId.equals(taskId) &
+              a.occurrenceDate.equalsValue(today) &
+              a.deletedAt.isNull()))
+        .get();
+    return rows.length;
+  }
+
+  /// Live completions counting toward the daily cap: verified or pending,
+  /// across all tasks, on [today].
+  Future<int> _liveDailyCapCountToday(LocalDate today) async {
+    final rows = await (_db.select(_db.completions)
+          ..where((c) =>
+              c.occurrenceDate.equalsValue(today) &
+              c.deletedAt.isNull() &
+              (c.verificationStatus.equalsValue(VerificationStatus.verified) |
+                  c.verificationStatus.equalsValue(VerificationStatus.pending))))
+        .get();
+    return rows.length;
+  }
+
+  /// Records a completion backed by an AI-verified (or pending) proof photo.
+  ///
+  /// Guards a-f all run read-only, before the verifier is ever called, so a
+  /// failed guard never costs a network call (verified by
+  /// [FakeProofVerifier.callCount] in tests). Once the guards pass, the
+  /// verifier is called outside any transaction (it's network I/O in the
+  /// real implementation); the result is then written in a transaction.
+  Future<CompleteOccurrenceResult> completeWithProof({
+    required String taskId,
+    required LocalDate occurrenceDate,
+    int slot = 0,
+    required ProofData proof,
+  }) async {
+    final today = _clock.today();
+
+    final (task, commonRejection) = await _checkCommonGuards(
+      taskId: taskId,
+      occurrenceDate: occurrenceDate,
+      today: today,
+      slot: slot,
+    );
+    if (commonRejection != null) return commonRejection;
+    final liveTask = task!;
+
+    final attemptsSoFar = await _liveAttemptsCountToday(taskId, today);
+    if (attemptsSoFar >= _policy.attemptsPerTaskPerDay) {
+      return const CompletionRejectedAttemptsExhausted();
+    }
+
+    final dailyCountSoFar = await _liveDailyCapCountToday(today);
+    if (dailyCountSoFar >= _policy.dailyCap) {
+      return const CompletionRejectedDailyCapReached();
+    }
+
+    final response = await _verifier.verify(ProofRequest(
+      imageBytes: proof.imageBytes,
+      taskTitle: liveTask.title,
+      taskDescription: liveTask.description,
+    ));
+
+    switch (response) {
+      case VerdictReceived(:final verdict):
+        if (_policy.isVerified(verdict)) {
+          return _db.transaction<CompleteOccurrenceResult>(
+            () => _insertProofCompletion(
+              task: liveTask,
+              today: today,
+              slot: slot,
+              status: VerificationStatus.verified,
+              verificationMeta: jsonEncode(verdict.toJson()),
+              proof: proof,
+            ),
+          );
+        }
+        return _db.transaction<CompleteOccurrenceResult>(() async {
+          final now = _clock.nowEpochMillis();
+          await _db.into(_db.verificationAttempts).insert(
+                VerificationAttemptsCompanion.insert(
+                  id: _uuid.v7(),
+                  taskId: taskId,
+                  occurrenceDate: today,
+                  slot: Value(slot),
+                  attemptedAt: now,
+                  verdictMeta: Value(jsonEncode(verdict.toJson())),
+                  updatedAt: now,
+                ),
+              );
+          final attemptsNow = await _liveAttemptsCountToday(taskId, today);
+          final remaining = _policy.attemptsPerTaskPerDay - attemptsNow;
+          return CompletionRejectedByVerifier(
+            verdict,
+            remaining < 0 ? 0 : remaining,
+          );
+        });
+      case VerifierUnavailable():
+        return _db.transaction<CompleteOccurrenceResult>(
+          () => _insertProofCompletion(
+            task: liveTask,
+            today: today,
+            slot: slot,
+            status: VerificationStatus.pending,
+            verificationMeta: null,
+            proof: proof,
+          ),
+        );
+    }
+  }
+
+  /// Computes points at insert time (base + streak bonus + perfect-day
+  /// bonus, exactly as [completeOccurrence] does) and inserts a completion
+  /// carrying the proof fields and the given [status] (verified or pending).
+  Future<CompleteOccurrenceResult> _insertProofCompletion({
+    required Task task,
+    required LocalDate today,
+    required int slot,
+    required VerificationStatus status,
+    required String? verificationMeta,
+    required ProofData proof,
+  }) async {
+    final streakLength = await _streakLengthIncludingThis(task, today, slot);
+    final isPerfectDay = await _isFinalOccurrenceOfDay(
+      excludingTaskId: task.id,
+      excludingSlot: slot,
+      today: today,
+    );
+    final points = _points.pointsForCompletion(
+      streakLengthIncludingThis: streakLength,
+      isPerfectDayFinalOccurrence: isPerfectDay,
+    );
+
+    final now = _clock.nowEpochMillis();
+    final id = _uuid.v7();
+    try {
+      await _db.into(_db.completions).insert(
+            CompletionsCompanion.insert(
+              id: id,
+              taskId: task.id,
+              occurrenceDate: today,
+              slot: Value(slot),
+              completedAt: now,
+              proofPhotoPath: Value(proof.photoPath),
+              proofSource: Value(proof.source),
+              photoTakenAt: Value(proof.photoTakenAt),
+              verificationStatus: Value(status),
+              verificationMeta: Value(verificationMeta),
+              pointsAwarded: Value(points),
+              updatedAt: now,
+            ),
+          );
+    } on SqliteException catch (e) {
+      // Racing insert on the same (task, date, slot) tripped the partial
+      // UNIQUE index after our pre-check; surface it as a graceful result.
+      // Any other SQLite error is unexpected and must not be swallowed.
+      if (e.extendedResultCode == SqlExtendedError.SQLITE_CONSTRAINT_UNIQUE) {
+        return const CompletionRejectedAlreadyCompleted();
+      }
+      rethrow;
+    }
+
+    final inserted = await (_db.select(_db.completions)
+          ..where((c) => c.id.equals(id)))
+        .getSingle();
+    return status == VerificationStatus.verified
+        ? CompletionRecorded(inserted)
+        : CompletionPendingVerification(inserted);
+  }
+
+  /// Retries every live `pending` completion through the verifier. Never
+  /// inserts a completion: a verified retry flips the existing row in place,
+  /// a rejected retry tombstones it and records an attempt against its
+  /// *original* occurrence_date/slot, and streaks/altitude self-heal because
+  /// both are derived from live completions. This is what keeps the
+  /// no-back-fill rule intact for pendings that outlive the day they were
+  /// recorded on.
+  Future<PendingRetryReport> retryPendingVerifications({
+    required Future<Uint8List?> Function(Completion completion) loadBytes,
+  }) async {
+    final pendingRows = await (_db.select(_db.completions)
+          ..where((c) =>
+              c.verificationStatus.equalsValue(VerificationStatus.pending) &
+              c.deletedAt.isNull()))
+        .get();
+
+    var verified = 0;
+    var rejected = 0;
+    var stillPending = 0;
+    var skipped = 0;
+
+    for (final completion in pendingRows) {
+      final outcome = await _retrySinglePending(completion, loadBytes);
+      switch (outcome) {
+        case _RetryOutcome.verified:
+          verified++;
+        case _RetryOutcome.rejected:
+          rejected++;
+        case _RetryOutcome.stillPending:
+          stillPending++;
+        case _RetryOutcome.skipped:
+          skipped++;
+      }
+    }
+
+    return PendingRetryReport(
+      verified: verified,
+      rejected: rejected,
+      stillPending: stillPending,
+      skipped: skipped,
+    );
+  }
+
+  Future<_RetryOutcome> _retrySinglePending(
+    Completion completion,
+    Future<Uint8List?> Function(Completion completion) loadBytes,
+  ) async {
+    // Looked up ignoring deletedAt/archived: a pending proof for a
+    // since-deleted task must still resolve.
+    final task = await (_db.select(_db.tasks)
+          ..where((t) => t.id.equals(completion.taskId)))
+        .getSingleOrNull();
+    if (task == null) return _RetryOutcome.skipped;
+
+    final bytes = await loadBytes(completion);
+    if (bytes == null) return _RetryOutcome.skipped;
+
+    final response = await _verifier.verify(ProofRequest(
+      imageBytes: bytes,
+      taskTitle: task.title,
+      taskDescription: task.description,
+    ));
+
+    switch (response) {
+      case VerifierUnavailable():
+        return _RetryOutcome.stillPending;
+      case VerdictReceived(:final verdict):
+        final now = _clock.nowEpochMillis();
+        if (_policy.isVerified(verdict)) {
+          await (_db.update(_db.completions)
+                ..where((c) => c.id.equals(completion.id)))
+              .write(CompletionsCompanion(
+            verificationStatus: const Value(VerificationStatus.verified),
+            verificationMeta: Value(jsonEncode(verdict.toJson())),
+            updatedAt: Value(now),
+          ));
+          return _RetryOutcome.verified;
+        }
+        await _db.transaction(() async {
+          await (_db.update(_db.completions)
+                ..where((c) => c.id.equals(completion.id)))
+              .write(CompletionsCompanion(
+            verificationStatus: const Value(VerificationStatus.rejected),
+            verificationMeta: Value(jsonEncode(verdict.toJson())),
+            deletedAt: Value(now),
+            updatedAt: Value(now),
+          ));
+          await _db.into(_db.verificationAttempts).insert(
+                VerificationAttemptsCompanion.insert(
+                  id: _uuid.v7(),
+                  taskId: completion.taskId,
+                  occurrenceDate: completion.occurrenceDate,
+                  slot: Value(completion.slot),
+                  attemptedAt: now,
+                  verdictMeta: Value(jsonEncode(verdict.toJson())),
+                  updatedAt: now,
+                ),
+              );
+        });
+        return _RetryOutcome.rejected;
+    }
   }
 
   /// Sync tombstone delete: rows are never hard-deleted.

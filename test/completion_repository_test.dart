@@ -2,6 +2,7 @@ import 'package:cairn/src/clock.dart';
 import 'package:cairn/src/db/database.dart';
 import 'package:cairn/src/repo/completion_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
+import 'package:cairn/src/services/proof_verifier.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers.dart';
@@ -21,7 +22,7 @@ void main() {
     test('rejects a completion for yesterday', () async {
       final clock = FixedClock(d(2026, 7, 10));
       final taskRepo = TaskRepository(db, clock);
-      final completionRepo = CompletionRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
 
       final task = await taskRepo.createTask(
         title: 'Push-ups',
@@ -42,7 +43,7 @@ void main() {
     test('accepts a completion for today', () async {
       final clock = FixedClock(d(2026, 7, 10));
       final taskRepo = TaskRepository(db, clock);
-      final completionRepo = CompletionRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
 
       final task = await taskRepo.createTask(
         title: 'Push-ups',
@@ -64,7 +65,7 @@ void main() {
         () async {
       final clock = FixedClock(d(2026, 7, 10));
       final taskRepo = TaskRepository(db, clock);
-      final completionRepo = CompletionRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
 
       final task = await taskRepo.createTask(
         title: 'Push-ups',
@@ -93,7 +94,7 @@ void main() {
         'same day', () async {
       final clock = FixedClock(d(2026, 7, 10));
       final taskRepo = TaskRepository(db, clock);
-      final completionRepo = CompletionRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
 
       final task = await taskRepo.createTask(
         title: 'Push-ups',
@@ -132,7 +133,7 @@ void main() {
     test('different slots of the same day both succeed', () async {
       final clock = FixedClock(d(2026, 7, 10));
       final taskRepo = TaskRepository(db, clock);
-      final completionRepo = CompletionRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
 
       final task = await taskRepo.createTask(
         title: 'Meds',
@@ -161,7 +162,7 @@ void main() {
     test('rejects a slot that is not part of the task today', () async {
       final clock = FixedClock(d(2026, 7, 10));
       final taskRepo = TaskRepository(db, clock);
-      final completionRepo = CompletionRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
 
       final task = await taskRepo.createTask(
         title: 'Meds',
@@ -182,7 +183,7 @@ void main() {
     test('rejects a weekly task on a non-scheduled day', () async {
       final clock = FixedClock(d(2026, 7, 8)); // a Wednesday
       final taskRepo = TaskRepository(db, clock);
-      final completionRepo = CompletionRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
 
       final task = await taskRepo.createTask(
         title: 'Gym',
@@ -204,7 +205,7 @@ void main() {
     test('base + streak on the first-ever completion of a lone task', () async {
       final clock = FixedClock(d(2026, 7, 1));
       final taskRepo = TaskRepository(db, clock);
-      final completionRepo = CompletionRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
 
       final task = await taskRepo.createTask(
         title: 'Push-ups',
@@ -238,7 +239,7 @@ void main() {
       // This is the only task scheduled, so every day is also a perfect day.
       for (var day = 1; day <= 12; day++) {
         final clock = FixedClock(d(2026, 7, day));
-        final completionRepo = CompletionRepository(db, clock);
+        final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
         final result = await completionRepo.completeOccurrence(
           taskId: task.id,
           occurrenceDate: d(2026, 7, day),
@@ -265,7 +266,7 @@ void main() {
         startDate: d(2026, 7, 1),
       );
 
-      final completionRepo = CompletionRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
 
       final firstResult = await completionRepo.completeOccurrence(
         taskId: taskA.id,
@@ -299,7 +300,7 @@ void main() {
         startDate: d(2026, 7, 1),
       );
 
-      final completionRepo = CompletionRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
       final result = await completionRepo.completeOccurrence(
         taskId: taskA.id,
         occurrenceDate: d(2026, 7, 1),
@@ -313,7 +314,7 @@ void main() {
     test('sums points across non-tombstoned completions', () async {
       final clock = FixedClock(d(2026, 7, 1));
       final taskRepo = TaskRepository(db, clock);
-      final completionRepo = CompletionRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
 
       final task = await taskRepo.createTask(
         title: 'Push-ups',

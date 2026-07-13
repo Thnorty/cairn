@@ -1923,16 +1923,612 @@ class CompletionsCompanion extends UpdateCompanion<Completion> {
   }
 }
 
+class $VerificationAttemptsTable extends VerificationAttempts
+    with TableInfo<$VerificationAttemptsTable, VerificationAttempt> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $VerificationAttemptsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _taskIdMeta = const VerificationMeta('taskId');
+  @override
+  late final GeneratedColumn<String> taskId = GeneratedColumn<String>(
+    'task_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES tasks (id)',
+    ),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<LocalDate, String>
+  occurrenceDate =
+      GeneratedColumn<String>(
+        'occurrence_date',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<LocalDate>(
+        $VerificationAttemptsTable.$converteroccurrenceDate,
+      );
+  static const VerificationMeta _slotMeta = const VerificationMeta('slot');
+  @override
+  late final GeneratedColumn<int> slot = GeneratedColumn<int>(
+    'slot',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _attemptedAtMeta = const VerificationMeta(
+    'attemptedAt',
+  );
+  @override
+  late final GeneratedColumn<int> attemptedAt = GeneratedColumn<int>(
+    'attempted_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _verdictMetaMeta = const VerificationMeta(
+    'verdictMeta',
+  );
+  @override
+  late final GeneratedColumn<String> verdictMeta = GeneratedColumn<String>(
+    'verdict_meta',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<int> deletedAt = GeneratedColumn<int>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    taskId,
+    occurrenceDate,
+    slot,
+    attemptedAt,
+    verdictMeta,
+    userId,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'verification_attempts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<VerificationAttempt> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('task_id')) {
+      context.handle(
+        _taskIdMeta,
+        taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_taskIdMeta);
+    }
+    if (data.containsKey('slot')) {
+      context.handle(
+        _slotMeta,
+        slot.isAcceptableOrUnknown(data['slot']!, _slotMeta),
+      );
+    }
+    if (data.containsKey('attempted_at')) {
+      context.handle(
+        _attemptedAtMeta,
+        attemptedAt.isAcceptableOrUnknown(
+          data['attempted_at']!,
+          _attemptedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_attemptedAtMeta);
+    }
+    if (data.containsKey('verdict_meta')) {
+      context.handle(
+        _verdictMetaMeta,
+        verdictMeta.isAcceptableOrUnknown(
+          data['verdict_meta']!,
+          _verdictMetaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  VerificationAttempt map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return VerificationAttempt(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      taskId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}task_id'],
+      )!,
+      occurrenceDate: $VerificationAttemptsTable.$converteroccurrenceDate
+          .fromSql(
+            attachedDatabase.typeMapping.read(
+              DriftSqlType.string,
+              data['${effectivePrefix}occurrence_date'],
+            )!,
+          ),
+      slot: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}slot'],
+      )!,
+      attemptedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}attempted_at'],
+      )!,
+      verdictMeta: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}verdict_meta'],
+      ),
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $VerificationAttemptsTable createAlias(String alias) {
+    return $VerificationAttemptsTable(attachedDatabase, alias);
+  }
+
+  static TypeConverter<LocalDate, String> $converteroccurrenceDate =
+      const LocalDateConverter();
+}
+
+class VerificationAttempt extends DataClass
+    implements Insertable<VerificationAttempt> {
+  /// Client-generated UUID v7.
+  final String id;
+  final String taskId;
+
+  /// The local date the attempt was for.
+  final LocalDate occurrenceDate;
+
+  /// Index into the task's due_times (0 for untimed/single).
+  final int slot;
+
+  /// Epoch millis from the Clock.
+  final int attemptedAt;
+
+  /// JSON of the ProofVerdict that caused the rejection.
+  final String? verdictMeta;
+  final String? userId;
+  final int updatedAt;
+  final int? deletedAt;
+  const VerificationAttempt({
+    required this.id,
+    required this.taskId,
+    required this.occurrenceDate,
+    required this.slot,
+    required this.attemptedAt,
+    this.verdictMeta,
+    this.userId,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['task_id'] = Variable<String>(taskId);
+    {
+      map['occurrence_date'] = Variable<String>(
+        $VerificationAttemptsTable.$converteroccurrenceDate.toSql(
+          occurrenceDate,
+        ),
+      );
+    }
+    map['slot'] = Variable<int>(slot);
+    map['attempted_at'] = Variable<int>(attemptedAt);
+    if (!nullToAbsent || verdictMeta != null) {
+      map['verdict_meta'] = Variable<String>(verdictMeta);
+    }
+    if (!nullToAbsent || userId != null) {
+      map['user_id'] = Variable<String>(userId);
+    }
+    map['updated_at'] = Variable<int>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<int>(deletedAt);
+    }
+    return map;
+  }
+
+  VerificationAttemptsCompanion toCompanion(bool nullToAbsent) {
+    return VerificationAttemptsCompanion(
+      id: Value(id),
+      taskId: Value(taskId),
+      occurrenceDate: Value(occurrenceDate),
+      slot: Value(slot),
+      attemptedAt: Value(attemptedAt),
+      verdictMeta: verdictMeta == null && nullToAbsent
+          ? const Value.absent()
+          : Value(verdictMeta),
+      userId: userId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userId),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory VerificationAttempt.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return VerificationAttempt(
+      id: serializer.fromJson<String>(json['id']),
+      taskId: serializer.fromJson<String>(json['taskId']),
+      occurrenceDate: serializer.fromJson<LocalDate>(json['occurrenceDate']),
+      slot: serializer.fromJson<int>(json['slot']),
+      attemptedAt: serializer.fromJson<int>(json['attemptedAt']),
+      verdictMeta: serializer.fromJson<String?>(json['verdictMeta']),
+      userId: serializer.fromJson<String?>(json['userId']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+      deletedAt: serializer.fromJson<int?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'taskId': serializer.toJson<String>(taskId),
+      'occurrenceDate': serializer.toJson<LocalDate>(occurrenceDate),
+      'slot': serializer.toJson<int>(slot),
+      'attemptedAt': serializer.toJson<int>(attemptedAt),
+      'verdictMeta': serializer.toJson<String?>(verdictMeta),
+      'userId': serializer.toJson<String?>(userId),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+      'deletedAt': serializer.toJson<int?>(deletedAt),
+    };
+  }
+
+  VerificationAttempt copyWith({
+    String? id,
+    String? taskId,
+    LocalDate? occurrenceDate,
+    int? slot,
+    int? attemptedAt,
+    Value<String?> verdictMeta = const Value.absent(),
+    Value<String?> userId = const Value.absent(),
+    int? updatedAt,
+    Value<int?> deletedAt = const Value.absent(),
+  }) => VerificationAttempt(
+    id: id ?? this.id,
+    taskId: taskId ?? this.taskId,
+    occurrenceDate: occurrenceDate ?? this.occurrenceDate,
+    slot: slot ?? this.slot,
+    attemptedAt: attemptedAt ?? this.attemptedAt,
+    verdictMeta: verdictMeta.present ? verdictMeta.value : this.verdictMeta,
+    userId: userId.present ? userId.value : this.userId,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  VerificationAttempt copyWithCompanion(VerificationAttemptsCompanion data) {
+    return VerificationAttempt(
+      id: data.id.present ? data.id.value : this.id,
+      taskId: data.taskId.present ? data.taskId.value : this.taskId,
+      occurrenceDate: data.occurrenceDate.present
+          ? data.occurrenceDate.value
+          : this.occurrenceDate,
+      slot: data.slot.present ? data.slot.value : this.slot,
+      attemptedAt: data.attemptedAt.present
+          ? data.attemptedAt.value
+          : this.attemptedAt,
+      verdictMeta: data.verdictMeta.present
+          ? data.verdictMeta.value
+          : this.verdictMeta,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VerificationAttempt(')
+          ..write('id: $id, ')
+          ..write('taskId: $taskId, ')
+          ..write('occurrenceDate: $occurrenceDate, ')
+          ..write('slot: $slot, ')
+          ..write('attemptedAt: $attemptedAt, ')
+          ..write('verdictMeta: $verdictMeta, ')
+          ..write('userId: $userId, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    taskId,
+    occurrenceDate,
+    slot,
+    attemptedAt,
+    verdictMeta,
+    userId,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is VerificationAttempt &&
+          other.id == this.id &&
+          other.taskId == this.taskId &&
+          other.occurrenceDate == this.occurrenceDate &&
+          other.slot == this.slot &&
+          other.attemptedAt == this.attemptedAt &&
+          other.verdictMeta == this.verdictMeta &&
+          other.userId == this.userId &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class VerificationAttemptsCompanion
+    extends UpdateCompanion<VerificationAttempt> {
+  final Value<String> id;
+  final Value<String> taskId;
+  final Value<LocalDate> occurrenceDate;
+  final Value<int> slot;
+  final Value<int> attemptedAt;
+  final Value<String?> verdictMeta;
+  final Value<String?> userId;
+  final Value<int> updatedAt;
+  final Value<int?> deletedAt;
+  final Value<int> rowid;
+  const VerificationAttemptsCompanion({
+    this.id = const Value.absent(),
+    this.taskId = const Value.absent(),
+    this.occurrenceDate = const Value.absent(),
+    this.slot = const Value.absent(),
+    this.attemptedAt = const Value.absent(),
+    this.verdictMeta = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  VerificationAttemptsCompanion.insert({
+    required String id,
+    required String taskId,
+    required LocalDate occurrenceDate,
+    this.slot = const Value.absent(),
+    required int attemptedAt,
+    this.verdictMeta = const Value.absent(),
+    this.userId = const Value.absent(),
+    required int updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       taskId = Value(taskId),
+       occurrenceDate = Value(occurrenceDate),
+       attemptedAt = Value(attemptedAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<VerificationAttempt> custom({
+    Expression<String>? id,
+    Expression<String>? taskId,
+    Expression<String>? occurrenceDate,
+    Expression<int>? slot,
+    Expression<int>? attemptedAt,
+    Expression<String>? verdictMeta,
+    Expression<String>? userId,
+    Expression<int>? updatedAt,
+    Expression<int>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (taskId != null) 'task_id': taskId,
+      if (occurrenceDate != null) 'occurrence_date': occurrenceDate,
+      if (slot != null) 'slot': slot,
+      if (attemptedAt != null) 'attempted_at': attemptedAt,
+      if (verdictMeta != null) 'verdict_meta': verdictMeta,
+      if (userId != null) 'user_id': userId,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  VerificationAttemptsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? taskId,
+    Value<LocalDate>? occurrenceDate,
+    Value<int>? slot,
+    Value<int>? attemptedAt,
+    Value<String?>? verdictMeta,
+    Value<String?>? userId,
+    Value<int>? updatedAt,
+    Value<int?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return VerificationAttemptsCompanion(
+      id: id ?? this.id,
+      taskId: taskId ?? this.taskId,
+      occurrenceDate: occurrenceDate ?? this.occurrenceDate,
+      slot: slot ?? this.slot,
+      attemptedAt: attemptedAt ?? this.attemptedAt,
+      verdictMeta: verdictMeta ?? this.verdictMeta,
+      userId: userId ?? this.userId,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (taskId.present) {
+      map['task_id'] = Variable<String>(taskId.value);
+    }
+    if (occurrenceDate.present) {
+      map['occurrence_date'] = Variable<String>(
+        $VerificationAttemptsTable.$converteroccurrenceDate.toSql(
+          occurrenceDate.value,
+        ),
+      );
+    }
+    if (slot.present) {
+      map['slot'] = Variable<int>(slot.value);
+    }
+    if (attemptedAt.present) {
+      map['attempted_at'] = Variable<int>(attemptedAt.value);
+    }
+    if (verdictMeta.present) {
+      map['verdict_meta'] = Variable<String>(verdictMeta.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<int>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VerificationAttemptsCompanion(')
+          ..write('id: $id, ')
+          ..write('taskId: $taskId, ')
+          ..write('occurrenceDate: $occurrenceDate, ')
+          ..write('slot: $slot, ')
+          ..write('attemptedAt: $attemptedAt, ')
+          ..write('verdictMeta: $verdictMeta, ')
+          ..write('userId: $userId, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $TasksTable tasks = $TasksTable(this);
   late final $CompletionsTable completions = $CompletionsTable(this);
+  late final $VerificationAttemptsTable verificationAttempts =
+      $VerificationAttemptsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [tasks, completions];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    tasks,
+    completions,
+    verificationAttempts,
+  ];
 }
 
 typedef $$TasksTableCreateCompanionBuilder =
@@ -1997,6 +2593,34 @@ final class $$TasksTableReferences
     ).filter((f) => f.taskId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_completionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $VerificationAttemptsTable,
+    List<VerificationAttempt>
+  >
+  _verificationAttemptsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.verificationAttempts,
+        aliasName: $_aliasNameGenerator(
+          db.tasks.id,
+          db.verificationAttempts.taskId,
+        ),
+      );
+
+  $$VerificationAttemptsTableProcessedTableManager
+  get verificationAttemptsRefs {
+    final manager = $$VerificationAttemptsTableTableManager(
+      $_db,
+      $_db.verificationAttempts,
+    ).filter((f) => f.taskId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _verificationAttemptsRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -2124,6 +2748,31 @@ class $$TasksTableFilterComposer extends Composer<_$AppDatabase, $TasksTable> {
           }) => $$CompletionsTableFilterComposer(
             $db: $db,
             $table: $db.completions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> verificationAttemptsRefs(
+    Expression<bool> Function($$VerificationAttemptsTableFilterComposer f) f,
+  ) {
+    final $$VerificationAttemptsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.verificationAttempts,
+      getReferencedColumn: (t) => t.taskId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VerificationAttemptsTableFilterComposer(
+            $db: $db,
+            $table: $db.verificationAttempts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2334,6 +2983,32 @@ class $$TasksTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> verificationAttemptsRefs<T extends Object>(
+    Expression<T> Function($$VerificationAttemptsTableAnnotationComposer a) f,
+  ) {
+    final $$VerificationAttemptsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.verificationAttempts,
+          getReferencedColumn: (t) => t.taskId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$VerificationAttemptsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.verificationAttempts,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$TasksTableTableManager
@@ -2349,7 +3024,10 @@ class $$TasksTableTableManager
           $$TasksTableUpdateCompanionBuilder,
           (Task, $$TasksTableReferences),
           Task,
-          PrefetchHooks Function({bool completionsRefs})
+          PrefetchHooks Function({
+            bool completionsRefs,
+            bool verificationAttemptsRefs,
+          })
         > {
   $$TasksTableTableManager(_$AppDatabase db, $TasksTable table)
     : super(
@@ -2452,28 +3130,63 @@ class $$TasksTableTableManager
                     (e.readTable(table), $$TasksTableReferences(db, table, e)),
               )
               .toList(),
-          prefetchHooksCallback: ({completionsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (completionsRefs) db.completions],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (completionsRefs)
-                    await $_getPrefetchedData<Task, $TasksTable, Completion>(
-                      currentTable: table,
-                      referencedTable: $$TasksTableReferences
-                          ._completionsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$TasksTableReferences(db, table, p0).completionsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.taskId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({completionsRefs = false, verificationAttemptsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (completionsRefs) db.completions,
+                    if (verificationAttemptsRefs) db.verificationAttempts,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (completionsRefs)
+                        await $_getPrefetchedData<
+                          Task,
+                          $TasksTable,
+                          Completion
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TasksTableReferences
+                              ._completionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TasksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).completionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.taskId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (verificationAttemptsRefs)
+                        await $_getPrefetchedData<
+                          Task,
+                          $TasksTable,
+                          VerificationAttempt
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TasksTableReferences
+                              ._verificationAttemptsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TasksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).verificationAttemptsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.taskId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -2490,7 +3203,10 @@ typedef $$TasksTableProcessedTableManager =
       $$TasksTableUpdateCompanionBuilder,
       (Task, $$TasksTableReferences),
       Task,
-      PrefetchHooks Function({bool completionsRefs})
+      PrefetchHooks Function({
+        bool completionsRefs,
+        bool verificationAttemptsRefs,
+      })
     >;
 typedef $$CompletionsTableCreateCompanionBuilder =
     CompletionsCompanion Function({
@@ -3005,6 +3721,427 @@ typedef $$CompletionsTableProcessedTableManager =
       Completion,
       PrefetchHooks Function({bool taskId})
     >;
+typedef $$VerificationAttemptsTableCreateCompanionBuilder =
+    VerificationAttemptsCompanion Function({
+      required String id,
+      required String taskId,
+      required LocalDate occurrenceDate,
+      Value<int> slot,
+      required int attemptedAt,
+      Value<String?> verdictMeta,
+      Value<String?> userId,
+      required int updatedAt,
+      Value<int?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$VerificationAttemptsTableUpdateCompanionBuilder =
+    VerificationAttemptsCompanion Function({
+      Value<String> id,
+      Value<String> taskId,
+      Value<LocalDate> occurrenceDate,
+      Value<int> slot,
+      Value<int> attemptedAt,
+      Value<String?> verdictMeta,
+      Value<String?> userId,
+      Value<int> updatedAt,
+      Value<int?> deletedAt,
+      Value<int> rowid,
+    });
+
+final class $$VerificationAttemptsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $VerificationAttemptsTable,
+          VerificationAttempt
+        > {
+  $$VerificationAttemptsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TasksTable _taskIdTable(_$AppDatabase db) => db.tasks.createAlias(
+    $_aliasNameGenerator(db.verificationAttempts.taskId, db.tasks.id),
+  );
+
+  $$TasksTableProcessedTableManager get taskId {
+    final $_column = $_itemColumn<String>('task_id')!;
+
+    final manager = $$TasksTableTableManager(
+      $_db,
+      $_db.tasks,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_taskIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$VerificationAttemptsTableFilterComposer
+    extends Composer<_$AppDatabase, $VerificationAttemptsTable> {
+  $$VerificationAttemptsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<LocalDate, LocalDate, String>
+  get occurrenceDate => $composableBuilder(
+    column: $table.occurrenceDate,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<int> get slot => $composableBuilder(
+    column: $table.slot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get attemptedAt => $composableBuilder(
+    column: $table.attemptedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get verdictMeta => $composableBuilder(
+    column: $table.verdictMeta,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TasksTableFilterComposer get taskId {
+    final $$TasksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.taskId,
+      referencedTable: $db.tasks,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TasksTableFilterComposer(
+            $db: $db,
+            $table: $db.tasks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VerificationAttemptsTableOrderingComposer
+    extends Composer<_$AppDatabase, $VerificationAttemptsTable> {
+  $$VerificationAttemptsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get occurrenceDate => $composableBuilder(
+    column: $table.occurrenceDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get slot => $composableBuilder(
+    column: $table.slot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get attemptedAt => $composableBuilder(
+    column: $table.attemptedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get verdictMeta => $composableBuilder(
+    column: $table.verdictMeta,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TasksTableOrderingComposer get taskId {
+    final $$TasksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.taskId,
+      referencedTable: $db.tasks,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TasksTableOrderingComposer(
+            $db: $db,
+            $table: $db.tasks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VerificationAttemptsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $VerificationAttemptsTable> {
+  $$VerificationAttemptsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<LocalDate, String> get occurrenceDate =>
+      $composableBuilder(
+        column: $table.occurrenceDate,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<int> get slot =>
+      $composableBuilder(column: $table.slot, builder: (column) => column);
+
+  GeneratedColumn<int> get attemptedAt => $composableBuilder(
+    column: $table.attemptedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get verdictMeta => $composableBuilder(
+    column: $table.verdictMeta,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$TasksTableAnnotationComposer get taskId {
+    final $$TasksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.taskId,
+      referencedTable: $db.tasks,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TasksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tasks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VerificationAttemptsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $VerificationAttemptsTable,
+          VerificationAttempt,
+          $$VerificationAttemptsTableFilterComposer,
+          $$VerificationAttemptsTableOrderingComposer,
+          $$VerificationAttemptsTableAnnotationComposer,
+          $$VerificationAttemptsTableCreateCompanionBuilder,
+          $$VerificationAttemptsTableUpdateCompanionBuilder,
+          (VerificationAttempt, $$VerificationAttemptsTableReferences),
+          VerificationAttempt,
+          PrefetchHooks Function({bool taskId})
+        > {
+  $$VerificationAttemptsTableTableManager(
+    _$AppDatabase db,
+    $VerificationAttemptsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$VerificationAttemptsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$VerificationAttemptsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$VerificationAttemptsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> taskId = const Value.absent(),
+                Value<LocalDate> occurrenceDate = const Value.absent(),
+                Value<int> slot = const Value.absent(),
+                Value<int> attemptedAt = const Value.absent(),
+                Value<String?> verdictMeta = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VerificationAttemptsCompanion(
+                id: id,
+                taskId: taskId,
+                occurrenceDate: occurrenceDate,
+                slot: slot,
+                attemptedAt: attemptedAt,
+                verdictMeta: verdictMeta,
+                userId: userId,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String taskId,
+                required LocalDate occurrenceDate,
+                Value<int> slot = const Value.absent(),
+                required int attemptedAt,
+                Value<String?> verdictMeta = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                required int updatedAt,
+                Value<int?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VerificationAttemptsCompanion.insert(
+                id: id,
+                taskId: taskId,
+                occurrenceDate: occurrenceDate,
+                slot: slot,
+                attemptedAt: attemptedAt,
+                verdictMeta: verdictMeta,
+                userId: userId,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$VerificationAttemptsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({taskId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (taskId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.taskId,
+                                referencedTable:
+                                    $$VerificationAttemptsTableReferences
+                                        ._taskIdTable(db),
+                                referencedColumn:
+                                    $$VerificationAttemptsTableReferences
+                                        ._taskIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$VerificationAttemptsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $VerificationAttemptsTable,
+      VerificationAttempt,
+      $$VerificationAttemptsTableFilterComposer,
+      $$VerificationAttemptsTableOrderingComposer,
+      $$VerificationAttemptsTableAnnotationComposer,
+      $$VerificationAttemptsTableCreateCompanionBuilder,
+      $$VerificationAttemptsTableUpdateCompanionBuilder,
+      (VerificationAttempt, $$VerificationAttemptsTableReferences),
+      VerificationAttempt,
+      PrefetchHooks Function({bool taskId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3013,4 +4150,6 @@ class $AppDatabaseManager {
       $$TasksTableTableManager(_db, _db.tasks);
   $$CompletionsTableTableManager get completions =>
       $$CompletionsTableTableManager(_db, _db.completions);
+  $$VerificationAttemptsTableTableManager get verificationAttempts =>
+      $$VerificationAttemptsTableTableManager(_db, _db.verificationAttempts);
 }

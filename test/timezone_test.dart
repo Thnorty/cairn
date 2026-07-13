@@ -3,6 +3,7 @@ import 'package:cairn/src/db/database.dart';
 import 'package:cairn/src/models/local_date.dart';
 import 'package:cairn/src/repo/completion_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
+import 'package:cairn/src/services/proof_verifier.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
@@ -50,7 +51,7 @@ void main() {
       addTearDown(db.close);
 
       final taskRepo = TaskRepository(db, clock);
-      final completionRepo = CompletionRepository(db, clock);
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
 
       final task = await taskRepo.createTask(
         title: 'Push-ups',
