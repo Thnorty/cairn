@@ -16,7 +16,8 @@ import 'app_colors.dart';
 class TopographicContourPainter extends CustomPainter {
   const TopographicContourPainter({
     this.origin = const Alignment(0.68, -0.92),
-    this.ringSpacing = 27,
+    this.ringSpacing = 26,
+    this.strokeWidth = 1,
     this.ringColor = const Color(0x0D463C2C),
   });
 
@@ -24,13 +25,27 @@ class TopographicContourPainter extends CustomPainter {
   /// coordinate space as everything else (-1..1 per axis, 0,0 = centre).
   /// Varies slightly per screen in the source files (50%/76%/84%/60%/82%
   /// horizontally, all within a few percent of the top edge vertically);
-  /// this default matches the Home file.
+  /// this default matches the Home file's `circle at 84% 4%`.
   final Alignment origin;
 
-  /// Spacing between rings, matching the designs' ~26-31px repeat.
+  /// Spacing between rings **in logical pixels (dp)**, matching the Home
+  /// file's `repeating-radial-gradient(circle at 84% 4%, transparent 0
+  /// 26px, rgba(70,60,44,.05) 26px 27px)`: a 26px transparent gap then a
+  /// 1px ring, repeating every 27px - i.e. one ring every 26px measured
+  /// gap-to-gap. `CustomPainter.paint`'s `Canvas`/`Size` are always in
+  /// logical pixels regardless of device pixel ratio, so drawing `r` in
+  /// these units (never multiplying by `MediaQuery.devicePixelRatio` or
+  /// similar) is what makes the rings scale correctly across devices.
   final double ringSpacing;
 
-  /// Ring stroke colour, matching the designs' ~0.045-0.05 alpha warm ink.
+  /// Ring stroke width in logical pixels (dp), matching the design's 1px
+  /// ring band.
+  final double strokeWidth;
+
+  /// Ring stroke colour, matching the design's `rgba(70,60,44,.05)`. The
+  /// design applies a *further* 50% opacity on the whole contour layer on
+  /// top of this (see [ScreenBackground]), so this colour's alpha alone is
+  /// intentionally the full `.05`, not pre-halved.
   final Color ringColor;
 
   @override
@@ -49,7 +64,7 @@ class TopographicContourPainter extends CustomPainter {
     final paint = Paint()
       ..color = ringColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
+      ..strokeWidth = strokeWidth;
 
     for (var r = ringSpacing; r < maxRadius; r += ringSpacing) {
       canvas.drawCircle(center, r, paint);
@@ -60,6 +75,7 @@ class TopographicContourPainter extends CustomPainter {
   bool shouldRepaint(TopographicContourPainter oldDelegate) =>
       origin != oldDelegate.origin ||
       ringSpacing != oldDelegate.ringSpacing ||
+      strokeWidth != oldDelegate.strokeWidth ||
       ringColor != oldDelegate.ringColor;
 }
 
@@ -111,9 +127,21 @@ class ScreenBackground extends StatelessWidget {
           for (final wash in washes)
             Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(gradient: wash))),
           if (showContour)
+            // The design wraps the contour div in its own `opacity:.5`,
+            // *on top of* the `rgba(70,60,44,.05)` already baked into the
+            // ring colour (see `Cairn Home.dc.html`'s "topographic contour
+            // wash" div: `opacity:.5;background-image:repeating-radial-
+            // gradient(...rgba(70,60,44,.05)...)`). Without this `Opacity`
+            // the rings render at their raw .05 alpha - roughly twice the
+            // intended, almost-subliminal .025 effective strength - which
+            // is what made them read as clearly-visible rings on a real
+            // device instead of a faint paper texture.
             Positioned.fill(
-              child: CustomPaint(
-                painter: TopographicContourPainter(origin: contourOrigin),
+              child: Opacity(
+                opacity: 0.5,
+                child: CustomPaint(
+                  painter: TopographicContourPainter(origin: contourOrigin),
+                ),
               ),
             ),
           child,

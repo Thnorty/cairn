@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 
 import '../theme/app_colors.dart';
@@ -52,6 +53,16 @@ class StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Chips get dropped into whichever screen/card a later run builds and
+    // must not depend on that caller remembering a `Material` ancestor (see
+    // AppShell's build() comment for why: without one, Text falls back to
+    // MaterialApp's deliberately-ugly red/yellow-underlined debug style).
+    // `MaterialType.transparency` fixes text inheritance without painting
+    // anything of its own, so it can't cover the chip's own background.
+    return Material(type: MaterialType.transparency, child: _buildChip());
+  }
+
+  Widget _buildChip() {
     switch (variant) {
       case StatusChipVariant.verified:
         return _FilledChip(

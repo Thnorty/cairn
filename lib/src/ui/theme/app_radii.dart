@@ -39,6 +39,9 @@ abstract final class AppRadii {
   /// Small inline CTA button radius ("Prove it").
   static const double buttonSmall = 22;
 
+  /// Medium content-sized CTA button radius (Empty Today's "+ New habit").
+  static const double buttonMedium = 24;
+
   /// Large full-width footer CTA button radius ("Done", "Retake photo").
   static const double buttonLarge = 26;
 

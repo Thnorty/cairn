@@ -46,6 +46,9 @@ abstract final class AppColors {
   /// Fainter secondary text: chevrons, ghost button labels, "next" hints.
   static const Color textFaint = Color(0xFF8A8072);
 
+  /// Empty Today's body copy colour (distinct from [textMuted]).
+  static const Color emptyStateBodyText = Color(0xFF5F5647);
+
   /// Inactive tab icon/label colour.
   static const Color textInactive = Color(0xFFA19785);
 
@@ -210,6 +213,12 @@ abstract final class AppColors {
   /// Freshly-placed/highlighted top stone (sage), 158deg.
   static const Color stoneSageLight = Color(0xFF96A776);
   static const Color stoneSageDark = Color(0xFF6D8056);
+
+  /// Placed-but-unverified top stone (muted clay), 158deg - Home Card 1b's
+  /// mini-cairn. Distinct from [pendingSealLight]/[pendingSealDark] (which
+  /// tint the pending chip's icon circle, not a stone).
+  static const Color stonePendingLight = Color(0xFFCDBFA6);
+  static const Color stonePendingDark = Color(0xFFA89A80);
 
   /// rgba(60,50,35,.16) / rgba(60,50,35,.14) - stone drop shadow.
   static const Color stoneShadow = Color(0x293C3223);

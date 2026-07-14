@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 
 import '../theme/app_colors.dart';
@@ -69,7 +70,19 @@ class CardSurface extends StatelessWidget {
                     : AppColors.cardTopHighlight,
               ),
             ),
-            Padding(padding: padding, child: child),
+            // Cards get dropped into whichever screen a later run builds
+            // and always host arbitrary caller-supplied content (usually
+            // text); that content must not depend on the caller
+            // remembering a `Material` ancestor (without one, `Text` falls
+            // back to MaterialApp's deliberately-ugly red/yellow-underlined
+            // debug style - see AppShell's build() comment).
+            // `MaterialType.transparency` fixes text inheritance without
+            // painting anything of its own, so it can't cover the card's
+            // own gradient fill above.
+            Padding(
+              padding: padding,
+              child: Material(type: MaterialType.transparency, child: child),
+            ),
           ],
         ),
       ),

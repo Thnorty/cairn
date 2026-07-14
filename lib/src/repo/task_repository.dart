@@ -263,6 +263,30 @@ class TaskRepository {
         .get();
   }
 
+  /// Each task's permanent "Cairn N" ordinal (Home/Trail's "Cairn 2 · 9
+  /// stones"), 1-based by creation order among every non-tombstoned task
+  /// (archived tasks included, so archiving one never renumbers another
+  /// task's cairn). `id` is a tiebreaker for tasks created in the same
+  /// millisecond: it is *stable* (an id never changes, so a given database
+  /// always produces the same cairn numbers and a user never sees a task's
+  /// cairn number shift between sessions) but *not* chronological within that
+  /// tie. UUID v7's timestamp prefix is identical for ids created in the same
+  /// millisecond, so everything after that prefix is random bits; ordering on
+  /// `id` there is an arbitrary, consistent tiebreak, not a recovery of
+  /// creation order.
+  Future<Map<String, int>> cairnNumbers() async {
+    final rows = await (_db.select(_db.tasks)
+          ..where((t) => t.deletedAt.isNull())
+          ..orderBy([
+            (t) => OrderingTerm.asc(t.createdAt),
+            (t) => OrderingTerm.asc(t.id),
+          ]))
+        .get();
+    return {
+      for (var i = 0; i < rows.length; i++) rows[i].id: i + 1,
+    };
+  }
+
   /// One-time backfill for rows created before the first successful
   /// anonymous sign-in (WO-4): stamps `user_id` on every row where it is
   /// currently NULL, so Phase 4's account upgrade carries the whole

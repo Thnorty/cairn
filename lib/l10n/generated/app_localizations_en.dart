@@ -127,6 +127,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get awaitingVerificationChip => 'Awaiting verification';
 
   @override
+  String get proofThumbnailPlaceholderLabel => 'proof';
+
+  @override
+  String get fallbackDisplayName => 'Friend';
+
+  @override
   String get proveItButton => 'Prove it';
 
   @override

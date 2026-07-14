@@ -1,0 +1,332 @@
+import 'package:flutter/material.dart'
+    show Colors, Scaffold, ScaffoldMessenger, SnackBar, Text;
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../l10n/generated/app_localizations.dart';
+import '../../l10n/date_number_formatting.dart';
+import '../../providers.dart';
+import '../../repo/completion_repository.dart';
+import '../../services/home_service.dart';
+import '../../services/proof_flow.dart';
+import '../../db/database.dart' show ProofSource;
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import '../widgets/buttons.dart';
+import '../widgets/plus_glyph.dart';
+import '../widgets/wordmark_glyph.dart';
+import 'empty_today_view.dart';
+import 'home_occurrence_card.dart';
+
+/// The Today/Home screen (`Cairn Home.dc.html` / `Cairn Empty Today.dc.html`):
+/// the app's default tab, showing every occurrence scheduled today across
+/// active tasks, or the empty-state illustration when there are no tasks at
+/// all yet.
+///
+/// All data comes from [homeSnapshotProvider], which stays live (see
+/// [HomeService.watchToday]'s doc comment): a completion recorded elsewhere,
+/// or a pending proof resolving in the background, updates this screen with
+/// no manual refresh.
+class HomeScreen extends ConsumerStatefulWidget {
+  const HomeScreen({super.key, this.onOpenDebug});
+
+  /// TEMPORARY: see [AppShell]'s doc comment. Wired onto this screen's own
+  /// wordmark text so the Phase 1 debug screen stays reachable now that
+  /// Today no longer shows [AppShell]'s shared placeholder header.
+  final VoidCallback? onOpenDebug;
+
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  /// Keys ("taskId#slot") of cards whose "Prove it" is currently mid-flight,
+  /// so a double-tap can't open the camera/gallery picker twice for the same
+  /// occurrence while the first attempt is still running.
+  final Set<String> _provingKeys = {};
+
+  Future<void> _handleProveIt(HomeOccurrenceCard card) async {
+    final key = '${card.taskId}#${card.slot}';
+    if (_provingKeys.contains(key)) return;
+    setState(() => _provingKeys.add(key));
+
+    try {
+      final clock = ref.read(clockProvider);
+      final proofFlow = ref.read(proofFlowServiceProvider);
+      final flowResult = await proofFlow.completeWithProof(
+        taskId: card.taskId,
+        occurrenceDate: clock.today(),
+        slot: card.slot,
+        source: ProofSource.camera,
+      );
+      if (!mounted) return;
+      switch (flowResult) {
+        case ProofFlowCancelled():
+          break; // user backed out of the camera; nothing to report
+        case ProofFlowCompleted(result: final result):
+          _showProofOutcome(result);
+      }
+    } finally {
+      if (mounted) setState(() => _provingKeys.remove(key));
+    }
+  }
+
+  /// Minimal placeholder feedback (a snackbar), by deliberate scope
+  /// decision: the real outcome screens (`Cairn Verify Result.dc.html`,
+  /// `Cairn Verify Pending.dc.html`, `Cairn Verify Failed*.dc.html`) are a
+  /// later run's work, not invented here. This mirrors the Phase 1 debug
+  /// screen's own outcome messages, which is an accepted, explicitly-scoped
+  /// exception to the "AppLocalizations only" copy rule for this one
+  /// transitional surface - it disappears once those screens land.
+  void _showProofOutcome(CompleteOccurrenceResult result) {
+    final message = switch (result) {
+      CompletionRecorded() => 'Verified',
+      CompletionPendingVerification() =>
+        'Saved - we\'ll verify it soon (offline or verifier unavailable)',
+      CompletionRejectedByVerifier(:final verdict, :final attemptsRemaining) =>
+        'Not verified: ${verdict.reason} ($attemptsRemaining attempt(s) left today)',
+      CompletionRejectedStalePhoto() => 'That photo looked too old - try a fresh one',
+      CompletionRejectedAttemptsExhausted() =>
+        'No attempts left for this task today',
+      CompletionRejectedDailyCapReached() => 'You have used today\'s proofs',
+      CompletionRejectedBackfill() => 'Cannot complete a past date',
+      CompletionRejectedNotScheduled() => 'Not scheduled for this slot today',
+      CompletionRejectedTaskNotFound() => 'Task not found',
+      CompletionRejectedAlreadyCompleted() => 'Already completed',
+    };
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    final today = ref.watch(clockProvider).today();
+    final displayName =
+        ref.watch(userDisplayNameProvider) ?? l10n.fallbackDisplayName;
+    final snapshotAsync = ref.watch(homeSnapshotProvider);
+
+    // This screen gets dropped into AppShell's `IndexedStack` (which already
+    // sits under its own `Material(type: MaterialType.transparency)`
+    // ancestor), but must also render correctly standalone - a widget test
+    // or the screenshot harness pumping just `HomeScreen` under a bare
+    // `MaterialApp` - so it supplies its own. A bare `Material.transparency`
+    // wrapper (the pattern `CardSurface`/`StatusChip`/the button family use)
+    // would be enough for text/ink inheritance alone, but `_showProofOutcome`
+    // needs a real `Scaffold` ancestor to show its placeholder snackbar
+    // (`ScaffoldMessenger.showSnackBar` asserts one exists to present into,
+    // even though `ScaffoldMessenger.of` itself is satisfied by MaterialApp's
+    // implicit root messenger), so this uses a transparent `Scaffold`
+    // instead: `backgroundColor: Colors.transparent` so it doesn't paint
+    // over `ScreenBackground`'s parchment gradient/washes/contour beneath it,
+    // and its own body already sits under a proper `Material` ancestor, so
+    // no separate wrapper is needed on top.
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(22, 8, 22, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _BrandRow(onOpenDebug: widget.onOpenDebug, displayName: displayName),
+            const SizedBox(height: 22),
+            Text(
+              formatWeekdayMonthDayHeader(today, locale),
+              style: AppTextStyles.sectionLabel,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l10n.goodMorningGreeting(displayName),
+              style: AppTextStyles.greeting,
+            ),
+            const SizedBox(height: 6),
+            Expanded(
+              child: snapshotAsync.when(
+                data: (snapshot) => snapshot.activeTaskCount == 0
+                    ? EmptyTodayView(onNewHabit: () {})
+                    : _PopulatedBody(
+                        snapshot: snapshot,
+                        l10n: l10n,
+                        provingKeys: _provingKeys,
+                        onProveIt: _handleProveIt,
+                      ),
+                // The stream's first emission is effectively synchronous
+                // (see HomeService.watchToday's doc comment), so there's no
+                // meaningful loading UI to design here; an empty box avoids
+                // a one-frame flash of anything else.
+                loading: () => const SizedBox.shrink(),
+                error: (error, stackTrace) => Center(child: Text('$error')),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PopulatedBody extends StatelessWidget {
+  const _PopulatedBody({
+    required this.snapshot,
+    required this.l10n,
+    required this.provingKeys,
+    required this.onProveIt,
+  });
+
+  final HomeSnapshot snapshot;
+  final AppLocalizations l10n;
+  final Set<String> provingKeys;
+  final void Function(HomeOccurrenceCard card) onProveIt;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              l10n.tasksDoneCount(snapshot.doneCount, snapshot.totalCount),
+              style: AppTextStyles.body,
+            ),
+            const SizedBox(width: 16),
+            const _SummaryDot(),
+            const SizedBox(width: 16),
+            Text(
+              l10n.stonesThisWeek(snapshot.stonesThisWeek),
+              style: AppTextStyles.body,
+            ),
+          ],
+        ),
+        const SizedBox(height: 26),
+        Text(l10n.todaySectionLabel, style: AppTextStyles.sectionLabel),
+        const SizedBox(height: 14),
+        Expanded(
+          child: snapshot.cards.isEmpty
+              ? const SizedBox.shrink()
+              : ListView.separated(
+                  padding: const EdgeInsetsDirectional.only(bottom: 16),
+                  itemCount: snapshot.cards.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final card = snapshot.cards[index];
+                    final busy = provingKeys.contains('${card.taskId}#${card.slot}');
+                    return HomeOccurrenceCardView(
+                      key: ValueKey('${card.taskId}#${card.slot}'),
+                      card: card,
+                      onProveIt: busy ? () {} : () => onProveIt(card),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The decorative bullet between "N of M done" and "N stones this week"
+/// (`width:4px;height:4px;border-radius:50%;background:#c4bbaa`).
+class _SummaryDot extends StatelessWidget {
+  const _SummaryDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 4,
+      height: 4,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Color(0xFFC4BBAA),
+          shape: BoxShape.circle,
+        ),
+      ),
+    );
+  }
+}
+
+class _BrandRow extends StatelessWidget {
+  const _BrandRow({required this.onOpenDebug, required this.displayName});
+
+  final VoidCallback? onOpenDebug;
+  final String displayName;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        GestureDetector(
+          // TEMPORARY: see HomeScreen's doc comment on [onOpenDebug].
+          onLongPress: onOpenDebug,
+          behavior: HitTestBehavior.opaque,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const WordmarkGlyph(),
+              const SizedBox(width: 10),
+              Text(l10n.appTitle, style: AppTextStyles.wordmark),
+            ],
+          ),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TintedPillButton(
+              label: l10n.newHabitButton,
+              // Not wired to a real destination yet: the New Habit screens
+              // are a separate, not-yet-built run (see CLAUDE.md's Phase 3
+              // note that screens parallelize across runs). Left inert
+              // rather than opening the Phase 1 debug dialog, which would
+              // mix debug-only UI into a real screen.
+              onPressed: () {},
+              icon: const PlusGlyph(color: AppColors.terracottaChipText),
+            ),
+            const SizedBox(width: 10),
+            _AvatarCircle(initial: displayName.isEmpty ? '?' : displayName[0].toUpperCase()),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// The circular avatar in the brand row
+/// (`linear-gradient(150deg,#c9c0b0,#a99f8c)`), showing the first letter of
+/// [initial] (the Home greeting's display name - see
+/// `userDisplayNameProvider`'s doc comment on why there's no real profile
+/// picture/name yet).
+class _AvatarCircle extends StatelessWidget {
+  const _AvatarCircle({required this.initial});
+
+  final String initial;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment(-0.5, -1),
+          end: Alignment(0.5, 1),
+          colors: [Color(0xFFC9C0B0), Color(0xFFA99F8C)],
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: const TextStyle(
+          fontFamily: 'Work Sans',
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          color: Color(0xFF453F35),
+        ),
+      ),
+    );
+  }
+}

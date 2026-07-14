@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 
 import '../theme/app_colors.dart';
@@ -6,13 +7,16 @@ import '../theme/app_radii.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
 
-/// Size variant for [PrimaryButton], matching the two terracotta-gradient
+/// Size variant for [PrimaryButton], matching the terracotta-gradient
 /// button treatments in the designs: a large full-width footer CTA
-/// ("Done", "Retake photo", "Go unlimited", "Back to Today") and a small
-/// inline CTA on a task card ("Prove it").
-enum PrimaryButtonSize { large, small }
+/// ("Done", "Retake photo", "Go unlimited", "Back to Today"), a small
+/// inline CTA on a task card ("Prove it"), and a medium content-sized CTA
+/// (the Empty Today "+ New habit" button - `padding:14px 22px;
+/// border-radius:24px; font-size:15px`, otherwise identical treatment to
+/// [large], including its drop shadow).
+enum PrimaryButtonSize { large, medium, small }
 
-/// The terracotta gradient primary action button. One widget, two sizes
+/// The terracotta gradient primary action button. One widget, three sizes
 /// (see [PrimaryButtonSize]); [icon], when given, is laid out before
 /// [label] the way every gradient button in the designs pairs a small
 /// glyph with its text.
@@ -35,20 +39,35 @@ class PrimaryButton extends StatelessWidget {
   /// always do; the small inline "Prove it" CTA sizes to its content).
   final bool expand;
 
-  bool get _isLarge => size == PrimaryButtonSize.large;
-
   @override
   Widget build(BuildContext context) {
-    final radius = _isLarge ? AppRadii.buttonLarge : AppRadii.buttonSmall;
-    final textStyle = _isLarge
-        ? AppTextStyles.buttonLabelLarge
-        : AppTextStyles.buttonLabelSmall;
-    final padding = _isLarge
-        ? const EdgeInsetsDirectional.symmetric(vertical: 17)
-        : const EdgeInsetsDirectional.symmetric(horizontal: 18, vertical: 11);
-    final shadows = _isLarge
-        ? AppShadows.buttonLarge
-        : AppShadows.buttonSmall;
+    final double radius;
+    final TextStyle textStyle;
+    final EdgeInsetsGeometry padding;
+    final List<BoxShadow> shadows;
+    switch (size) {
+      case PrimaryButtonSize.large:
+        radius = AppRadii.buttonLarge;
+        textStyle = AppTextStyles.buttonLabelLarge;
+        padding = const EdgeInsetsDirectional.symmetric(vertical: 17);
+        shadows = AppShadows.buttonLarge;
+      case PrimaryButtonSize.medium:
+        radius = AppRadii.buttonMedium;
+        textStyle = AppTextStyles.buttonLabelMedium;
+        padding = const EdgeInsetsDirectional.symmetric(
+          horizontal: 22,
+          vertical: 14,
+        );
+        shadows = AppShadows.buttonLarge;
+      case PrimaryButtonSize.small:
+        radius = AppRadii.buttonSmall;
+        textStyle = AppTextStyles.buttonLabelSmall;
+        padding = const EdgeInsetsDirectional.symmetric(
+          horizontal: 18,
+          vertical: 11,
+        );
+        shadows = AppShadows.buttonSmall;
+    }
 
     final content = Row(
       mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
@@ -141,6 +160,16 @@ class TextGhostButton extends StatelessWidget {
 /// Shared tap/disabled handling for the button family above: none of the
 /// designs show a Material ripple, so this is a plain tap target (dimmed
 /// and inert when [onPressed] is null) rather than an `InkWell`.
+///
+/// Every button label ([PrimaryButton], [TintedPillButton],
+/// [TextGhostButton]) routes through here, so this is also the one place
+/// that gives all three a `Material` ancestor: buttons get dropped into
+/// whichever screen a later run builds, and must not depend on that caller
+/// remembering one (without it, `Text` falls back to MaterialApp's
+/// deliberately-ugly red/yellow-underlined debug style - see AppShell's
+/// build() comment). `MaterialType.transparency` fixes text inheritance
+/// without painting anything of its own, so it can't cover the button's own
+/// gradient/fill.
 class _Pressable extends StatelessWidget {
   const _Pressable({required this.onPressed, required this.child});
 
@@ -150,16 +179,19 @@ class _Pressable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
-    return Semantics(
-      button: true,
-      enabled: enabled,
-      child: MouseRegion(
-        cursor: enabled
-            ? SystemMouseCursors.click
-            : SystemMouseCursors.basic,
-        child: GestureDetector(
-          onTap: onPressed,
-          child: Opacity(opacity: enabled ? 1 : 0.5, child: child),
+    return Material(
+      type: MaterialType.transparency,
+      child: Semantics(
+        button: true,
+        enabled: enabled,
+        child: MouseRegion(
+          cursor: enabled
+              ? SystemMouseCursors.click
+              : SystemMouseCursors.basic,
+          child: GestureDetector(
+            onTap: onPressed,
+            child: Opacity(opacity: enabled ? 1 : 0.5, child: child),
+          ),
         ),
       ),
     );

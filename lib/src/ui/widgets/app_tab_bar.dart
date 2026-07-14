@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
@@ -27,33 +28,42 @@ class AppTabBar extends StatelessWidget {
       (TabIconShape.you, l10n.navYou),
     ];
 
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [
-            AppColors.screenBackground,
-            AppColors.screenBackground,
-            Color(0x00E9E1D3),
-          ],
-          stops: [0, 0.6, 1],
+    // The tab bar gets dropped in wherever a real shell/screen needs it and
+    // must not depend on the caller remembering a `Material` ancestor
+    // (without one, the labels fall back to MaterialApp's deliberately-ugly
+    // red/yellow-underlined debug style - see AppShell's build() comment).
+    // `MaterialType.transparency` fixes text inheritance without painting
+    // anything of its own, so it can't cover the gradient fade below.
+    return Material(
+      type: MaterialType.transparency,
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [
+              AppColors.screenBackground,
+              AppColors.screenBackground,
+              Color(0x00E9E1D3),
+            ],
+            stops: [0, 0.6, 1],
+          ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(40, 12, 40, 26),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            for (var i = 0; i < tabs.length; i++)
-              _TabItem(
-                shape: tabs[i].$1,
-                label: tabs[i].$2,
-                selected: i == currentIndex,
-                onTap: () => onTap(i),
-              ),
-          ],
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(40, 12, 40, 26),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              for (var i = 0; i < tabs.length; i++)
+                _TabItem(
+                  shape: tabs[i].$1,
+                  label: tabs[i].$2,
+                  selected: i == currentIndex,
+                  onTap: () => onTap(i),
+                ),
+            ],
+          ),
         ),
       ),
     );

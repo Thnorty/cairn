@@ -1,18 +1,27 @@
-import 'package:flutter/material.dart' show MaterialPageRoute;
+import 'package:flutter/material.dart' show Material, MaterialPageRoute, MaterialType;
 import 'package:flutter/widgets.dart';
 
+import '../../../l10n/generated/app_localizations.dart';
 import '../../debug/debug_screen.dart';
-import '../theme/app_colors.dart';
+import '../home/home_screen.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/screen_background.dart';
 import '../widgets/app_tab_bar.dart';
+import '../widgets/wordmark_glyph.dart';
 
 /// The four-tab app shell: real background, real tab bar, real theme, so
 /// each real screen (Home/Trail/Stats/Profile) can drop straight in over
 /// the next few runs instead of being built against a bare `Scaffold`.
 ///
-/// Bodies are placeholders until their own run lands; only the chrome
-/// (background, wordmark header, tab bar) is real here.
+/// Today is the real [HomeScreen] (Phase 3's first screen); Trail/Stats/You
+/// remain placeholders until their own runs land. Trail, Stats and Profile
+/// each have a *different* header treatment in their own design files (see
+/// `Cairn Trail.dc.html`/`Cairn Profile.dc.html`), not the wordmark row
+/// used here - so [_WordmarkHeader] is only ever shown above a still-
+/// placeholder body; a real screen always brings its own full header
+/// (Home's brand row, in particular, already includes this same
+/// [WordmarkGlyph] plus its own controls) and this shared one is hidden for
+/// it instead of stacking two headers.
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
@@ -23,13 +32,6 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _index = 0;
 
-  static const _placeholders = [
-    _PlaceholderBody(label: 'Today'),
-    _PlaceholderBody(label: 'Trail'),
-    _PlaceholderBody(label: 'Stats'),
-    _PlaceholderBody(label: 'You'),
-  ];
-
   void _openDebugScreen() {
     Navigator.of(
       context,
@@ -38,24 +40,46 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenBackground(
-      child: SafeArea(
-        child: Column(
-          children: [
-            // TEMPORARY: Phase 1's debug screen (exercises the fake
-            // verifier without spending Gemini calls) has no home in the
-            // real navigation yet. Long-pressing the wordmark is a
-            // stand-in entry point until a real settings/debug affordance
-            // exists; remove this once one does.
-            _WordmarkHeader(onLongPress: _openDebugScreen),
-            Expanded(
-              child: IndexedStack(index: _index, children: _placeholders),
-            ),
-            AppTabBar(
-              currentIndex: _index,
-              onTap: (i) => setState(() => _index = i),
-            ),
-          ],
+    final bodies = [
+      HomeScreen(onOpenDebug: _openDebugScreen),
+      const _PlaceholderBody(label: 'Trail'),
+      const _PlaceholderBody(label: 'Stats'),
+      const _PlaceholderBody(label: 'You'),
+    ];
+
+    // `MaterialApp` (see main.dart) deliberately gives its root
+    // `DefaultTextStyle` an ugly red/yellow-double-underlined debug style
+    // to flag `Text` with no `Material` ancestor (see
+    // MaterialApp's "Why is my app's text red with yellow underlines?"
+    // troubleshooting doc). `Material.textStyle` merges over that with a
+    // real theme-derived style. `MaterialType.transparency` paints
+    // nothing of its own - no fill, no elevation, no shape - so it can't
+    // cover `ScreenBackground`'s parchment colour/washes/contour beneath
+    // it; it exists purely to fix text/ink inheritance for every
+    // descendant (the wordmark, the placeholder bodies, the tab bar, and
+    // whatever real screens land here in Phase 3).
+    return Material(
+      type: MaterialType.transparency,
+      child: ScreenBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // TEMPORARY: Phase 1's debug screen (exercises the fake
+              // verifier without spending Gemini calls) has no home in the
+              // real navigation yet. Long-pressing the wordmark is a
+              // stand-in entry point until a real settings/debug affordance
+              // exists; remove this once one does. Only shown above a
+              // still-placeholder body - see this class's doc comment.
+              if (_index != 0) _WordmarkHeader(onLongPress: _openDebugScreen),
+              Expanded(
+                child: IndexedStack(index: _index, children: bodies),
+              ),
+              AppTabBar(
+                currentIndex: _index,
+                onTap: (i) => setState(() => _index = i),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -69,6 +93,7 @@ class _WordmarkHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(22, 8, 22, 0),
       child: Align(
@@ -76,52 +101,15 @@ class _WordmarkHeader extends StatelessWidget {
         child: GestureDetector(
           onLongPress: onLongPress,
           behavior: HitTestBehavior.opaque,
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _WordmarkGlyph(),
-              SizedBox(width: 10),
-              Text('Cairn', style: AppTextStyles.wordmark),
+              const WordmarkGlyph(),
+              const SizedBox(width: 10),
+              Text(l10n.appTitle, style: AppTextStyles.wordmark),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// The tiny stacked-blob brand mark next to the "Cairn" wordmark. Unlike
-/// [CairnStack] (the tan-stone illustration used for task progress) this
-/// is a fixed 3-blob monochrome ink mark, so it's kept as a private
-/// one-off here rather than a reusable component.
-class _WordmarkGlyph extends StatelessWidget {
-  const _WordmarkGlyph();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 34,
-      height: 38,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          _blob(11, 8, AppColors.inkDimmed),
-          const SizedBox(height: 1),
-          _blob(17, 9, AppColors.iconMuted),
-          const SizedBox(height: 1),
-          _blob(24, 10, AppColors.inkStrong),
-        ],
-      ),
-    );
-  }
-
-  Widget _blob(double width, double height, Color color) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(height),
       ),
     );
   }

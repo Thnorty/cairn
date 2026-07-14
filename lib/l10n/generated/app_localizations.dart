@@ -206,6 +206,18 @@ abstract class AppLocalizations {
   /// **'Awaiting verification'**
   String get awaitingVerificationChip;
 
+  /// Tiny caption drawn on the placeholder swatch that stands in for a task card's proof thumbnail when the completion has no local photo file to show (e.g. a Phase 1 debug-inserted completion). A real proof photo, when present, is shown instead of this placeholder.
+  ///
+  /// In en, this message translates to:
+  /// **'proof'**
+  String get proofThumbnailPlaceholderLabel;
+
+  /// Stand-in for the Home screen greeting ('Good morning, {name}') and its avatar initial until Phase 4 adds real account display names (there is no profile/display-name system yet). Not a real user's name; deliberately generic rather than inventing a fake specific person.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend'**
+  String get fallbackDisplayName;
+
   /// Button label on a due-now task card that opens the camera capture flow.
   ///
   /// In en, this message translates to:

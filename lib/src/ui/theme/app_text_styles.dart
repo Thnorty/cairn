@@ -56,6 +56,24 @@ abstract final class AppTextStyles {
     color: AppColors.inkStrong,
   );
 
+  /// 24px Zilla Slab 600 - Empty Today's title ("Your first stone is
+  /// waiting").
+  static const TextStyle emptyStateTitle = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w600,
+    fontSize: 24,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 14px Work Sans 400 - Empty Today's body copy under [emptyStateTitle].
+  static const TextStyle emptyStateBody = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 14,
+    height: 1.55,
+    color: AppColors.emptyStateBodyText,
+  );
+
   /// 19px Zilla Slab 600 - task title on a card.
   static const TextStyle taskTitle = TextStyle(
     fontFamily: AppFontFamilies.zillaSlab,
@@ -137,6 +155,15 @@ abstract final class AppTextStyles {
     fontFamily: AppFontFamilies.workSans,
     fontWeight: FontWeight.w600,
     fontSize: 13.5,
+    color: AppColors.buttonText,
+  );
+
+  /// 15px Work Sans 600 - medium content-sized CTA button label (Empty
+  /// Today's "+ New habit").
+  static const TextStyle buttonLabelMedium = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 15,
     color: AppColors.buttonText,
   );
 

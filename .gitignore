@@ -52,3 +52,8 @@ build/
 # Supabase CLI local dev artifacts
 supabase/.temp/
 supabase/.branches/
+
+# Dev-only screenshot harness output (test/screenshots/*_test.dart): PNGs
+# for eyeballing a screen against its design/*.dc.html file, not test
+# fixtures or golden files.
+test/screenshots/output/

@@ -707,6 +707,52 @@ class CompletionRepository {
     return _points.totalAltitude(rows.map((c) => c.pointsAwarded));
   }
 
+  /// Each task's stone count for the Home/Trail cairn illustration: the
+  /// count of that task's live (non-tombstoned) completions, verified or
+  /// pending alike (a pending completion's stone is already placed - see
+  /// [pendingAltitude]'s doc comment - only its metres wait). Tasks with zero
+  /// completions are simply absent from the map; callers should treat a
+  /// missing key as zero.
+  Future<Map<String, int>> liveCompletionCountsByTask() async {
+    final rows = await (_db.select(_db.completions)
+          ..where((c) => c.deletedAt.isNull()))
+        .get();
+    final counts = <String, int>{};
+    for (final row in rows) {
+      counts[row.taskId] = (counts[row.taskId] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  /// Every live (non-tombstoned) completion recorded for local date [date],
+  /// across all tasks, regardless of verification status. Used to look up
+  /// which of today's occurrences already have a placed stone (and whether
+  /// it's verified or still pending) without a separate query per occurrence.
+  Future<List<Completion>> liveCompletionsForDate(LocalDate date) {
+    return (_db.select(_db.completions)
+          ..where((c) =>
+              c.occurrenceDate.equalsValue(date) & c.deletedAt.isNull()))
+        .get();
+  }
+
+  /// Count of live completions (any task, verified or pending) whose
+  /// occurrence_date falls in the Monday-Sunday ISO week containing
+  /// [anyDateInWeek] - the Home screen's "N stones this week" summary.
+  /// [LocalDate.weekday] is the ISO weekday (1=Monday..7=Sunday) this is
+  /// anchored on, so the week always starts on Monday regardless of the
+  /// locale's own first-day-of-week convention.
+  Future<int> completionsCountForWeekOf(LocalDate anyDateInWeek) async {
+    final weekStart = anyDateInWeek.addDays(-(anyDateInWeek.weekday - 1));
+    final weekEnd = weekStart.addDays(6);
+    final rows = await (_db.select(_db.completions)
+          ..where((c) =>
+              c.deletedAt.isNull() &
+              c.occurrenceDate.isBiggerOrEqualValue(weekStart.toIso()) &
+              c.occurrenceDate.isSmallerOrEqualValue(weekEnd.toIso())))
+        .get();
+    return rows.length;
+  }
+
   /// One-time backfill for rows created before the first successful
   /// anonymous sign-in (WO-4), covering both tables this repository owns:
   /// completions and verification_attempts. See

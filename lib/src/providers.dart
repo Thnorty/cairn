@@ -10,6 +10,7 @@ import 'models/proof_verdict.dart';
 import 'repo/completion_repository.dart';
 import 'repo/task_repository.dart';
 import 'services/auth_service.dart';
+import 'services/home_service.dart';
 import 'services/occurrence_generator.dart';
 import 'services/photo_capture.dart';
 import 'services/points_service.dart';
@@ -111,6 +112,32 @@ final completionRepositoryProvider = Provider<CompletionRepository>((ref) {
     policy: ref.watch(proofPolicyProvider),
     currentUserId: () => ref.read(authServiceProvider).currentUserId,
   );
+});
+
+/// Display name for the Home greeting and its avatar initial. No
+/// account/profile system exists yet (Phase 4 adds real display names via
+/// the optional email/password upgrade over the same anonymous user id);
+/// this resolves to the [AppLocalizations.fallbackDisplayName] stand-in
+/// until then. Kept as its own provider (rather than inlined in the Home
+/// widget) so Phase 4 only has to change this one place once a real name is
+/// available.
+final userDisplayNameProvider = Provider<String?>((ref) => null);
+
+final homeServiceProvider = Provider<HomeService>((ref) {
+  return HomeService(
+    ref.watch(databaseProvider),
+    ref.watch(taskRepositoryProvider),
+    ref.watch(completionRepositoryProvider),
+    ref.watch(occurrenceGeneratorProvider),
+    ref.watch(clockProvider),
+  );
+});
+
+/// Drives the Home screen. Recomputes automatically on every relevant
+/// database change (see [HomeService.watchToday]'s doc comment), so the
+/// screen never needs a manual refresh.
+final homeSnapshotProvider = StreamProvider<HomeSnapshot>((ref) {
+  return ref.watch(homeServiceProvider).watchToday();
 });
 
 // Photo-library metadata is tried first (its timestamp is harder to forge
