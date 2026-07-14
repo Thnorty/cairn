@@ -1,0 +1,18 @@
+# Configuration for `flutter gen-l10n` (run automatically before
+# `flutter build` / `flutter run` because pubspec.yaml sets
+# `flutter: generate: true`; can also be run directly as
+# `flutter gen-l10n`).
+#
+# output-dir sends the generated AppLocalizations class to lib/l10n/generated
+# so it's imported as a normal package file
+# (package:cairn/l10n/generated/app_localizations.dart) and lives alongside
+# other generated code checked into this repo (e.g. drift's database.g.dart),
+# rather than through the old `package:flutter_gen` synthetic package. As of
+# this Flutter version the synthetic-package option has been removed
+# entirely (non-synthetic, in-repo generation is the only mode), so it's not
+# set here.
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+output-dir: lib/l10n/generated

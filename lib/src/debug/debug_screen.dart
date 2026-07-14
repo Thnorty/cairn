@@ -18,6 +18,10 @@ import 'new_task_dialog.dart';
 /// layer. Lists today's occurrences per task, lets you mark them complete,
 /// and shows per-task streak plus total altitude/rank. Real screens are
 /// implemented from `design/` in later phases: this one deliberately isn't.
+///
+/// Exempt from localization: this is a developer tool, not product UI, so
+/// its strings are hardcoded English rather than sourced from
+/// `lib/l10n/app_en.arb`/`AppLocalizations`.
 class DebugScreen extends ConsumerStatefulWidget {
   const DebugScreen({super.key});
 

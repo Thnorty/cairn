@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'l10n/generated/app_localizations.dart';
 import 'src/config.dart';
 import 'src/debug/debug_screen.dart';
 import 'src/providers.dart';
@@ -48,7 +49,11 @@ class CairnApp extends ConsumerWidget {
     ref.watch(proofRetryTriggerProvider);
     ref.watch(authBootstrapProvider);
     return MaterialApp(
-      title: 'Cairn (Phase 1 debug)',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      // System locale only for now: no in-app language picker yet (that's a
+      // Profile-screen decision for a later phase).
       theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal)),
       home: const DebugScreen(),
     );

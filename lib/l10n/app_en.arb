@@ -1,0 +1,386 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Cairn",
+  "@appTitle": {
+    "description": "App brand wordmark / MaterialApp title. A proper noun, included for completeness even though it is not expected to need translation."
+  },
+
+  "navToday": "Today",
+  "@navToday": {
+    "description": "Bottom navigation tab label for the Today (home) screen."
+  },
+  "navTrail": "Trail",
+  "@navTrail": {
+    "description": "Bottom navigation tab label for the Trail screen."
+  },
+  "navStats": "Stats",
+  "@navStats": {
+    "description": "Bottom navigation tab label for the Stats screen."
+  },
+  "navYou": "You",
+  "@navYou": {
+    "description": "Bottom navigation tab label for the profile (You) screen."
+  },
+
+  "newHabitButton": "New habit",
+  "@newHabitButton": {
+    "description": "Button label (paired with a leading '+' icon glyph, not part of this string) that opens the new-habit flow. Appears in the Home app bar and the Empty Today state."
+  },
+
+  "goodMorningGreeting": "Good morning, {name}",
+  "@goodMorningGreeting": {
+    "description": "Home screen greeting header. Only the morning variant appears in the design files seeded so far; afternoon/evening variants are not invented here and should be added as sibling keys once their canonical copy is confirmed.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sam"
+      }
+    }
+  },
+
+  "todaySectionLabel": "TODAY",
+  "@todaySectionLabel": {
+    "description": "Small all-caps section label above the day's occurrence list on the Home screen. Stored already uppercased rather than uppercased at runtime: Dart's String.toUpperCase() maps lowercase 'i' to 'I', but Turkish requires the dotted 'İ', so calling .toUpperCase() on a translated string would render incorrectly in Turkish. Do not \"simplify\" this back to toUpperCase()."
+  },
+
+  "verificationHeaderLabel": "VERIFICATION",
+  "@verificationHeaderLabel": {
+    "description": "All-caps header label shown on every verification-flow screen (pending, result, failed, failed-no-retries). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+
+  "tasksDoneCount": "{done} of {total, plural, one{{total} done} other{{total} done}}",
+  "@tasksDoneCount": {
+    "description": "Home screen summary of how many of today's occurrences are complete, e.g. '2 of 4 done'. The total is expressed as an ICU plural so languages whose grammar needs to change around the count (unlike English, where both categories read the same) have somewhere to do it.",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "example": "2"
+      },
+      "total": {
+        "type": "num",
+        "example": "4"
+      }
+    }
+  },
+
+  "stonesThisWeek": "{count, plural, one{1 stone this week} other{{count} stones this week}}",
+  "@stonesThisWeek": {
+    "description": "Home screen weekly stone total, e.g. '17 stones this week'.",
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "example": "17"
+      }
+    }
+  },
+
+  "verifiedAt": "Verified · {time}",
+  "@verifiedAt": {
+    "description": "Verified-status chip on a completed task card, e.g. 'Verified · 7:14 AM'. time is pre-formatted by the caller with an intl DateFormat, not built by hand.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "7:14 AM"
+      }
+    }
+  },
+
+  "taskSummaryVerifiedNewStone": "Cairn {cairnNumber} · {stoneCount, plural, one{1 stone} other{{stoneCount} stones}} · new stone placed",
+  "@taskSummaryVerifiedNewStone": {
+    "description": "Per-task progress line on a completed/verified task card, e.g. 'Cairn 2 · 9 stones · new stone placed'.",
+    "placeholders": {
+      "cairnNumber": {
+        "type": "int",
+        "example": "2"
+      },
+      "stoneCount": {
+        "type": "num",
+        "example": "9"
+      }
+    }
+  },
+
+  "taskSummaryAwaitingVerification": "Cairn {cairnNumber} · {stoneCount, plural, one{1 stone} other{{stoneCount} stones}} · {metres} m when verified",
+  "@taskSummaryAwaitingVerification": {
+    "description": "Per-task progress line on a task card whose completion is still pending verification, e.g. 'Cairn 2 · 9 stones · 13 m when verified'. metres is pre-formatted by the caller (thousands separator) via NumberFormat.",
+    "placeholders": {
+      "cairnNumber": {
+        "type": "int",
+        "example": "2"
+      },
+      "stoneCount": {
+        "type": "num",
+        "example": "9"
+      },
+      "metres": {
+        "type": "String",
+        "example": "13"
+      }
+    }
+  },
+
+  "taskSummaryDueToday": "Due today · Cairn {cairnNumber} · {stoneCount, plural, one{1 stone} other{{stoneCount} stones}}",
+  "@taskSummaryDueToday": {
+    "description": "Per-task progress line on a not-yet-done task card, e.g. 'Due today · Cairn 1 · 4 stones'.",
+    "placeholders": {
+      "cairnNumber": {
+        "type": "int",
+        "example": "1"
+      },
+      "stoneCount": {
+        "type": "num",
+        "example": "4"
+      }
+    }
+  },
+
+  "taskSummaryScheduled": "Cairn {cairnNumber} · {stoneCount, plural, one{1 stone} other{{stoneCount} stones}}",
+  "@taskSummaryScheduled": {
+    "description": "Per-task progress line on a card for a task scheduled later today, e.g. 'Cairn 1 · 6 stones'.",
+    "placeholders": {
+      "cairnNumber": {
+        "type": "int",
+        "example": "1"
+      },
+      "stoneCount": {
+        "type": "num",
+        "example": "6"
+      }
+    }
+  },
+
+  "taskSummaryNoStonePlaced": "Cairn {cairnNumber} · {stoneCount, plural, one{1 stone} other{{stoneCount} stones}} · no stone placed",
+  "@taskSummaryNoStonePlaced": {
+    "description": "Per-task progress line shown after a rejected verification, e.g. 'Cairn 1 · 4 stones · no stone placed'.",
+    "placeholders": {
+      "cairnNumber": {
+        "type": "int",
+        "example": "1"
+      },
+      "stoneCount": {
+        "type": "num",
+        "example": "4"
+      }
+    }
+  },
+
+  "awaitingVerificationChip": "Awaiting verification",
+  "@awaitingVerificationChip": {
+    "description": "Status chip shown on a task card and on the proof photo while a completion is pending verification."
+  },
+
+  "proveItButton": "Prove it",
+  "@proveItButton": {
+    "description": "Button label on a due-now task card that opens the camera capture flow."
+  },
+
+  "scheduledAt": "Scheduled · {time}",
+  "@scheduledAt": {
+    "description": "Status pill on a task card scheduled later today, e.g. 'Scheduled · 8:00 PM'. time is pre-formatted by the caller via intl.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "8:00 PM"
+      }
+    }
+  },
+
+  "emptyTodayTitle": "Your first stone is waiting",
+  "@emptyTodayTitle": {
+    "description": "Title shown on the Home screen when the user has no tasks yet."
+  },
+
+  "emptyTodayBody": "Add a habit, prove it once, and watch your cairn begin to rise.",
+  "@emptyTodayBody": {
+    "description": "Body copy shown under emptyTodayTitle on the empty Home screen."
+  },
+
+  "verifyPendingTitle": "Saved. We'll verify it soon.",
+  "@verifyPendingTitle": {
+    "description": "Title on the verification screen when a completion was saved but verification hasn't run yet (e.g. offline)."
+  },
+
+  "taskNameAtTime": "{taskName} · {time}",
+  "@taskNameAtTime": {
+    "description": "Subtitle line shared by the verification pending/result/failed screens, e.g. 'Meditate 10 min · 7:16 AM'. time is pre-formatted by the caller via intl.",
+    "placeholders": {
+      "taskName": {
+        "type": "String",
+        "example": "Read 20 pages"
+      },
+      "time": {
+        "type": "String",
+        "example": "7:16 AM"
+      }
+    }
+  },
+
+  "offlineReassuranceMessage": "No connection right now. Your proof is saved on this device - we'll verify it automatically the moment you're back online.",
+  "@offlineReassuranceMessage": {
+    "description": "Reassurance banner on the verification-pending screen when offline. The leading sentence ('No connection right now.') renders bold in the design; that emphasis is a widget-level concern, not part of this string. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character)."
+  },
+
+  "streakSafeLabel": "Streak safe",
+  "@streakSafeLabel": {
+    "description": "Label in the streak-safe info chip on the verification-pending screen."
+  },
+  "streakSafeSubtext": "counts today",
+  "@streakSafeSubtext": {
+    "description": "Second line of the streak-safe info chip on the verification-pending screen."
+  },
+
+  "heldMetresLabel": "{metres} m held",
+  "@heldMetresLabel": {
+    "description": "First line of the held-metres info chip on the verification-pending screen, e.g. '13 m held'. metres is pre-formatted by the caller via NumberFormat.",
+    "placeholders": {
+      "metres": {
+        "type": "String",
+        "example": "13"
+      }
+    }
+  },
+  "landsOnVerifyLabel": "lands on verify",
+  "@landsOnVerifyLabel": {
+    "description": "Second line of the held-metres info chip on the verification-pending screen."
+  },
+
+  "backToTodayButton": "Back to Today",
+  "@backToTodayButton": {
+    "description": "Footer button on the verification-pending screen."
+  },
+
+  "verifiedTitle": "Verified",
+  "@verifiedTitle": {
+    "description": "Title on the verification-result screen when the proof was accepted."
+  },
+
+  "verifyReasonPositiveLead": "Looks good.",
+  "@verifyReasonPositiveLead": {
+    "description": "Static bold lead-in preceding the verifier's freeform reason text on an accepted verification-result screen. The reason text itself is server-generated (Gemini's explanation) and is not part of this string catalogue."
+  },
+
+  "doneButton": "Done",
+  "@doneButton": {
+    "description": "Footer button on the verification-result screen (accepted case)."
+  },
+
+  "couldntVerifyTitle": "Couldn't verify",
+  "@couldntVerifyTitle": {
+    "description": "Title on the verification-result screen when the proof was rejected (with or without retries remaining)."
+  },
+
+  "notVerifiedChip": "Not verified",
+  "@notVerifiedChip": {
+    "description": "Status chip on the proof photo on a rejected verification screen."
+  },
+
+  "retakePhotoButton": "Retake photo",
+  "@retakePhotoButton": {
+    "description": "Primary footer button on the verification-failed screen when retries remain."
+  },
+
+  "triesLeftToday": "{count, plural, one{1 try left today} other{{count} tries left today}}",
+  "@triesLeftToday": {
+    "description": "Caption under the retake-photo button showing remaining attempts for this task today.",
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "example": "2"
+      }
+    }
+  },
+
+  "cancelButton": "Cancel",
+  "@cancelButton": {
+    "description": "Secondary footer button that dismisses the verification-failed screen."
+  },
+
+  "allAttemptsUsedLead": "You've used all {maxAttempts} attempts for this task today.",
+  "@allAttemptsUsedLead": {
+    "description": "Bold lead-in sentence on the verification-failed screen once the per-task daily attempt cap is reached.",
+    "placeholders": {
+      "maxAttempts": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "allAttemptsUsedDetail": "The last photo looked like a screenshot rather than a live capture. Try again tomorrow with a photo of the page directly.",
+  "@allAttemptsUsedDetail": {
+    "description": "Detail sentence following allAttemptsUsedLead on the verification-failed (no retries) screen, as shown in the canonical design. This is captured verbatim from the design and may need to become dynamic per rejection reason once Phase 2b/3 wire up the real verifier."
+  },
+
+  "tryAgainTomorrowButton": "Try again tomorrow",
+  "@tryAgainTomorrowButton": {
+    "description": "Disabled footer button on the verification-failed screen once retries are exhausted for the day."
+  },
+
+  "attemptsResetMidnight": "Attempts reset at midnight",
+  "@attemptsResetMidnight": {
+    "description": "Caption under the disabled tryAgainTomorrowButton."
+  },
+
+  "dailyLimitTitle": "That's today's five",
+  "@dailyLimitTitle": {
+    "description": "Title on the daily-limit screen shown once the daily successful-proof cap is reached."
+  },
+
+  "dailyLimitBody": "You've used all {count, plural, one{1 free AI proof} other{{count} free AI proofs}} for today. This stone is ready - it'll settle onto your cairn as soon as your proofs reset.",
+  "@dailyLimitBody": {
+    "description": "Body copy on the daily-limit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character). Apostrophes are left as plain literal characters: this project's l10n.yaml does not set use-escaping, so gen_l10n treats ' as literal text even inside a plural construct rather than as ICU quoting syntax.",
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "example": "5"
+      }
+    }
+  },
+
+  "resetsAtMidnight": "Resets at midnight",
+  "@resetsAtMidnight": {
+    "description": "Caption pill on the daily-limit screen."
+  },
+
+  "goUnlimitedButton": "Go unlimited",
+  "@goUnlimitedButton": {
+    "description": "Primary footer button on the daily-limit screen (premium upsell)."
+  },
+
+  "maybeLaterButton": "Maybe later",
+  "@maybeLaterButton": {
+    "description": "Secondary footer button on the daily-limit screen."
+  },
+
+  "provingLabel": "PROVING",
+  "@provingLabel": {
+    "description": "All-caps label above the task name in the camera capture viewfinder overlay. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+
+  "galleryButton": "Gallery",
+  "@galleryButton": {
+    "description": "Camera capture screen control: opens the photo gallery picker instead of the live camera."
+  },
+
+  "flipCameraButton": "Flip",
+  "@flipCameraButton": {
+    "description": "Camera capture screen control: switches between front and rear camera."
+  },
+
+  "verifyingTitle": "Verifying…",
+  "@verifyingTitle": {
+    "description": "Title shown while a captured photo is being sent for verification."
+  },
+
+  "verifyingSubtitle": "Checking your proof for “{taskName}”",
+  "@verifyingSubtitle": {
+    "description": "Subtitle shown while a captured photo is being sent for verification.",
+    "placeholders": {
+      "taskName": {
+        "type": "String",
+        "example": "Read 20 pages"
+      }
+    }
+  }
+}
