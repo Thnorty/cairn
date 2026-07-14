@@ -92,22 +92,39 @@ flutter:
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
 
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
+  # Bundled offline: the design files specify Zilla Slab (headings/task
+  # titles) and Work Sans (everything else). Both are OFL-licensed, pulled
+  # from the google/fonts GitHub repo as static TTFs where available. This
+  # is an offline-first app, so these are bundled assets rather than
+  # google_fonts' runtime CDN fetch: text must render correctly with no
+  # network on first launch.
   #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+  # Work Sans: google/fonts ships this family only as a single variable
+  # font (`WorkSans[wght].ttf`, weight axis 100-900) now, not as separate
+  # static per-weight TTFs. Declaring the same variable-font asset three
+  # times below, once per weight, is Flutter's supported way to pin
+  # specific static instances out of a variable font: each `weight:` entry
+  # selects that instance from the font's weight axis at shaping time, no
+  # runtime interpolation or network access involved. The design also
+  # references Work Sans 450, which has no static instance in the family
+  # (its only defined instances are the standard 100/200/.../900 steps);
+  # every "450" usage in the designs is mapped to 500 throughout this app.
+  fonts:
+    - family: Zilla Slab
+      fonts:
+        - asset: assets/fonts/ZillaSlab-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/ZillaSlab-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/ZillaSlab-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/ZillaSlab-Bold.ttf
+          weight: 700
+    - family: Work Sans
+      fonts:
+        - asset: assets/fonts/WorkSans-Variable.ttf
+          weight: 400
+        - asset: assets/fonts/WorkSans-Variable.ttf
+          weight: 500
+        - asset: assets/fonts/WorkSans-Variable.ttf
+          weight: 600

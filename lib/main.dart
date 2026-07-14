@@ -4,8 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'l10n/generated/app_localizations.dart';
 import 'src/config.dart';
-import 'src/debug/debug_screen.dart';
 import 'src/providers.dart';
+import 'src/ui/shell/app_shell.dart';
+import 'src/ui/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,8 +55,8 @@ class CairnApp extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       // System locale only for now: no in-app language picker yet (that's a
       // Profile-screen decision for a later phase).
-      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal)),
-      home: const DebugScreen(),
+      theme: AppTheme.light,
+      home: const AppShell(),
     );
   }
 }
