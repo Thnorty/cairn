@@ -47,6 +47,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   bool _loading = true;
   List<_TaskRow> _rows = [];
   int _totalAltitude = 0;
+  int _pendingAltitude = 0;
   Rank? _rank;
   int _proofsUsedToday = 0;
   StreamSubscription<PendingRetryReport>? _retryReportsSubscription;
@@ -163,12 +164,14 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
     }
 
     final altitude = await completionRepo.totalAltitude();
+    final pendingAltitude = await completionRepo.pendingAltitude();
     final proofsToday = await completionRepo.successfulProofsToday();
 
     if (!mounted) return;
     setState(() {
       _rows = rows;
       _totalAltitude = altitude;
+      _pendingAltitude = pendingAltitude;
       _rank = points.rankFor(altitude);
       _proofsUsedToday = proofsToday;
       _loading = false;
@@ -345,6 +348,11 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                 : rank.metresToNext == null
                     ? '${rank.tier.label} (top rank)'
                     : '${rank.tier.label} (${rank.metresToNext} m to next)'),
+            if (_pendingAltitude > 0)
+              Text(
+                '+$_pendingAltitude m pending verification',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             const SizedBox(height: 4),
             Text('Proofs today: $_proofsUsedToday/$dailyCap'),
           ],

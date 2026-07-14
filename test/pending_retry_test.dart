@@ -57,6 +57,10 @@ void main() {
     );
     final pending = (result as CompletionPendingVerification).completion;
     expect(pending.verificationStatus, VerificationStatus.pending);
+    // Before the retry: the pending completion contributes nothing to
+    // altitude, only to pendingAltitude.
+    expect(await repo.totalAltitude(), 0);
+    expect(await repo.pendingAltitude(), pending.pointsAwarded);
 
     final retryVerifier =
         FakeProofVerifier((_) => const VerdictReceived(_passingVerdict));
@@ -81,6 +85,11 @@ void main() {
 
     final attempts = await db.select(db.verificationAttempts).get();
     expect(attempts, isEmpty); // a verified retry never writes an attempt
+
+    // After a verified retry: the same stored points now count toward
+    // altitude (not recomputed), and pendingAltitude has dropped to zero.
+    expect(await retryRepo.totalAltitude(), pending.pointsAwarded);
+    expect(await retryRepo.pendingAltitude(), 0);
   });
 
   test(
@@ -105,7 +114,11 @@ void main() {
       proof: _proof(),
     );
     final pending = (result as CompletionPendingVerification).completion;
-    expect(await repo.totalAltitude(), pending.pointsAwarded);
+    // NEW RULE: a pending completion's points_awarded is stored on the row
+    // (unchanged) but does not count toward altitude until it verifies, so
+    // a rejection can never make altitude (and therefore rank) go backwards.
+    expect(await repo.totalAltitude(), 0);
+    expect(await repo.pendingAltitude(), pending.pointsAwarded);
 
     final retryVerifier =
         FakeProofVerifier((_) => const VerdictReceived(_rejectingVerdict));
@@ -130,7 +143,11 @@ void main() {
     expect(attempts.single.occurrenceDate, d(2026, 7, 10));
     expect(attempts.single.slot, 1);
 
+    // Altitude was already 0 before the rejection (it never counted the
+    // pending row), so the rejection leaves it unchanged: this is the
+    // rank-never-decreases property.
     expect(await retryRepo.totalAltitude(), 0);
+    expect(await retryRepo.pendingAltitude(), 0);
   });
 
   test('VerifierUnavailable on retry leaves the completion pending', () async {

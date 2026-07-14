@@ -672,10 +672,37 @@ class CompletionRepository {
     ));
   }
 
-  /// Total altitude: sum of points_awarded over non-tombstoned completions.
+  /// Total altitude: sum of points_awarded over live (non-tombstoned)
+  /// completions that are *verified*. Altitude is a permanent cumulative
+  /// score, so a pending completion (its verdict not yet in) must not
+  /// inflate it and then deflate it again if the retry later rejects it:
+  /// that would make the displayed rank move backwards, which must never
+  /// happen. `points_awarded` is still computed and stored at insert time
+  /// exactly as before; it simply doesn't count here until the row's status
+  /// flips to verified. A rejected retry tombstones the row, which removes
+  /// metres that were never counted toward this total in the first place, so
+  /// altitude can only ever go up or stay flat, never down.
   Future<int> totalAltitude() async {
     final rows = await (_db.select(_db.completions)
-          ..where((c) => c.deletedAt.isNull()))
+          ..where((c) =>
+              c.deletedAt.isNull() &
+              c.verificationStatus.equalsValue(VerificationStatus.verified)))
+        .get();
+    return _points.totalAltitude(rows.map((c) => c.pointsAwarded));
+  }
+
+  /// Metres "not awarded yet": sum of points_awarded over live completions
+  /// still awaiting a verdict (`pending`). This is the counterpart to
+  /// [totalAltitude] for surfacing what a pending proof *would* add once
+  /// verified, without counting it yet. Drops to zero once every pending
+  /// completion resolves (either verified, where the same metres move into
+  /// [totalAltitude], or rejected, where the row is tombstoned and the
+  /// metres are simply gone).
+  Future<int> pendingAltitude() async {
+    final rows = await (_db.select(_db.completions)
+          ..where((c) =>
+              c.deletedAt.isNull() &
+              c.verificationStatus.equalsValue(VerificationStatus.pending)))
         .get();
     return _points.totalAltitude(rows.map((c) => c.pointsAwarded));
   }
