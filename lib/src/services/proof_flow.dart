@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../db/database.dart';
 import '../models/local_date.dart';
 import '../models/proof_verdict.dart';
@@ -20,13 +22,39 @@ class ProofFlowCancelled extends ProofFlowResult {
 /// any rejection.
 class ProofFlowCompleted extends ProofFlowResult {
   final CompleteOccurrenceResult result;
-  const ProofFlowCompleted(this.result);
+
+  /// The (compressed) photo bytes just captured/picked, so a caller can show
+  /// the photo immediately without reading it back from disk. This matters
+  /// most for a rejection: [CompletionRepository]'s photo-lifecycle rule
+  /// deletes a rejected proof's file right away (see this class's own doc
+  /// comment), so the in-flight bytes are the *only* way left to show the
+  /// user the photo that was just rejected. Null only when [result] came
+  /// from the precheck short-circuit, before any photo was ever captured.
+  final Uint8List? imageBytes;
+
+  const ProofFlowCompleted(this.result, [this.imageBytes]);
 }
 
 /// The single entry point Phase 3's UI calls to record a completion backed
-/// by a proof photo: capture, compress, persist, then hand off to
-/// [CompletionRepository.completeWithProof] for the guard chain and
-/// verification.
+/// by a proof photo. Two entry points share one compress/persist/verify
+/// core ([_compressSaveAndComplete]):
+///
+/// - [completeWithProof]: the original all-in-one path (precheck, capture via
+///   [PhotoCapture], then the core) - still used for the gallery path (via
+///   `image_picker`) and the Phase 1/2 debug screen.
+/// - [submitCapturedProof]: for a photo the UI already captured itself. The
+///   canonical `Cairn Camera Capture.dc.html` custom in-app camera (live
+///   preview, shutter, flip) is driven by `CameraSession`
+///   (`camera_session.dart`), a widget-owned resource `ProofFlowService` has
+///   no business managing - by the time this is called the shutter has
+///   already fired and a temp file already exists, so there is no capture
+///   step (or cancellation) left for this method to run.
+///
+/// Both entry points enforce the same guarantees: [CompletionRepository]
+/// stays the single enforcement point (its own guard chain, not this
+/// service, is what actually blocks a doomed attempt), and a photo's
+/// `takenAt` always comes from the [Clock] the caller used to build it, never
+/// `DateTime.now()` in this file.
 class ProofFlowService {
   final PhotoCapture _capture;
   final ImageCompressor _compressor;
@@ -68,6 +96,49 @@ class ProofFlowService {
     final captured = await _capture.capture(source);
     if (captured == null) return const ProofFlowCancelled();
 
+    final (result, bytes) = await _compressSaveAndComplete(
+      taskId: taskId,
+      occurrenceDate: occurrenceDate,
+      slot: slot,
+      captured: captured,
+    );
+    return ProofFlowCompleted(result, bytes);
+  }
+
+  /// Submits a photo the UI already captured itself (see this class's doc
+  /// comment for why). Compresses, persists, hands off to
+  /// [CompletionRepository.completeWithProof], then runs the same
+  /// photo-lifecycle cleanup [completeWithProof] does.
+  ///
+  /// Callers must run [CompletionRepository.precheckProof] (or
+  /// [CompletionRepository.attemptsUsedToday]/`successfulProofsToday`)
+  /// themselves *before* opening the camera - see `precheckProof`'s own doc
+  /// comment. This method does not repeat that check: by the time it's
+  /// called the shutter has already fired and the photo already exists, so
+  /// short-circuiting here would only ever throw away a photo the user just
+  /// took, never save them from taking it. [CompletionRepository]'s own guard
+  /// chain inside `completeWithProof` remains the actual enforcement point
+  /// either way.
+  Future<(CompleteOccurrenceResult, Uint8List)> submitCapturedProof({
+    required String taskId,
+    required LocalDate occurrenceDate,
+    int slot = 0,
+    required CapturedPhoto captured,
+  }) {
+    return _compressSaveAndComplete(
+      taskId: taskId,
+      occurrenceDate: occurrenceDate,
+      slot: slot,
+      captured: captured,
+    );
+  }
+
+  Future<(CompleteOccurrenceResult, Uint8List)> _compressSaveAndComplete({
+    required String taskId,
+    required LocalDate occurrenceDate,
+    required int slot,
+    required CapturedPhoto captured,
+  }) async {
     final compressed = await _compressor.compress(captured.tempPath);
     final savedPath = await _store.save(compressed);
 
@@ -94,6 +165,6 @@ class ProofFlowService {
       await _store.delete(savedPath);
     }
 
-    return ProofFlowCompleted(result);
+    return (result, compressed);
   }
 }

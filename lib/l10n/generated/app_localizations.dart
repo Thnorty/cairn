@@ -254,11 +254,17 @@ abstract class AppLocalizations {
   /// **'{taskName} · {time}'**
   String taskNameAtTime(String taskName, String time);
 
-  /// Reassurance banner on the verification-pending screen when offline. The leading sentence ('No connection right now.') renders bold in the design; that emphasis is a widget-level concern, not part of this string. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character).
+  /// Bold lead-in sentence of the reassurance banner on the verification-pending screen when offline. Split out from the rest of the sentence (see offlineReassuranceBody) so the widget can render just this part bold, matching the design's <strong> span, rather than bolding a hardcoded prefix of one combined string.
   ///
   /// In en, this message translates to:
-  /// **'No connection right now. Your proof is saved on this device - we\'ll verify it automatically the moment you\'re back online.'**
-  String get offlineReassuranceMessage;
+  /// **'No connection right now.'**
+  String get offlineReassuranceLead;
+
+  /// Regular-weight remainder of the reassurance banner on the verification-pending screen, following offlineReassuranceLead. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character).
+  ///
+  /// In en, this message translates to:
+  /// **'Your proof is saved on this device - we\'ll verify it automatically the moment you\'re back online.'**
+  String get offlineReassuranceBody;
 
   /// Label in the streak-safe info chip on the verification-pending screen.
   ///
@@ -421,6 +427,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Checking your proof for “{taskName}”'**
   String verifyingSubtitle(String taskName);
+
+  /// Reason banner text shown on the Verify Failed layout when a photo is rejected for being too old (its own capture timestamp fell outside the recency window), reused because there is no dedicated canonical design for this outcome (a noted design gap - see the phase-3 implementation report). Unlike a verifier rejection's reason, this is client-side policy copy, not server-generated text, and this rejection does not burn an attempt.
+  ///
+  /// In en, this message translates to:
+  /// **'This photo looks too old to count as fresh proof. Try capturing it again right now.'**
+  String get stalePhotoReason;
+
+  /// Shown on the Camera Capture screen in place of the live preview when the device camera can't be started (no hardware, permission denied, or the plugin is unavailable), so the gallery path stays reachable instead of dead-ending on a broken viewfinder. Not part of any canonical design (a noted design gap - see the phase-3 implementation report).
+  ///
+  /// In en, this message translates to:
+  /// **'Camera unavailable. Choose a photo from your gallery instead.'**
+  String get cameraUnavailableMessage;
 }
 
 class _AppLocalizationsDelegate

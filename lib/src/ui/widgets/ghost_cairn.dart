@@ -1,5 +1,49 @@
 import 'package:flutter/widgets.dart';
 
+/// A single dashed-outline "ghost" pebble stone: no fill, just a dashed
+/// stroke around a pebble-ish rounded-rect shape. Extracted from
+/// [GhostCairnStack] (which stacks four of these for the "no completions
+/// yet" illustration) so a *single* dashed stone can also mark "this is
+/// where a new stone would have gone" above an otherwise-real [CairnStack] -
+/// see the verification-failed screens' "no stone placed" cairn
+/// (`Cairn Verify Failed.dc.html`'s ghost outline sitting above its real
+/// stack). Approximates the source files' per-corner elliptical radii with a
+/// single uniform stadium-ish rounded rect (a deliberate simplification for
+/// a decorative placeholder illustration).
+class DashedGhostStone extends StatelessWidget {
+  const DashedGhostStone({
+    super.key,
+    required this.width,
+    required this.height,
+    this.rotationDeg = 0,
+    this.alpha = 0x80,
+    this.strokeWidth = 1.6,
+  });
+
+  final double width;
+  final double height;
+  final double rotationDeg;
+
+  /// Alpha byte (0-255) of the dashed stroke colour, matching the source
+  /// files' `rgba(120,108,88,x)` outlines at varying opacity per stone.
+  final int alpha;
+  final double strokeWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: rotationDeg * 3.1415926535 / 180,
+      child: CustomPaint(
+        size: Size(width, height),
+        painter: _DashedPebblePainter(
+          color: Color.fromARGB(alpha, 0x78, 0x6C, 0x58),
+          strokeWidth: strokeWidth,
+        ),
+      ),
+    );
+  }
+}
+
 /// The dashed-outline "waiting" cairn (4 stones, no fill): the "no stones
 /// yet" illustration from `Cairn Empty Today.dc.html`, reused wherever the
 /// app needs to represent a cairn with zero completions - the empty-today
@@ -12,11 +56,9 @@ import 'package:flutter/widgets.dart';
 ///
 /// A distinct one-off rendering from [CairnStack]'s solid gradient stones:
 /// this is the only place in the designs a *dashed* pebble outline appears,
-/// so it's kept as its own small widget rather than adding a rarely-used
-/// "ghost" mode to the shared stack component. Approximates the source
-/// file's per-corner elliptical radii with a single uniform stadium-ish
-/// rounded rect per stone (a deliberate simplification for a decorative
-/// placeholder illustration).
+/// so it's kept as its own small widget (built from [DashedGhostStone]
+/// stacked four times) rather than adding a rarely-used "ghost" mode to the
+/// shared stack component.
 class GhostCairnStack extends StatelessWidget {
   const GhostCairnStack({super.key, this.scale = 1.0});
 
@@ -40,15 +82,12 @@ class GhostCairnStack extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         for (final stone in _stones) ...[
-          Transform.rotate(
-            angle: stone.rotation * 3.1415926535 / 180,
-            child: CustomPaint(
-              size: Size(stone.width * scale, stone.height * scale),
-              painter: _DashedPebblePainter(
-                color: Color.fromARGB(stone.alpha, 0x78, 0x6C, 0x58),
-                strokeWidth: 1.6 * scale,
-              ),
-            ),
+          DashedGhostStone(
+            width: stone.width * scale,
+            height: stone.height * scale,
+            rotationDeg: stone.rotation,
+            alpha: stone.alpha,
+            strokeWidth: 1.6 * scale,
           ),
           SizedBox(height: 5 * scale),
         ],

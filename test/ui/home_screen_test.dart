@@ -8,10 +8,11 @@ import 'package:cairn/src/models/proof_verdict.dart';
 import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/completion_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
-import 'package:cairn/src/services/photo_capture.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
 import 'package:cairn/src/ui/home/home_occurrence_card.dart';
 import 'package:cairn/src/ui/home/home_screen.dart';
+import 'package:cairn/src/ui/proof/camera_capture_screen.dart';
+import 'package:cairn/src/ui/proof/daily_limit_screen.dart';
 import 'package:cairn/src/ui/widgets/buttons.dart';
 import 'package:cairn/src/ui/widgets/ghost_cairn.dart';
 import 'package:cairn/src/ui/widgets/status_chip.dart';
@@ -20,41 +21,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers.dart';
+import '../support/fake_camera_session.dart';
 
 /// Local wall-clock instant on this same process/timezone; see
 /// `home_service_test.dart`'s identical helper for why.
 int _localMillis(int y, int m, int d, int hh, int mm) =>
     DateTime(y, m, d, hh, mm).millisecondsSinceEpoch;
-
-class _FakePhotoCapture implements PhotoCapture {
-  final int? takenAtMillis;
-  _FakePhotoCapture({this.takenAtMillis});
-
-  @override
-  Future<CapturedPhoto?> capture(ProofSource source) async {
-    return CapturedPhoto(
-      tempPath: '/fake/path.jpg',
-      source: source,
-      takenAtMillis: takenAtMillis,
-    );
-  }
-}
-
-class _FakeImageCompressor implements ImageCompressor {
-  @override
-  Future<Uint8List> compress(String path) async => Uint8List.fromList([1, 2, 3]);
-}
-
-class _FakeProofPhotoStore implements ProofPhotoStore {
-  @override
-  Future<String> save(Uint8List bytes) async => '/fake/saved.jpg';
-
-  @override
-  Future<Uint8List?> load(String path) async => Uint8List.fromList([1, 2, 3]);
-
-  @override
-  Future<void> delete(String path) async {}
-}
 
 /// Wraps [testWidgets] with a fix-up for a drift + flutter_test
 /// interaction: cancelling a `.watch()` stream subscription - which happens
@@ -359,9 +331,16 @@ void main() {
   });
 
   group('Prove it wiring', () {
+    // As of this run, Home no longer completes the proof itself: tapping
+    // "Prove it" runs CompletionRepository.precheckProof first, so a doomed
+    // attempt never opens the camera. A clear precheck opens
+    // CameraCaptureScreen, which owns capture/verify/routing from there on
+    // (see camera_capture_screen_test.dart and proof_outcome_routing_test.dart
+    // for that state machine); a cap rejection routes straight to its own
+    // outcome screen without ever touching the camera.
     testHomeWidgets(
-        'tapping Prove it calls the proof flow and flips the card to verified',
-        (tester) async {
+        'tapping Prove it on a clear occurrence opens the Camera Capture '
+        'screen, not the camera directly', (tester) async {
       final clock = FixedClock(d(2026, 7, 10));
       final db = inMemoryDatabase();
       addTearDown(db.close);
@@ -378,12 +357,12 @@ void main() {
           overrides: [
             databaseProvider.overrideWithValue(db),
             clockProvider.overrideWithValue(clock),
-            debugVerifierModeProvider.overrideWith((ref) => DebugVerifierMode.pass),
-            photoCaptureProvider.overrideWithValue(_FakePhotoCapture(
-              takenAtMillis: clock.nowEpochMillis(),
-            )),
-            imageCompressorProvider.overrideWithValue(_FakeImageCompressor()),
-            proofPhotoStoreProvider.overrideWithValue(_FakeProofPhotoStore()),
+            // A fake, not the real plugin-backed session: Home's own test
+            // only cares that navigation happened, not camera behaviour
+            // (see camera_capture_screen_test.dart for that), and no test
+            // in this suite should ever touch the real `camera` plugin's
+            // platform channel.
+            cameraSessionFactoryProvider.overrideWithValue(() => FakeCameraSession()),
           ],
           child: wrap(const HomeScreen()),
         ),
@@ -395,10 +374,65 @@ void main() {
       await tester.tap(find.text('Prove it'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Prove it'), findsNothing);
-      expect(find.textContaining('Verified ·'), findsOneWidget);
-      expect(find.text('Verified'), findsOneWidget); // snackbar placeholder
+      expect(find.byType(CameraCaptureScreen), findsOneWidget);
+      expect(find.byType(DailyLimitScreen), findsNothing);
+      // The task pill on the camera screen names the same task.
+      expect(find.text('Push-ups'), findsOneWidget);
       expect(task.title, 'Push-ups'); // sanity: same task throughout
+    });
+
+    testHomeWidgets(
+        'tapping Prove it once the daily cap is already reached opens the '
+        'Daily Limit screen and never opens the camera', (tester) async {
+      final clock = FixedClock(d(2026, 7, 10));
+      final db = inMemoryDatabase();
+      addTearDown(db.close);
+
+      final taskRepo = TaskRepository(db, clock);
+      final completionRepo =
+          CompletionRepository(db, clock, verifier: FakeProofVerifier());
+
+      // Created (and so ordered by cairn number) first, so its card renders
+      // at the top of the list and its "Prove it" button is on screen
+      // without needing to scroll a lazy ListView past the five filler
+      // cards below it.
+      await taskRepo.createTask(
+        title: 'Push-ups',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      // Burn the daily cap (5) across five other tasks.
+      for (var i = 0; i < 5; i++) {
+        final filler = await taskRepo.createTask(
+          title: 'Filler $i',
+          recurrenceType: RecurrenceType.daily,
+          startDate: d(2026, 7, 1),
+        );
+        final r = await completionRepo.completeWithProof(
+          taskId: filler.id,
+          occurrenceDate: d(2026, 7, 10),
+          proof: ProofData(imageBytes: Uint8List.fromList([1, 2, 3])),
+        );
+        expect(r, isA<CompletionRecorded>());
+      }
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            clockProvider.overrideWithValue(clock),
+          ],
+          child: wrap(const HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Prove it'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(DailyLimitScreen), findsOneWidget);
+      expect(find.byType(CameraCaptureScreen), findsNothing);
     });
   });
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart'
-    show Colors, Scaffold, ScaffoldMessenger, SnackBar, Text;
+    show Colors, MaterialPageRoute, Scaffold, ScaffoldMessenger, SnackBar, Text;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,10 +8,10 @@ import '../../l10n/date_number_formatting.dart';
 import '../../providers.dart';
 import '../../repo/completion_repository.dart';
 import '../../services/home_service.dart';
-import '../../services/proof_flow.dart';
-import '../../db/database.dart' show ProofSource;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../proof/camera_capture_screen.dart';
+import '../proof/proof_outcome_routing.dart';
 import '../widgets/buttons.dart';
 import '../widgets/plus_glyph.dart';
 import '../widgets/wordmark_glyph.dart';
@@ -45,6 +45,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// occurrence while the first attempt is still running.
   final Set<String> _provingKeys = {};
 
+  /// Tapping "Prove it" always runs [CompletionRepository.precheckProof]
+  /// *first*, so a doomed attempt (daily cap, attempts exhausted, or any of
+  /// the other guard-chain rejections) never opens the camera - see this
+  /// run's spec ("the state machine") and `proof_outcome_routing.dart`'s doc
+  /// comment. Only a clear precheck (`null`) opens [CameraCaptureScreen];
+  /// everything from there on (capture, verify, and routing to the outcome
+  /// screens) happens on that screen, not here.
   Future<void> _handleProveIt(HomeOccurrenceCard card) async {
     final key = '${card.taskId}#${card.slot}';
     if (_provingKeys.contains(key)) return;
@@ -52,47 +59,66 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     try {
       final clock = ref.read(clockProvider);
-      final proofFlow = ref.read(proofFlowServiceProvider);
-      final flowResult = await proofFlow.completeWithProof(
+      final today = clock.today();
+      final completionRepo = ref.read(completionRepositoryProvider);
+      final rejection = await completionRepo.precheckProof(
         taskId: card.taskId,
-        occurrenceDate: clock.today(),
+        occurrenceDate: today,
         slot: card.slot,
-        source: ProofSource.camera,
       );
       if (!mounted) return;
-      switch (flowResult) {
-        case ProofFlowCancelled():
-          break; // user backed out of the camera; nothing to report
-        case ProofFlowCompleted(result: final result):
-          _showProofOutcome(result);
+
+      if (rejection == null) {
+        await Navigator.of(context).push(MaterialPageRoute<void>(
+          builder: (_) => CameraCaptureScreen(
+            taskId: card.taskId,
+            taskTitle: card.taskTitle,
+            cairnNumber: card.cairnNumber,
+            occurrenceDate: today,
+            slot: card.slot,
+          ),
+        ));
+        return;
+      }
+
+      // Daily-cap/attempts-exhausted precheck rejections route to the exact
+      // same outcome screens a post-submit rejection would (shared with
+      // CameraCaptureScreen via routeToProofOutcome, so both paths agree);
+      // the remaining rejection types have no dedicated screen by design
+      // (they're not reachable from a correctly-behaving UI) and fall back
+      // to a minimal snackbar below.
+      final handled = await routeToProofOutcome(
+        context,
+        ref,
+        result: rejection,
+        taskId: card.taskId,
+        taskTitle: card.taskTitle,
+        cairnNumber: card.cairnNumber,
+        occurrenceDate: today,
+        slot: card.slot,
+      );
+      if (!handled && mounted) {
+        _showUnreachableRejection(rejection);
       }
     } finally {
       if (mounted) setState(() => _provingKeys.remove(key));
     }
   }
 
-  /// Minimal placeholder feedback (a snackbar), by deliberate scope
-  /// decision: the real outcome screens (`Cairn Verify Result.dc.html`,
-  /// `Cairn Verify Pending.dc.html`, `Cairn Verify Failed*.dc.html`) are a
-  /// later run's work, not invented here. This mirrors the Phase 1 debug
-  /// screen's own outcome messages, which is an accepted, explicitly-scoped
-  /// exception to the "AppLocalizations only" copy rule for this one
-  /// transitional surface - it disappears once those screens land.
-  void _showProofOutcome(CompleteOccurrenceResult result) {
+  /// Minimal fallback for the handful of rejections
+  /// [routeToProofOutcome] deliberately builds no screen for (back-fill,
+  /// not-scheduled, task-not-found, already-completed): none of these are
+  /// reachable from a correctly-behaving UI (precheckProof already blocked
+  /// the tap that could cause them), so this stays a plain, untranslated
+  /// safety net rather than polished product copy - the same scope decision
+  /// the Phase 1 debug screen already makes for these exact rejection types.
+  void _showUnreachableRejection(CompleteOccurrenceResult result) {
     final message = switch (result) {
-      CompletionRecorded() => 'Verified',
-      CompletionPendingVerification() =>
-        'Saved - we\'ll verify it soon (offline or verifier unavailable)',
-      CompletionRejectedByVerifier(:final verdict, :final attemptsRemaining) =>
-        'Not verified: ${verdict.reason} ($attemptsRemaining attempt(s) left today)',
-      CompletionRejectedStalePhoto() => 'That photo looked too old - try a fresh one',
-      CompletionRejectedAttemptsExhausted() =>
-        'No attempts left for this task today',
-      CompletionRejectedDailyCapReached() => 'You have used today\'s proofs',
       CompletionRejectedBackfill() => 'Cannot complete a past date',
       CompletionRejectedNotScheduled() => 'Not scheduled for this slot today',
       CompletionRejectedTaskNotFound() => 'Task not found',
       CompletionRejectedAlreadyCompleted() => 'Already completed',
+      _ => 'Something went wrong',
     };
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),

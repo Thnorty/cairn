@@ -156,8 +156,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get offlineReassuranceMessage =>
-      'No connection right now. Your proof is saved on this device - we\'ll verify it automatically the moment you\'re back online.';
+  String get offlineReassuranceLead => 'No connection right now.';
+
+  @override
+  String get offlineReassuranceBody =>
+      'Your proof is saved on this device - we\'ll verify it automatically the moment you\'re back online.';
 
   @override
   String get streakSafeLabel => 'Streak safe';
@@ -262,4 +265,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String verifyingSubtitle(String taskName) {
     return 'Checking your proof for “$taskName”';
   }
+
+  @override
+  String get stalePhotoReason =>
+      'This photo looks too old to count as fresh proof. Try capturing it again right now.';
+
+  @override
+  String get cameraUnavailableMessage =>
+      'Camera unavailable. Choose a photo from your gallery instead.';
 }

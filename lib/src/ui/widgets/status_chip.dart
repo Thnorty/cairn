@@ -96,7 +96,7 @@ class StatusChip extends StatelessWidget {
         return _FilledChip(
           background: AppColors.notVerifiedChipBg,
           iconBackground: AppColors.richCream,
-          icon: const _CloseGlyph(color: AppColors.clayHeading),
+          icon: const CloseGlyph(color: AppColors.clayHeading),
           label: label,
           textColor: AppColors.richCream,
           iconSize: 15,
@@ -293,16 +293,20 @@ class _ClockGlyphPainter extends CustomPainter {
 }
 
 /// Minimal close/X glyph, matching the not-verified chip SVG
-/// (`M6 6l12 12M18 6L6 18`).
-class _CloseGlyph extends StatelessWidget {
-  const _CloseGlyph({required this.color});
+/// (`M6 6l12 12M18 6L6 18`). Public (not just this file's own chip icon) so
+/// the verification-flow screens' header close button
+/// (`verification_chrome.dart`) can reuse the same glyph at a larger size
+/// rather than a near-duplicate painter.
+class CloseGlyph extends StatelessWidget {
+  const CloseGlyph({super.key, required this.color, this.size = 9});
 
   final Color color;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: const Size(9, 9),
+      size: Size(size, size),
       painter: _CloseGlyphPainter(color: color),
     );
   }

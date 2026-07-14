@@ -144,6 +144,15 @@ class CairnStack extends StatelessWidget {
   static double _topHeightFor(int n) => _envelope(n, _topHeightAnchors);
   static double _bottomHeightFor(int n) => _envelope(n, _bottomHeightAnchors);
 
+  /// Public accessors onto the same top-of-stack width/height envelope
+  /// [_layout] uses for stone 0, so a caller drawing a *ghost* stone next to
+  /// a real stack (the verification-failed screens' "no stone placed" cairn:
+  /// a dashed [DashedGhostStone] sized to match the stack it sits above) can
+  /// size it consistently instead of re-deriving or hardcoding its own
+  /// numbers.
+  static double topWidthFor(int stoneCount) => _topWidthFor(stoneCount);
+  static double topHeightFor(int stoneCount) => _topHeightFor(stoneCount);
+
   @override
   Widget build(BuildContext context) {
     final stones = _layout();

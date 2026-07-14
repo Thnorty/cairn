@@ -103,6 +103,7 @@ class ScreenBackground extends StatelessWidget {
     ],
     this.showContour = true,
     this.contourOrigin = const Alignment(0.68, -0.92),
+    this.contourRingColor = const Color(0x0D463C2C),
   });
 
   final Widget child;
@@ -117,6 +118,13 @@ class ScreenBackground extends StatelessWidget {
 
   /// Passed through to [TopographicContourPainter.origin].
   final Alignment contourOrigin;
+
+  /// Passed through to [TopographicContourPainter.ringColor]. Each design
+  /// file tints its contour rings to match that screen's own wash (e.g. a
+  /// faint green cast on `Cairn Verify Result.dc.html`, a faint terracotta
+  /// cast on the failed-verification screens) rather than reusing Home's
+  /// neutral warm-ink tint everywhere.
+  final Color contourRingColor;
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +148,10 @@ class ScreenBackground extends StatelessWidget {
               child: Opacity(
                 opacity: 0.5,
                 child: CustomPaint(
-                  painter: TopographicContourPainter(origin: contourOrigin),
+                  painter: TopographicContourPainter(
+                    origin: contourOrigin,
+                    ringColor: contourRingColor,
+                  ),
                 ),
               ),
             ),

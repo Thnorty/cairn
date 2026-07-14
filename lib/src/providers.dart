@@ -10,6 +10,7 @@ import 'models/proof_verdict.dart';
 import 'repo/completion_repository.dart';
 import 'repo/task_repository.dart';
 import 'services/auth_service.dart';
+import 'services/camera_session.dart';
 import 'services/home_service.dart';
 import 'services/occurrence_generator.dart';
 import 'services/photo_capture.dart';
@@ -173,6 +174,20 @@ final proofFlowServiceProvider = Provider<ProofFlowService>((ref) {
     completionRepository: ref.watch(completionRepositoryProvider),
   );
 });
+
+/// Factory for a fresh [CameraSession] per `CameraCaptureScreen` visit,
+/// rather than a single shared provider instance: a live camera resource is
+/// strictly scoped to that screen's own lifetime (acquired in its
+/// `initState`, released in its `dispose`), so a Riverpod singleton would
+/// either leak the camera hardware handle after the screen closes or force
+/// every later visit to reuse an already-disposed controller. A widget test
+/// overrides this with a factory returning a `FakeCameraSession`, so no
+/// widget test ever touches the real plugin's platform channel.
+typedef CameraSessionFactory = CameraSession Function();
+
+final cameraSessionFactoryProvider = Provider<CameraSessionFactory>(
+  (ref) => PluginCameraSession.new,
+);
 
 final proofRetryServiceProvider = Provider<ProofRetryService>((ref) {
   final service = ProofRetryService(

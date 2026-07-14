@@ -1,6 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- photo_manager gallery access on Android 13+ (API 33+). -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <!-- Cairn Camera Capture.dc.html's custom in-app camera (camera package). -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- required="false": a device/emulator with no camera hardware must
+         still be able to install the app, since the gallery path is always
+         available as a fallback for every task (see CameraCaptureScreen's
+         graceful degradation when CameraSession.initialize() fails). -->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
         android:label="cairn"
         android:name="${applicationName}"
