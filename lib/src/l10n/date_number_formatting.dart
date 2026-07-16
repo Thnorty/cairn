@@ -43,6 +43,52 @@ String formatWeekdayMonthDayHeader(LocalDate date, Locale locale) {
   return localeAwareToUpperCase('$weekday · $monthDay', locale);
 }
 
+/// Narrow single-letter weekday symbol for [isoWeekday] (1=Mon..7=Sun),
+/// e.g. "S" for Sunday in `en`. Used by the New Habit screen's day-of-week
+/// picker circles (`Cairn New Habit.dc.html`'s "S M T W T F S" row and
+/// `Cairn New Habit - Monthly 3rd Weekday.dc.html`'s "M T W T F S S" row).
+///
+/// `DateFormat.dateSymbols.NARROWWEEKDAYS` is indexed Sunday-first (`[0]` =
+/// Sunday .. `[6]` = Saturday) regardless of locale - the same convention
+/// `intl` uses internally for its own weekday lookups (see its
+/// `symbols.STANDALONENARROWWEEKDAYS[date.weekday % 7]` usage), which is
+/// why `isoWeekday % 7` (not `isoWeekday - 1`) is the correct index here:
+/// Dart's ISO weekday numbering (1=Mon..7=Sun) puts Sunday at 7, and
+/// `7 % 7 == 0` lines up with NARROWWEEKDAYS' own Sunday-first index 0.
+String narrowWeekdayLabel(int isoWeekday, Locale locale) {
+  final symbols = DateFormat(null, locale.toLanguageTag()).dateSymbols;
+  return symbols.NARROWWEEKDAYS[isoWeekday % 7];
+}
+
+/// Full weekday name for [isoWeekday] (1=Mon..7=Sun), e.g. "Friday" for
+/// `en`. Used by the New Habit screen's monthly nth-weekday mode toggle
+/// label ("On the 3rd Friday").
+///
+/// January 1st 2024 is a Monday, so `DateTime.utc(2024, 1, isoWeekday)` for
+/// `isoWeekday` 1..7 lands on Monday..Sunday respectively - purely a way to
+/// hand intl a real `DateTime` whose weekday matches [isoWeekday] for name
+/// lookup, the same trick [formatWeekdayMonthDayHeader] uses below, not a
+/// calendar computation (LocalDate is not involved because there is no
+/// specific calendar date here, only an abstract weekday number).
+String weekdayFullName(int isoWeekday, Locale locale) {
+  final dt = DateTime.utc(2024, 1, isoWeekday);
+  return DateFormat.EEEE(locale.toLanguageTag()).format(dt);
+}
+
+/// Formats [date] as an abbreviated "weekday, month day" (e.g. "Sat, Jul
+/// 19" for `en`), used by the New Habit screen's Once date-picker row
+/// (`Cairn New Habit - Once.dc.html`). Distinct from
+/// [formatWeekdayMonthDayHeader] (Home's full-weekday, uppercased, `·`-
+/// separated header): this one is mixed-case with a comma separator and an
+/// abbreviated weekday, matching that screen's own copy exactly.
+String formatShortWeekdayMonthDay(LocalDate date, Locale locale) {
+  final localeTag = locale.toLanguageTag();
+  final dt = DateTime(date.year, date.month, date.day);
+  final weekday = DateFormat.E(localeTag).format(dt);
+  final monthDay = DateFormat.MMMd(localeTag).format(dt);
+  return '$weekday, $monthDay';
+}
+
 /// Formats a short time-of-day (e.g. "7:14 AM" for `en`) for the `time`
 /// placeholders used throughout the verification-flow ARB messages
 /// (`verifiedAt`, `scheduledAt`, `taskNameAtTime`, ...). Callers pass the

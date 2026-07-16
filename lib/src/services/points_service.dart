@@ -28,6 +28,14 @@ class Rank {
     return next.thresholdMetres - metres;
   }
 
+  /// The tier immediately after [tier] in [RankTier.values] order, or null
+  /// at Summit (the top tier). Public alongside [metresToNext] (which uses
+  /// the same lookup internally) so a caller that needs the next tier's own
+  /// label/threshold - not just the metres gap - doesn't have to re-derive
+  /// `RankTier.values.indexOf(tier) + 1` itself (the Profile screen's rank
+  /// hero and rank ladder both need this).
+  RankTier? get nextTier => _nextTier();
+
   RankTier? _nextTier() {
     final tiers = RankTier.values;
     final i = tiers.indexOf(tier);

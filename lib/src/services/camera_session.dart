@@ -1,4 +1,5 @@
 import 'package:camera/camera.dart';
+import 'package:flutter/services.dart' show DeviceOrientation;
 import 'package:flutter/widgets.dart';
 
 /// Abstraction over a live, custom in-app camera capture session.
@@ -29,6 +30,20 @@ abstract class CameraSession {
   /// returned true; rebuilding after [switchCamera] reflects the
   /// newly-selected camera.
   Widget buildPreview();
+
+  /// The live preview's aspect ratio (width / height) as it should be
+  /// *displayed* on screen - already adjusted for orientation, not the raw
+  /// value a camera controller reports (which is measured in the sensor's
+  /// native landscape orientation). 1 (square) before [initialize] has
+  /// succeeded. Callers use this to size the preview so it fills the
+  /// viewfinder by center-cropping (`BoxFit.cover`) rather than stretching -
+  /// see `CameraCaptureScreen`'s `_CoverCameraPreview`, which exists because
+  /// a plain `CameraPreview(controller)` dropped into a
+  /// `Stack(fit: StackFit.expand)` gets *tight* constraints from that Stack,
+  /// and a tight-constrained `AspectRatio` (which is exactly what
+  /// `package:camera`'s own `CameraPreview` wraps itself in) can't honour
+  /// its own ratio and just stretches to fill instead.
+  double get previewAspectRatio;
 
   /// Whether more than one camera is available to switch between (e.g. both
   /// a front and a rear camera). [switchCamera] is a no-op when this is
@@ -68,7 +83,27 @@ class PluginCameraSession implements CameraSession {
     }
   }
 
+  /// Starts a controller for `_cameras[index]`, disposing whichever
+  /// controller is currently active *first*.
+  ///
+  /// Real-device regression fix: this used to initialize the *new*
+  /// controller before disposing the old one (so both briefly held the
+  /// camera hardware at once). Most phones can't open two `CameraDescription`
+  /// devices simultaneously, so the new controller's `initialize()` threw,
+  /// the `catch` swallowed it, and `switchCamera` silently returned false -
+  /// the flip control looked completely dead on a real device even though
+  /// every piece of the plumbing (`hasMultipleCameras`, the index cycling,
+  /// the widget wiring) was already correct. Disposing first frees the
+  /// hardware before the new controller ever touches it. If the new
+  /// controller then fails anyway, this falls back to re-starting the
+  /// previous camera so the screen doesn't lose its preview entirely over a
+  /// single failed flip.
   Future<bool> _startController(int index) async {
+    final previousDescription =
+        _controller == null ? null : _cameras[_selectedIndex];
+    await _controller?.dispose();
+    _controller = null;
+
     try {
       final controller = CameraController(
         _cameras[index],
@@ -76,12 +111,27 @@ class PluginCameraSession implements CameraSession {
         enableAudio: false,
       );
       await controller.initialize();
-      await _controller?.dispose();
       _controller = controller;
       _selectedIndex = index;
       return true;
     } catch (_) {
-      return false;
+      if (previousDescription == null) return false;
+      // Best-effort fallback: try to get the previous camera back rather
+      // than leaving the screen with no preview at all. If this also
+      // fails, `_controller` stays null and `buildPreview` degrades to an
+      // empty box.
+      try {
+        final fallback = CameraController(
+          previousDescription,
+          ResolutionPreset.high,
+          enableAudio: false,
+        );
+        await fallback.initialize();
+        _controller = fallback;
+        return false;
+      } catch (_) {
+        return false;
+      }
     }
   }
 
@@ -92,6 +142,23 @@ class PluginCameraSession implements CameraSession {
       return const SizedBox.shrink();
     }
     return CameraPreview(controller);
+  }
+
+  @override
+  double get previewAspectRatio {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return 1;
+    final raw = controller.value.aspectRatio;
+    if (raw <= 0) return 1;
+    // Mirrors `CameraPreview`'s own `_isLandscape()` check (see
+    // package:camera's camera_preview.dart): `CameraController.value
+    // .aspectRatio` is measured in the sensor's native landscape
+    // orientation, so it needs inverting for the common portrait case.
+    final orientation =
+        controller.value.lockedCaptureOrientation ?? controller.value.deviceOrientation;
+    final isLandscape = orientation == DeviceOrientation.landscapeLeft ||
+        orientation == DeviceOrientation.landscapeRight;
+    return isLandscape ? raw : 1 / raw;
   }
 
   @override

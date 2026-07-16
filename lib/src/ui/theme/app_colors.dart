@@ -234,4 +234,134 @@ abstract final class AppColors {
   /// rgba(60,50,35, x) - the warm umber used for every card/photo drop
   /// shadow layer in the designs; only the alpha differs per layer.
   static const Color umberShadowBase = Color(0xFF3C3223);
+
+  // ---- New Habit screen ---------------------------------------------------
+
+  /// `#f0ece1` - text on the selected (dark) recurrence-type chip.
+  static const Color darkChipText = Color(0xFFF0ECE1);
+
+  /// `#f4f0e6` - text on a selected sage day-circle (the weekly day
+  /// picker, the monthly day-of-month grid, and the monthly nth-weekday
+  /// mode's weekday row all share this one selected-circle treatment).
+  static const Color sageChipText = Color(0xFFF4F0E6);
+
+  /// 165deg `#f2ede2 -> #e5ddcc` - inactive recurrence-type chip fill.
+  static const Color chipInactiveLight = Color(0xFFF2EDE2);
+  static const Color chipInactiveDark = Color(0xFFE5DDCC);
+
+  /// 155deg `#f3eee3 -> #e2dac9` - unselected day-circle fill, reused by
+  /// the same three controls as [sageChipText].
+  static const Color circleInactiveLight = Color(0xFFF3EEE3);
+  static const Color circleInactiveDark = Color(0xFFE2DAC9);
+
+  /// rgba(255,255,255,.5) - the unselected day-circle/chip border, shared
+  /// by the weekly day picker, the monthly day-of-month grid, the monthly
+  /// nth-weekday mode's weekday row, and its "Which week" ordinal chips.
+  static const Color circleBorder = Color(0x80FFFFFF);
+
+  /// rgba(122,141,96,.1) - the sage-tinted panel background wrapping each
+  /// recurrence type's extra controls (the weekly day picker, the monthly
+  /// mode panel, the once date panel).
+  static const Color sagePanelBg = Color(0x1A7A8D60);
+
+  /// `#5f6b4c` - sage-toned panel label text ("On these days", "Day of
+  /// the month", "Which week", "Which day", "On this date").
+  static const Color sagePanelLabelText = Color(0xFF5F6B4C);
+
+  /// rgba(120,108,88,.12) - the monthly-mode pill-toggle track background.
+  static const Color pillToggleTrackBg = Color(0x1F786C58);
+
+  /// 155deg `#f5f1e7 -> #e8e0d0` - the active segment of the monthly-mode
+  /// pill toggle.
+  static const Color pillToggleActiveLight = Color(0xFFF5F1E7);
+  static const Color pillToggleActiveDark = Color(0xFFE8E0D0);
+
+  /// rgba(120,108,88,.16) - the small "+" icon-circle background on
+  /// "+ Add a time".
+  static const Color addTimeIconBg = Color(0x29786C58);
+
+  // ---- Profile screen -----------------------------------------------------
+
+  /// `#f0ece1` - the rank hero's primary text colour (inherited by its tier
+  /// title/"m gained" line's container) and its current-tier ladder-icon
+  /// inner dot fill.
+  static const Color heroInk = Color(0xFFF0ECE1);
+
+  /// `#f2ede2` - the rank hero's mountain-badge icon stroke: a distinct,
+  /// near-white cream from [heroInk], verbatim from the source file's own
+  /// two close-but-different creams (not a typo/duplicate).
+  static const Color heroMountainStroke = Color(0xFFF2EDE2);
+
+  /// `#8a97b0` / `#5f6d88` - the rank hero's circular mountain-badge
+  /// gradient (155deg), distinct from the account-status row's avatar
+  /// gradient below.
+  static const Color heroBadgeLight = Color(0xFF8A97B0);
+  static const Color heroBadgeDark = Color(0xFF5F6D88);
+
+  /// `#c2cdae` - the rank hero's "CURRENT RANK" label and the progress
+  /// row's bold "N m to Next" text; also the progress-bar fill's gradient
+  /// end (see [heroProgressFillStart]).
+  static const Color heroLabelSage = Color(0xFFC2CDAE);
+
+  /// `#cdc9ba` - the rank hero's "N m gained" line and the progress row's
+  /// plain current-tier text.
+  static const Color heroSubtext = Color(0xFFCDC9BA);
+
+  /// rgba(240,236,225,.5) - the rank hero's withheld-metres line ("+N m
+  /// awaiting verification") text/icon, shown only while
+  /// `pendingAltitude() > 0`.
+  static const Color heroPendingText = Color(0x80F0ECE1);
+
+  /// rgba(255,255,255,.14) - the rank hero's progress-bar track background.
+  static const Color heroProgressTrackBg = Color(0x24FFFFFF);
+
+  /// `#9aa87c` - the rank hero's progress-bar fill gradient start (end is
+  /// [heroLabelSage]).
+  static const Color heroProgressFillStart = Color(0xFF9AA87C);
+
+  /// rgba(255,255,255,.6) - the top inset-highlight line on the rank-ladder
+  /// and settings list panels and the Cairn Premium row (distinct from
+  /// [cardTopHighlight]'s .7/.55, which the irregular task cards use).
+  static const Color panelTopHighlight = Color(0x99FFFFFF);
+
+  /// rgba(255,255,255,.4) - the rank-ladder/settings list panel border
+  /// (distinct from [cardBorder]'s .35).
+  static const Color panelBorder = Color(0x66FFFFFF);
+
+  /// rgba(120,108,88,.14) - the hairline divider between rows in a list
+  /// panel (the rank ladder, the settings list).
+  static const Color hairlineDivider = Color(0x24786C58);
+
+  /// rgba(122,141,96,.18) - a passed (already-reached) rank tier's icon
+  /// circle background in the ladder. Numerically identical to
+  /// [sageRing] (same source rgb/alpha) but kept as its own named token
+  /// since the two mark unrelated things.
+  static const Color achievedTierIconBg = Color(0x2E7A8D60);
+
+  /// rgba(120,108,88,.35) - a not-yet-reached rank tier's outline-circle
+  /// border in the ladder.
+  static const Color futureTierBorder = Color(0x59786C58);
+
+  /// rgba(178,124,92,.1) / rgba(178,124,92,.2) - the "Climbing anonymously"
+  /// account-status row's background/border.
+  static const Color accountStatusBg = Color(0x1AB27C5C);
+  static const Color accountStatusBorder = Color(0x33B27C5C);
+
+  /// `#5c5344` - the account-status row's person-icon stroke.
+  static const Color accountIconStroke = Color(0xFF5C5344);
+
+  /// `#c9c0b0` / `#a99f8c` - the account-status row's avatar-circle
+  /// gradient (150deg; the same pair Home's greeting avatar uses, kept as
+  /// its own token here since that one is a private literal in
+  /// `home_screen.dart`).
+  static const Color accountAvatarLight = Color(0xFFC9C0B0);
+  static const Color accountAvatarDark = Color(0xFFA99F8C);
+
+  /// rgba(122,141,96,.3) - the Cairn Premium row's border.
+  static const Color premiumBorder = Color(0x4D7A8D60);
+
+  /// `#f4efe4` / `#e6decb` - the Cairn Premium row's background gradient
+  /// (160deg).
+  static const Color premiumBgLight = Color(0xFFF4EFE4);
+  static const Color premiumBgDark = Color(0xFFE6DECB);
 }

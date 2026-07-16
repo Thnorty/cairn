@@ -8,11 +8,15 @@ import 'package:cairn/src/db/database.dart';
 import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
+import 'package:cairn/src/services/recent_photo_library.dart';
 import 'package:cairn/src/ui/proof/camera_capture_screen.dart';
+import 'package:cairn/src/ui/proof/camera_unavailable_screen.dart';
 import 'package:cairn/src/ui/proof/daily_limit_screen.dart';
+import 'package:cairn/src/ui/proof/photo_review_screen.dart';
 import 'package:cairn/src/ui/proof/verify_failed_screen.dart';
 import 'package:cairn/src/ui/proof/verify_pending_screen.dart';
 import 'package:cairn/src/ui/proof/verify_result_screen.dart';
+import 'package:cairn/src/ui/proof/verify_too_old_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +25,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../helpers.dart';
 import '../support/fake_camera_session.dart';
 import '../support/fake_proof_pipeline.dart';
+import '../support/fake_recent_photos.dart';
 import '../support/load_app_fonts.dart';
 
 /// A [ProofVerifier] whose [verify] call never resolves, so a screenshot of
@@ -230,5 +235,116 @@ void main() {
     )));
     await tester.pumpAndSettle();
     await captureAt392x846(tester, 'daily_limit.png');
+  });
+
+  testWidgets('Verify Too Old', (tester) async {
+    await tester.pumpWidget(boundaryApp(VerifyTooOldScreen(
+      taskTitle: 'Read 20 pages',
+      photoTakenAtMillis: DateTime(2026, 7, 10, 7, 15).millisecondsSinceEpoch,
+      ageMinutes: 17,
+      imageBytes: kFakeImageBytes,
+      attemptsRemaining: 3,
+      recencyWindowMinutes: 15,
+      onRetake: () {},
+      onCancel: () {},
+    )));
+    await tester.pumpAndSettle();
+    await captureAt392x846(tester, 'verify_too_old.png');
+  });
+
+  testWidgets('Camera Unavailable', (tester) async {
+    final clock = FixedClock(d(2026, 7, 10));
+    final db = inMemoryDatabase();
+    addTearDown(db.close);
+    final taskRepo = TaskRepository(db, clock);
+    final task = await taskRepo.createTask(
+      title: 'Read 20 pages',
+      recurrenceType: RecurrenceType.daily,
+      startDate: d(2026, 7, 1),
+    );
+    final recentPhotos = FakeRecentPhotoLibrary(
+      result: RecentPhotosLoaded([
+        for (var i = 0; i < 6; i++)
+          RecentPhotoAsset(id: 'a$i', thumbnail: kFakeImageBytes, takenAtMillis: clock.nowEpochMillis()),
+      ]),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+          clockProvider.overrideWithValue(clock),
+          recentPhotoLibraryProvider.overrideWithValue(recentPhotos),
+          appSettingsOpenerProvider.overrideWithValue(FakeAppSettingsOpener()),
+        ],
+        child: boundaryApp(CameraUnavailableScreen(
+          taskId: task.id,
+          taskTitle: task.title,
+          cairnNumber: 1,
+          occurrenceDate: d(2026, 7, 10),
+          slot: 0,
+        )),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await captureAt392x846(tester, 'camera_unavailable.png');
+  });
+
+  // Writes a real temp file with real (decodable) image bytes so
+  // PhotoReviewScreen's Image.file genuinely renders the photo rather than
+  // its error-fallback fill. Wrapped in `tester.runAsync`: real `dart:io`
+  // file I/O does not resolve reliably inside a bare `testWidgets` body
+  // (the same reason `captureAt392x846` above already wraps the real
+  // image-encoding step this way) - calling it unwrapped previously hung
+  // this exact test indefinitely.
+  Future<String> writeTempPhoto(WidgetTester tester) async {
+    late String path;
+    await tester.runAsync(() async {
+      final tempDir = await Directory.systemTemp.createTemp('photo_review_screenshot');
+      addTearDown(() async {
+        try {
+          await tempDir.delete(recursive: true);
+        } catch (_) {
+          // Best-effort only: on Windows, Image.file's decoded-frame cache
+          // can still hold this file open briefly after the test body
+          // finishes, which fails a delete here - harmless, since the OS
+          // temp directory is cleaned up independently regardless.
+        }
+      });
+      final photoFile = File('${tempDir.path}${Platform.pathSeparator}proof.jpg');
+      await photoFile.writeAsBytes(kFakeImageBytes);
+      path = photoFile.path;
+    });
+    return path;
+  }
+
+  testWidgets('Photo Review (camera path: "Retake")', (tester) async {
+    final imagePath = await writeTempPhoto(tester);
+
+    await tester.pumpWidget(boundaryApp(PhotoReviewScreen(
+      imagePath: imagePath,
+      taskTitle: 'Read 20 pages',
+      secondaryLabel: 'Retake',
+      onUsePhoto: () {},
+      onSecondaryAction: () {},
+      onClose: () {},
+    )));
+    await tester.pumpAndSettle();
+    await captureAt392x846(tester, 'photo_review_camera.png');
+  });
+
+  testWidgets('Photo Review (gallery path: "Choose another")', (tester) async {
+    final imagePath = await writeTempPhoto(tester);
+
+    await tester.pumpWidget(boundaryApp(PhotoReviewScreen(
+      imagePath: imagePath,
+      taskTitle: 'Read 20 pages',
+      secondaryLabel: 'Choose another',
+      onUsePhoto: () {},
+      onSecondaryAction: () {},
+      onClose: () {},
+    )));
+    await tester.pumpAndSettle();
+    await captureAt392x846(tester, 'photo_review_gallery.png');
   });
 }

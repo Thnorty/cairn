@@ -35,22 +35,63 @@ class ProofFlowCompleted extends ProofFlowResult {
   const ProofFlowCompleted(this.result, [this.imageBytes]);
 }
 
+/// Outcome of [ProofFlowService.captureForReview]: the gallery path's
+/// "precheck, then capture" half of the "capture, then review, then submit"
+/// split the Photo Review screen (`Cairn Photo Review.dc.html`) needs (see
+/// this class's own doc comment). The camera path has no equivalent
+/// capture-only entry point on this class: `CameraCaptureScreen` owns its
+/// own `CameraSession` and already has a captured photo by the time review
+/// begins, so it just builds a [CapturedPhoto] itself from the shutter's
+/// result (see that screen's `_handleShutter`) rather than calling into
+/// [ProofFlowService] for the capture step too.
+sealed class GalleryCaptureOutcome {
+  const GalleryCaptureOutcome();
+}
+
+/// The user backed out of the gallery picker before choosing a photo.
+/// Nothing changes: a caller mid-review (e.g. "Choose another") should
+/// simply stay on the review screen showing whatever photo it already had.
+class GalleryCaptureCancelled extends GalleryCaptureOutcome {
+  const GalleryCaptureCancelled();
+}
+
+/// The precheck rejected this attempt before the picker ever opened (e.g.
+/// the daily cap was reached by another completion while the user was
+/// reviewing a photo, or between opening this screen and tapping "Choose
+/// another"). The caller should route straight to [result] - there is no
+/// photo to review.
+class GalleryCaptureRejected extends GalleryCaptureOutcome {
+  final CompleteOccurrenceResult result;
+  const GalleryCaptureRejected(this.result);
+}
+
+/// A photo was picked and is ready to show on the review screen.
+class GalleryCapturePicked extends GalleryCaptureOutcome {
+  final CapturedPhoto captured;
+  const GalleryCapturePicked(this.captured);
+}
+
 /// The single entry point Phase 3's UI calls to record a completion backed
-/// by a proof photo. Two entry points share one compress/persist/verify
-/// core ([_compressSaveAndComplete]):
+/// by a proof photo. Every path funnels through one compress/persist/verify
+/// core ([_compressSaveAndComplete]), reached only once a photo has been
+/// accepted on the Photo Review screen (`Cairn Photo Review.dc.html`,
+/// "Use this photo") - that review step lives entirely in the UI layer
+/// (`CameraCaptureScreen`/`CameraUnavailableScreen` show it,
+/// `PhotoReviewScreen` renders it), not in this service.
 ///
 /// - [completeWithProof]: the original all-in-one path (precheck, capture via
-///   [PhotoCapture], then the core) - still used for the gallery path (via
-///   `image_picker`) and the Phase 1/2 debug screen.
-/// - [submitCapturedProof]: for a photo the UI already captured itself. The
-///   canonical `Cairn Camera Capture.dc.html` custom in-app camera (live
-///   preview, shutter, flip) is driven by `CameraSession`
-///   (`camera_session.dart`), a widget-owned resource `ProofFlowService` has
-///   no business managing - by the time this is called the shutter has
-///   already fired and a temp file already exists, so there is no capture
-///   step (or cancellation) left for this method to run.
+///   [PhotoCapture], then the core, with no review step in between) - kept
+///   for the Phase 1/2 debug screen, which has no design system and so no
+///   Photo Review screen to show either.
+/// - [captureForReview]: the gallery path's precheck-then-capture half,
+///   returning the picked photo for review instead of continuing straight
+///   to submission.
+/// - [submitCapturedProof]: the review screen's "Use this photo" action, for
+///   a photo the UI already has in hand - either just shot by the live
+///   camera (`CameraCaptureScreen` builds the [CapturedPhoto] itself; see
+///   its `_handleShutter`) or already returned by [captureForReview].
 ///
-/// Both entry points enforce the same guarantees: [CompletionRepository]
+/// Every entry point enforces the same guarantees: [CompletionRepository]
 /// stays the single enforcement point (its own guard chain, not this
 /// service, is what actually blocks a doomed attempt), and a photo's
 /// `takenAt` always comes from the [Clock] the caller used to build it, never
@@ -96,6 +137,11 @@ class ProofFlowService {
     final captured = await _capture.capture(source);
     if (captured == null) return const ProofFlowCancelled();
 
+    // No review step here, deliberately: this all-in-one path only serves
+    // the Phase 1/2 debug screen (see this class's doc comment), which has
+    // no Photo Review screen to show. The real UI never calls this method -
+    // it calls [captureForReview] then [submitCapturedProof] instead, with
+    // the review screen interposed between them.
     final (result, bytes) = await _compressSaveAndComplete(
       taskId: taskId,
       occurrenceDate: occurrenceDate,
@@ -103,6 +149,38 @@ class ProofFlowService {
       captured: captured,
     );
     return ProofFlowCompleted(result, bytes);
+  }
+
+  /// The gallery path's "precheck, then capture" half of the "capture, then
+  /// review, then submit" split (see this class's doc comment): runs the
+  /// same UX precheck [completeWithProof] does, then opens the gallery
+  /// picker via [PhotoCapture] and returns the picked photo for the caller
+  /// to show on the Photo Review screen - rather than continuing straight to
+  /// submission the way [completeWithProof] does. [submitCapturedProof] is
+  /// that review screen's "Use this photo" action; "Choose another" calls
+  /// this again.
+  Future<GalleryCaptureOutcome> captureForReview({
+    required String taskId,
+    required LocalDate occurrenceDate,
+    int slot = 0,
+    required ProofSource source,
+  }) async {
+    // Same UX-short-circuit rationale as completeWithProof's own precheck
+    // call: doesn't replace CompletionRepository's own guard chain inside
+    // submitCapturedProof (the actual enforcement point), just avoids
+    // opening the picker on an attempt that's already doomed.
+    final precheckRejection = await _completionRepository.precheckProof(
+      taskId: taskId,
+      occurrenceDate: occurrenceDate,
+      slot: slot,
+    );
+    if (precheckRejection != null) {
+      return GalleryCaptureRejected(precheckRejection);
+    }
+
+    final captured = await _capture.capture(source);
+    if (captured == null) return const GalleryCaptureCancelled();
+    return GalleryCapturePicked(captured);
   }
 
   /// Submits a photo the UI already captured itself (see this class's doc
@@ -119,6 +197,14 @@ class ProofFlowService {
   /// took, never save them from taking it. [CompletionRepository]'s own guard
   /// chain inside `completeWithProof` remains the actual enforcement point
   /// either way.
+  ///
+  /// This is the Photo Review screen's "Use this photo" action: [captured]
+  /// already names an existing photo file (from either the live camera or a
+  /// gallery pick, via [captureForReview]) that the user has already seen and
+  /// accepted. "Retake"/"Choose another" never calls this at all - they
+  /// discard [captured] and either return to the live camera or reopen the
+  /// gallery picker instead, entirely in the UI layer
+  /// (`CameraCaptureScreen`/`CameraUnavailableScreen`).
   Future<(CompleteOccurrenceResult, Uint8List)> submitCapturedProof({
     required String taskId,
     required LocalDate occurrenceDate,

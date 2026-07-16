@@ -89,3 +89,57 @@ class CardSurface extends StatelessWidget {
     );
   }
 }
+
+/// A uniform-corner-radius parchment surface: the same gradient/border/
+/// top-highlight recipe as [CardSurface], but with a single [radius]
+/// rather than [CardSurface]'s deliberately irregular per-corner shape.
+///
+/// This is the treatment every input-like row in `Cairn New Habit.dc.html`
+/// (and its Once/Monthly variants) uses - the habit-title field, each
+/// times-of-day slot row, the Once date-picker row: those are plain
+/// `border-radius:Npx` rects in the source files, not the hand-made
+/// irregular card shape [CardSurface] reproduces elsewhere.
+class ParchmentPill extends StatelessWidget {
+  const ParchmentPill({
+    super.key,
+    required this.child,
+    this.radius = 20,
+    this.padding = const EdgeInsetsDirectional.symmetric(
+      horizontal: 16,
+      vertical: 14,
+    ),
+  });
+
+  final Widget child;
+  final double radius;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.circular(radius);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: AppGradients.card,
+        borderRadius: borderRadius,
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(height: 1.5, color: AppColors.cardTopHighlight),
+            ),
+            Padding(
+              padding: padding,
+              child: Material(type: MaterialType.transparency, child: child),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&amp;family=Work+Sans:wght@400;450;500;600&amp;display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  a { color: #6e8156; text-decoration: none; }
+  a:hover { color: #5a6b44; }
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:44px 24px;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 80% at 50% -10%, rgba(140,120,95,.14), transparent 55%), repeating-radial-gradient(circle at 76% 8%, transparent 0 30px, rgba(90,78,58,.045) 30px 31px);">
+
+  <!-- ===== DEVICE ===== -->
+  <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+
+    <!-- ===== SCREEN ===== -->
+    <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;background-image:radial-gradient(130% 50% at 50% -8%, rgba(150,131,104,.24), transparent 62%), radial-gradient(90% 40% at 100% 0%, rgba(150,131,104,.16), transparent 65%);">
+
+      <!-- topographic contour wash -->
+      <div style="position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:repeating-radial-gradient(circle at 50% -6%, transparent 0 26px, rgba(90,78,58,.05) 26px 27px);"></div>
+
+      <!-- status bar -->
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 30px 4px;color:#33302b;font-weight:600;font-size:15px;letter-spacing:.3px;">
+        <span>7:15</span>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="display:flex;align-items:flex-end;gap:2px;height:11px;">
+            <div style="width:3px;height:5px;background:#33302b;border-radius:1px;"></div>
+            <div style="width:3px;height:7px;background:#33302b;border-radius:1px;"></div>
+            <div style="width:3px;height:9px;background:#33302b;border-radius:1px;"></div>
+            <div style="width:3px;height:11px;background:#33302b;border-radius:1px;"></div>
+          </div>
+          <div style="width:16px;height:11px;border:1.5px solid #33302b;border-radius:3px;position:relative;padding:1.5px;"><div style="width:70%;height:100%;background:#33302b;border-radius:1px;"></div><div style="position:absolute;right:-3px;top:3px;width:2px;height:4px;background:#33302b;border-radius:0 1px 1px 0;"></div></div>
+        </div>
+      </div>
+
+      <!-- header row -->
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:8px 24px 0;">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(120,108,88,.14);display:flex;align-items:center;justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a453c" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </div>
+        <span style="font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#9c917e;">Prove it</span>
+        <div style="width:38px;"></div>
+      </div>
+
+      <!-- body -->
+      <div style="position:relative;flex:1;overflow:hidden;padding:20px 24px 0;display:flex;flex-direction:column;align-items:center;">
+
+        <!-- muted stone seal — camera off, neutral -->
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(155deg,#c3b49a,#a2937a);box-shadow:0 0 0 8px rgba(160,148,126,.16),0 10px 18px -8px rgba(90,80,60,.45),inset 0 1px 0 rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#f4f0e6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8.2A2 2 0 0 1 4.5 6.5h1.2l1.3-1.9h5"></path><path d="M21.5 15.8V8.5a2 2 0 0 0-2-2h-2.2"></path><path d="M9.8 9.9a3 3 0 0 0 4.2 4.2"></path><path d="M21.5 17.5v0a2 2 0 0 1-2 2H6"></path><path d="M3 3.5l18 18"></path></svg>
+          </div>
+          <div style="font-family:'Zilla Slab',serif;font-weight:600;font-size:27px;color:#544b3b;margin-top:16px;line-height:1.12;">Camera unavailable</div>
+          <div style="font-size:13.5px;line-height:1.5;color:#6a6153;margin-top:8px;max-width:288px;">Cairn couldn't open your camera. You can prove <strong style="font-weight:600;color:#544d40;">Read 20 pages</strong> with a photo from your gallery instead.</div>
+        </div>
+
+        <!-- gallery preview strip -->
+        <div style="width:100%;margin-top:26px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#9c917e;margin-bottom:12px;">Recent photos</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+            <div style="aspect-ratio:1;border-radius:20px;background-image:repeating-linear-gradient(135deg,#d3cab8 0 12px,#c9bfab 12px 24px);box-shadow:inset 0 0 0 1px rgba(70,60,44,.1),0 3px 6px -3px rgba(60,50,35,.22);"></div>
+            <div style="aspect-ratio:1;border-radius:20px;background-image:repeating-linear-gradient(135deg,#cdc5b2 0 12px,#c2b8a4 12px 24px);box-shadow:inset 0 0 0 1px rgba(70,60,44,.1),0 3px 6px -3px rgba(60,50,35,.22);"></div>
+            <div style="aspect-ratio:1;border-radius:20px;background-image:repeating-linear-gradient(135deg,#d6cdba 0 12px,#ccc2ae 12px 24px);box-shadow:inset 0 0 0 1px rgba(70,60,44,.1),0 3px 6px -3px rgba(60,50,35,.22);"></div>
+            <div style="aspect-ratio:1;border-radius:20px;background-image:repeating-linear-gradient(135deg,#cec6b3 0 12px,#c3b9a5 12px 24px);box-shadow:inset 0 0 0 1px rgba(70,60,44,.1),0 3px 6px -3px rgba(60,50,35,.22);"></div>
+            <div style="aspect-ratio:1;border-radius:20px;background-image:repeating-linear-gradient(135deg,#d2c9b6 0 12px,#c7bda9 12px 24px);box-shadow:inset 0 0 0 1px rgba(70,60,44,.1),0 3px 6px -3px rgba(60,50,35,.22);"></div>
+            <div style="aspect-ratio:1;border-radius:20px;background-image:repeating-linear-gradient(135deg,#d8cfbc 0 12px,#cdc3af 12px 24px);box-shadow:inset 0 0 0 1px rgba(70,60,44,.1),0 3px 6px -3px rgba(60,50,35,.22);"></div>
+          </div>
+        </div>
+
+        <!-- reason / how to fix -->
+        <div style="width:100%;margin-top:18px;display:flex;gap:11px;align-items:flex-start;background:rgba(120,108,88,.12);border-radius:22px;padding:14px 16px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8a7f6c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><circle cx="12" cy="7.7" r="0.5" fill="#8a7f6c" stroke="none"></circle></svg>
+          <div style="font-size:13px;line-height:1.5;color:#544d40;">To use the camera, allow Cairn camera access in <strong style="font-weight:600;color:#463f31;">Settings › Apps › Cairn › Permissions</strong>. Gallery proofs still need a recent, in-the-moment photo.</div>
+        </div>
+
+      </div>
+
+      <!-- footer actions -->
+      <div style="position:relative;flex-shrink:0;padding:14px 24px 30px;background:linear-gradient(0deg,#e9e1d3 62%,rgba(233,225,211,0));display:flex;flex-direction:column;gap:8px;">
+        <button style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(155deg,#c07a54,#a6603d);color:#f6efe6;border:none;padding:17px;border-radius:26px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 10px 20px -8px rgba(140,74,42,.6),inset 0 1px 0 rgba(255,255,255,.3);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f6efe6" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"></rect><circle cx="8.5" cy="9.5" r="1.6"></circle><path d="M3.5 17l5-4.5 4 3.5 3-2.5 5 4.5"></path></svg>
+          Choose from gallery
+        </button>
+        <button style="width:100%;background:transparent;color:#6a6153;border:none;padding:8px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:14.5px;cursor:pointer;">Open camera settings</button>
+      </div>
+
+      <!-- home indicator -->
+      <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);"></div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:940}}"></script>
+</body>
+</html>

@@ -207,7 +207,9 @@ void main() {
       expect(find.byType(GhostCairnStack), findsOneWidget);
     });
 
-    testHomeWidgets('SCHEDULED: dimmed card, outlined Scheduled chip', (
+    testHomeWidgets(
+        'SCHEDULED: outlined Scheduled chip AND a working Prove it button '
+        '(real-device fix: a later-today task is still provable now)', (
       tester,
     ) async {
       final clock = FixedClock(
@@ -232,7 +234,11 @@ void main() {
       expect(find.text('Water the plants'), findsOneWidget);
       expect(find.text('Cairn 1 · 0 stones'), findsOneWidget);
       expect(find.text('Scheduled · $expectedTime'), findsOneWidget);
-      expect(find.text('Prove it'), findsNothing);
+      // Real-device fix (this run): the scheduled card used to have no way
+      // to prove the task before its due time; it now shows the same
+      // "Prove it" button a due-now card does, alongside (not instead of)
+      // the Scheduled chip.
+      expect(find.text('Prove it'), findsOneWidget);
       // Defect 4 regression: a zero-stone task renders the dashed ghost
       // cairn in its mini-cairn column instead of an empty gap.
       expect(find.byType(GhostCairnStack), findsOneWidget);
@@ -379,6 +385,54 @@ void main() {
       // The task pill on the camera screen names the same task.
       expect(find.text('Push-ups'), findsOneWidget);
       expect(task.title, 'Push-ups'); // sanity: same task throughout
+    });
+
+    testHomeWidgets(
+        'tapping Prove it on a SCHEDULED (not-yet-due) occurrence also opens '
+        'the Camera Capture screen, exactly like a DUE-now one - real-device '
+        'fix: proving ahead of the scheduled time is allowed', (tester) async {
+      final clock = FixedClock(
+        d(2026, 7, 10),
+        nowMillis: _localMillis(2026, 7, 10, 7, 0),
+      );
+      final db = inMemoryDatabase();
+      addTearDown(db.close);
+
+      final taskRepo = TaskRepository(db, clock);
+      final task = await taskRepo.createTask(
+        title: 'Water the plants',
+        recurrenceType: RecurrenceType.daily,
+        dueTimes: const ['20:00'],
+        startDate: d(2026, 7, 1),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            clockProvider.overrideWithValue(clock),
+            cameraSessionFactoryProvider.overrideWithValue(() => FakeCameraSession()),
+          ],
+          child: wrap(const HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final expectedTime = formatTimeOfDay(
+        DateTime(2000, 1, 1, 20, 0),
+        const Locale('en'),
+      );
+      // The scheduled chip is still shown as context alongside the button.
+      expect(find.text('Scheduled · $expectedTime'), findsOneWidget);
+      expect(find.text('Prove it'), findsOneWidget);
+
+      await tester.tap(find.text('Prove it'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CameraCaptureScreen), findsOneWidget);
+      expect(find.byType(DailyLimitScreen), findsNothing);
+      expect(find.text('Water the plants'), findsOneWidget);
+      expect(task.title, 'Water the plants'); // sanity: same task throughout
     });
 
     testHomeWidgets(

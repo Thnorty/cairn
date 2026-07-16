@@ -428,17 +428,383 @@ abstract class AppLocalizations {
   /// **'Checking your proof for “{taskName}”'**
   String verifyingSubtitle(String taskName);
 
-  /// Reason banner text shown on the Verify Failed layout when a photo is rejected for being too old (its own capture timestamp fell outside the recency window), reused because there is no dedicated canonical design for this outcome (a noted design gap - see the phase-3 implementation report). Unlike a verifier rejection's reason, this is client-side policy copy, not server-generated text, and this rejection does not burn an attempt.
+  /// All-caps header label on the Camera Unavailable screen (Cairn Camera Unavailable.dc.html's header row). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel/verificationHeaderLabel; do not uppercase at runtime. Distinct from proveItButton ('Prove it'), which is a button label stored in mixed case for a different context.
   ///
   /// In en, this message translates to:
-  /// **'This photo looks too old to count as fresh proof. Try capturing it again right now.'**
-  String get stalePhotoReason;
+  /// **'PROVE IT'**
+  String get proveItHeaderLabel;
 
-  /// Shown on the Camera Capture screen in place of the live preview when the device camera can't be started (no hardware, permission denied, or the plugin is unavailable), so the gallery path stays reachable instead of dead-ending on a broken viewfinder. Not part of any canonical design (a noted design gap - see the phase-3 implementation report).
+  /// Title on the Verify Too Old screen (Cairn Verify Too Old.dc.html), shown for a proof photo rejected for being outside the recency window.
   ///
   /// In en, this message translates to:
-  /// **'Camera unavailable. Choose a photo from your gallery instead.'**
-  String get cameraUnavailableMessage;
+  /// **'This photo is too old'**
+  String get verifyTooOldTitle;
+
+  /// Subtitle on the Verify Too Old screen showing the task name and the photo's own capture time, e.g. 'Read 20 pages · taken 7:15 AM'. Distinct from taskNameAtTime (which has no 'taken' wording and is used for the completion/rejection event time on the other verification screens): this screen specifically calls out that the time shown is when the PHOTO was taken, per the canonical design. time is pre-formatted by the caller via intl.
+  ///
+  /// In en, this message translates to:
+  /// **'{taskName} · taken {time}'**
+  String taskNameTakenAt(String taskName, String time);
+
+  /// Age badge overlaid on the proof photo on the Verify Too Old screen, e.g. '17 min old'. Deliberately identical one/other text (English doesn't inflect 'min'), same pattern as tasksDoneCount, so a language whose grammar needs to change around the count has somewhere to do it.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, one{{minutes} min old} other{{minutes} min old}}'**
+  String stalePhotoAgeBadge(num minutes);
+
+  /// Bold lead-in sentence of the reassurance banner on the Verify Too Old screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Proof has to be taken in the moment.'**
+  String get stalePhotoReassuranceLead;
+
+  /// Regular-weight remainder of the reassurance banner on the Verify Too Old screen, following stalePhotoReassuranceLead. minutes is ProofPolicy.recencyWindow in whole minutes, sourced from policy rather than hardcoded.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos more than {minutes} minutes old can\'t be verified, so snap a fresh one right as you finish.'**
+  String stalePhotoReassuranceBody(int minutes);
+
+  /// Plain lead-in clause of the 'doesn't cost an attempt' info card on the Verify Too Old screen, immediately preceding the bold stalePhotoAttemptsCount clause. The canonical design's own copy is 'This didn't use a try [em dash, U+2014] you still have {n} left today.'; CLAUDE.md bans that character, so the em dash is replaced here with a period and the sentence continues ('This didn't use a try. You still have...') - the wording is unchanged, only the punctuation. Do not restore the em dash.
+  ///
+  /// In en, this message translates to:
+  /// **'This didn\'t use a try. You still have'**
+  String get stalePhotoAttemptsIntro;
+
+  /// Bold clause of the 'doesn't cost an attempt' info card on the Verify Too Old screen, following stalePhotoAttemptsIntro, e.g. 'This didn't use a try. You still have 3 left today.' count is the task's full remaining attempts today (attemptsPerTaskPerDay - attemptsUsedToday), unaffected by this rejection since a stale photo never burns an attempt.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 left today} other{{count} left today}}'**
+  String stalePhotoAttemptsCount(num count);
+
+  /// Primary footer button on the Verify Too Old screen. Distinct wording from retakePhotoButton ('Retake photo') on the Verify Failed screen, per the canonical design.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a new photo'**
+  String get takeNewPhotoButton;
+
+  /// Title on the Camera Unavailable screen (Cairn Camera Unavailable.dc.html), shown when the live camera can't be started at all.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera unavailable'**
+  String get cameraUnavailableTitle;
+
+  /// Plain lead clause of the Camera Unavailable screen's body copy, immediately preceding the bold task name, e.g. 'Cairn couldn't open your camera. You can prove **Read 20 pages** with a photo from your gallery instead.' Split into lead/task-name/trail fragments (the task name is interpolated as its own bold TextSpan by the widget, not part of any ARB string) to reproduce the design's <strong> span around the task name - the same rationale as ReasonBanner's leadText/bodyText split elsewhere in this app.
+  ///
+  /// In en, this message translates to:
+  /// **'Cairn couldn\'t open your camera. You can prove'**
+  String get cameraUnavailableBodyLead;
+
+  /// Plain trailing clause of the Camera Unavailable screen's body copy, following the bold task name - see cameraUnavailableBodyLead.
+  ///
+  /// In en, this message translates to:
+  /// **'with a photo from your gallery instead.'**
+  String get cameraUnavailableBodyTrail;
+
+  /// All-caps section label above the recent-photos quick-pick grid on the Camera Unavailable screen. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'RECENT PHOTOS'**
+  String get recentPhotosLabel;
+
+  /// Accessibility label read by screen readers for each tappable thumbnail in the Camera Unavailable screen's recent-photos grid (the grid itself has no per-photo visible caption).
+  ///
+  /// In en, this message translates to:
+  /// **'Recent photo'**
+  String get recentPhotoThumbnailLabel;
+
+  /// Plain lead clause of the Camera Unavailable screen's Settings hint banner, immediately preceding the bold settingsHintEmphasis clause.
+  ///
+  /// In en, this message translates to:
+  /// **'To use the camera, allow Cairn camera access in'**
+  String get settingsHintLead;
+
+  /// Bold middle clause of the Camera Unavailable screen's Settings hint banner, between settingsHintLead and settingsHintTrail, matching the design's own <strong> span in the middle of the sentence. This is the Android system Settings path to this app's permissions screen (Settings > Apps > Cairn > Permissions), where camera access is actually granted.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings › Apps › Cairn › Permissions'**
+  String get settingsHintEmphasis;
+
+  /// Plain trailing clause of the Camera Unavailable screen's Settings hint banner, immediately following settingsHintEmphasis. The leading period is deliberate: it closes the sentence right after the bold span, matching the design's own punctuation placement.
+  ///
+  /// In en, this message translates to:
+  /// **'. Gallery proofs still need a recent, in-the-moment photo.'**
+  String get settingsHintTrail;
+
+  /// Button label that opens the photo gallery picker: the Camera Unavailable screen's primary footer action, and also its own fallback body button shown in place of the recent-photos grid when the photo library can't be read or has no photos.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get chooseFromGalleryButton;
+
+  /// Secondary footer button on the Camera Unavailable screen that opens the OS app-settings screen so the user can grant camera permission.
+  ///
+  /// In en, this message translates to:
+  /// **'Open camera settings'**
+  String get openCameraSettingsButton;
+
+  /// Header title on the New Habit screen (Cairn New Habit.dc.html and its Once/Monthly variants). Distinct from newHabitButton ('New habit'), which is a button label paired with a '+' icon in a different context (Home's app bar / Empty Today CTA) - same pattern as proveItButton vs proveItHeaderLabel elsewhere in this catalogue, kept separate in case a translation ever needs to phrase a screen title differently from a button that opens it.
+  ///
+  /// In en, this message translates to:
+  /// **'New habit'**
+  String get newHabitScreenTitle;
+
+  /// Section label above the habit-title input on the New Habit screen. The source file is mixed-case with a CSS text-transform:uppercase; stored already uppercased here for the same Turkish dotted-i reason as todaySectionLabel - do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'WHAT ARE YOU PROVING?'**
+  String get whatAreYouProvingLabel;
+
+  /// Section label above the recurrence-type selector on the New Habit screen. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'HOW OFTEN?'**
+  String get howOftenLabel;
+
+  /// Recurrence-type chip label on the New Habit screen: a one-off habit due on a single date.
+  ///
+  /// In en, this message translates to:
+  /// **'Once'**
+  String get recurrenceOnceLabel;
+
+  /// Recurrence-type chip label on the New Habit screen: a habit scheduled every day.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get recurrenceDailyLabel;
+
+  /// Recurrence-type chip label on the New Habit screen: a habit scheduled on chosen days of the week.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get recurrenceWeeklyLabel;
+
+  /// Recurrence-type chip label on the New Habit screen: a habit scheduled monthly, either by day-of-month or by nth weekday.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get recurrenceMonthlyLabel;
+
+  /// Label above the day-of-week picker in the Weekly recurrence panel on the New Habit screen.
+  ///
+  /// In en, this message translates to:
+  /// **'On these days'**
+  String get onTheseDaysLabel;
+
+  /// Label above the 1-31 day grid in the Monthly (day-of-month mode) recurrence panel on the New Habit screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of the month'**
+  String get dayOfTheMonthLabel;
+
+  /// Info note under the day-of-month grid on the New Habit screen, describing the hand-rolled clamping generator's behaviour (day = min(monthDay, lastDayOfMonth)) in user-facing terms; the generator itself is not reimplemented here, only its behaviour surfaced.
+  ///
+  /// In en, this message translates to:
+  /// **'Months without this day will use the last day of the month.'**
+  String get monthlyClampHelpText;
+
+  /// Label above the 1st/2nd/3rd/4th/Last ordinal chip row in the Monthly (nth-weekday mode) recurrence panel on the New Habit screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Which week'**
+  String get whichWeekLabel;
+
+  /// Label above the day-of-week row in the Monthly (nth-weekday mode) recurrence panel on the New Habit screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Which day'**
+  String get whichDayLabel;
+
+  /// Left segment of the Monthly mode toggle, summarizing the currently chosen day-of-month, e.g. 'On the 31st'. day is pre-formatted by the caller as an English ordinal (e.g. '31st') - see monthly_ordinal.dart's englishOrdinal, which is deliberately English-only (intl has no public ordinal-number API and this app currently ships a single locale).
+  ///
+  /// In en, this message translates to:
+  /// **'On the {day}'**
+  String monthlyDayToggleLabel(String day);
+
+  /// Right segment of the Monthly mode toggle, summarizing the currently chosen nth-weekday, e.g. 'On the 3rd Friday'. Both nth and weekday are pre-formatted by the caller (nth via englishOrdinal or monthlyWeekLastLabel for month_nth = -1; weekday via the date_number_formatting.dart weekdayFullName intl helper).
+  ///
+  /// In en, this message translates to:
+  /// **'On the {nth} {weekday}'**
+  String monthlyNthWeekdayToggleLabel(String nth, String weekday);
+
+  /// Ordinal chip label for month_nth = -1 (the last occurrence of the chosen weekday in the month), and the nth value substituted into monthlyNthWeekdayToggleLabel in that same case.
+  ///
+  /// In en, this message translates to:
+  /// **'Last'**
+  String get monthlyWeekLastLabel;
+
+  /// Label above the date-picker row in the Once recurrence panel on the New Habit screen.
+  ///
+  /// In en, this message translates to:
+  /// **'On this date'**
+  String get onThisDateLabel;
+
+  /// Section label above the due-times editor for the Daily/Weekly/Monthly recurrence variants of the New Habit screen (plural: more than one time slot is expected to be common). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime. Distinct from timeOfDayLabel (singular), used by the Once variant.
+  ///
+  /// In en, this message translates to:
+  /// **'TIMES OF DAY'**
+  String get timesOfDayLabel;
+
+  /// Section label above the due-times editor for the Once recurrence variant of the New Habit screen (singular: capped at a single optional reminder time). Stored already uppercased for the same reason as timesOfDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TIME OF DAY'**
+  String get timeOfDayLabel;
+
+  /// Helper copy under timesOfDayLabel on the Daily/Weekly/Monthly variants of the New Habit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character).
+  ///
+  /// In en, this message translates to:
+  /// **'Each time is one proof - two times means a twice-a-day habit.'**
+  String get timesOfDayHelpText;
+
+  /// Helper copy under timeOfDayLabel on the Once variant of the New Habit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character).
+  ///
+  /// In en, this message translates to:
+  /// **'Optional - a reminder to prove it on the day.'**
+  String get onceTimeHelpText;
+
+  /// Dashed-outline affordance that appends a new due-time slot on the New Habit screen. Hidden once the Once variant already has its one allowed slot.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a time'**
+  String get addTimeButton;
+
+  /// Primary footer button on the New Habit screen that submits the form via TaskRepository.createTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Create habit'**
+  String get createHabitButton;
+
+  /// Primary footer button on the Photo Review screen (Cairn Photo Review.dc.html), shown after a photo is captured/picked and before it is ever submitted for verification. Accepts the photo and proceeds to submit it.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this photo'**
+  String get usePhotoButton;
+
+  /// Secondary footer button on the Photo Review screen for a just-shot camera photo: discards the capture and returns to the live camera. Distinct from retakePhotoButton ('Retake photo'), the Verify Failed screen's wording for reopening the camera after a rejection - this screen's own canonical design says just 'Retake'.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get retakeButton;
+
+  /// Secondary footer button on the Photo Review screen for a gallery-picked photo: reopens the gallery picker so the user can pick a different photo. This is the gallery-path equivalent of retakeButton ('Retake'), shown instead when the reviewed photo came from the gallery rather than the live camera; the canonical design only shows the camera variant ('Retake'), so this wording was chosen to fill the same slot for a picked (rather than shot) photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another'**
+  String get chooseAnotherPhotoButton;
+
+  /// Prompt pill on the Photo Review screen, above the accept/retake actions, asking the user to check the photo before submitting it for verification.
+  ///
+  /// In en, this message translates to:
+  /// **'Does this show your proof clearly?'**
+  String get photoReviewPrompt;
+
+  /// Small all-caps section label above the 'You' title on the Profile screen (Cairn Profile.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'PROFILE'**
+  String get profileHeaderLabel;
+
+  /// All-caps label on the Profile screen's rank hero card, above the current rank tier name. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'CURRENT RANK'**
+  String get profileCurrentRankLabel;
+
+  /// Profile rank hero's total-altitude line, e.g. '840 m gained'. metres is pre-formatted by the caller via NumberFormat (formatMetresNumber).
+  ///
+  /// In en, this message translates to:
+  /// **'{metres} m gained'**
+  String profileMetresGainedLabel(String metres);
+
+  /// Profile rank hero's withheld-metres line, shown only while CompletionRepository.pendingAltitude() > 0, e.g. '+13 m awaiting verification'. metres is pre-formatted by the caller via NumberFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'+{metres} m awaiting verification'**
+  String profilePendingMetresLabel(String metres);
+
+  /// Profile rank hero's progress-row trailing label, e.g. '260 m to Crag'. metres is pre-formatted by the caller via NumberFormat; tier is the next RankTier's own label (domain vocabulary, not translated - see profile_screen.dart's doc comment).
+  ///
+  /// In en, this message translates to:
+  /// **'{metres} m to {tier}'**
+  String profileMetresToNextTier(String metres, String tier);
+
+  /// Marks the user's current tier row in the Profile rank ladder.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re here'**
+  String get profileYoureHereLabel;
+
+  /// Trailing label on the rank-ladder row for the tier immediately after the user's current one, e.g. '1,100 m · next'. metres is pre-formatted by the caller via NumberFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'{metres} m · next'**
+  String profileNextTierMetres(String metres);
+
+  /// Trailing label on a Profile rank-ladder row for any tier that isn't the user's current one or the very next one, e.g. '2,400 m'. metres is pre-formatted by the caller via NumberFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'{metres} m'**
+  String profileTierMetres(String metres);
+
+  /// Title of the Profile screen's account-status row, shown while there is no upgraded account (Phase 4).
+  ///
+  /// In en, this message translates to:
+  /// **'Climbing anonymously'**
+  String get profileClimbingAnonymouslyTitle;
+
+  /// Subtitle of the Profile screen's account-status row.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account so your trail is never lost.'**
+  String get profileCreateAccountBody;
+
+  /// Action label on the Profile screen's account-status row. Phase 4 wires this to the real email/password upgrade flow; for now it is a no-op-for-now (see profileComingSoonSnackbar).
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get profileCreateButton;
+
+  /// Title of the Profile screen's Cairn Premium upsell row.
+  ///
+  /// In en, this message translates to:
+  /// **'Cairn Premium'**
+  String get profilePremiumTitle;
+
+  /// Subtitle of the Profile screen's Cairn Premium upsell row.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited proofs, backup, deeper insights.'**
+  String get profilePremiumSubtitle;
+
+  /// Snackbar shown when tapping the Profile screen's 'Create' account action or its Cairn Premium row, both of which are out of scope for this phase (Phase 4 accounts, post-MVP Premium) and are deliberate no-ops-for-now rather than a fake/invented flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get profileComingSoonSnackbar;
+
+  /// All-caps section label above the Profile screen's settings list. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'SETTINGS'**
+  String get profileSettingsSectionLabel;
+
+  /// Row label in the Profile screen's settings list. A navigational placeholder for now - later phases wire a real destination.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get profileNotificationsRow;
+
+  /// Row label in the Profile screen's settings list. A navigational placeholder for now - later phases wire a real destination.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get profilePrivacyRow;
+
+  /// Row label in the Profile screen's settings list. A navigational placeholder for now - later phases wire a real destination.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore purchase'**
+  String get profileRestorePurchaseRow;
 }
 
 class _AppLocalizationsDelegate

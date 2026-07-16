@@ -199,4 +199,171 @@ abstract final class AppTextStyles {
     fontSize: 10.5,
     color: AppColors.textInactive,
   );
+
+  /// 11.5px Work Sans 700, 1.5px letter-spacing, uppercase - New Habit's
+  /// form section labels ("WHAT ARE YOU PROVING?", "HOW OFTEN?", "TIMES OF
+  /// DAY"). Distinct from [sectionLabel] (12px/600/2px letter-spacing):
+  /// close but not identical in the source files, faithfully kept as its
+  /// own token rather than collapsed into one. Callers must pass
+  /// already-uppercased text, same reasoning as [sectionLabel].
+  static const TextStyle formSectionLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w700,
+    fontSize: 11.5,
+    letterSpacing: 1.5,
+    color: AppColors.labelGrey,
+  );
+
+  /// 14px Work Sans 600 - New Habit's recurrence-type chip label ("Once",
+  /// "Daily", "Weekly", "Monthly") and its "+ Add a time" label, inactive-
+  /// state colour.
+  static const TextStyle recurrenceChipLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 14,
+    color: AppColors.textMuted,
+  );
+
+  /// 12px Work Sans 600 - New Habit's sage-panel sub-labels ("On these
+  /// days", "Day of the month", "Which week", "Which day", "On this
+  /// date").
+  static const TextStyle panelSubLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 12,
+    color: AppColors.sagePanelLabelText,
+  );
+
+  /// 12px Work Sans 400 - New Habit's helper copy under a section label
+  /// ("Each time is one proof...", "Optional - a reminder...").
+  static const TextStyle formHelperText = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    height: 1.4,
+    color: AppColors.textMuted,
+  );
+
+  /// 11.5px Work Sans 400 - New Habit's smaller inline note under the
+  /// day-of-month grid ("Months without this day will use the last day of
+  /// the month.").
+  static const TextStyle formFinePrint = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 11.5,
+    height: 1.4,
+    color: AppColors.textFaint,
+  );
+
+  // ---- Profile screen -------------------------------------------------
+
+  /// 11px Work Sans 700, 2px letter-spacing, uppercase - the Profile rank
+  /// hero's "CURRENT RANK" label. Callers must pass already-uppercased
+  /// text, same Turkish dotted-i reason as [sectionLabel].
+  static const TextStyle heroLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w700,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: AppColors.heroLabelSage,
+  );
+
+  /// 26px Zilla Slab 600 - the Profile rank hero's tier name ("Ridge").
+  /// The tier name itself is domain vocabulary (`RankTier.label`), not run
+  /// through AppLocalizations - see `profile_screen.dart`'s doc comment.
+  static const TextStyle heroTierTitle = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w600,
+    fontSize: 26,
+    height: 1.05,
+    color: AppColors.heroInk,
+  );
+
+  /// 13px Work Sans 400 - the Profile rank hero's "N m gained" line.
+  static const TextStyle heroGainedSubtitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 13,
+    color: AppColors.heroSubtext,
+  );
+
+  /// 11.5px Work Sans 400 - the Profile rank hero's withheld-metres line.
+  static const TextStyle heroPendingLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 11.5,
+    color: AppColors.heroPendingText,
+  );
+
+  /// 11.5px Work Sans 400 - the Profile rank hero's progress-row
+  /// current-tier label (left side, e.g. "Ridge").
+  static const TextStyle heroProgressLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 11.5,
+    color: AppColors.heroSubtext,
+  );
+
+  /// 11.5px Work Sans 600 - the Profile rank hero's progress-row "N m to
+  /// Next" label (right side).
+  static const TextStyle heroProgressNext = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 11.5,
+    color: AppColors.heroLabelSage,
+  );
+
+  /// 14px Work Sans 400 - the Profile rank-ladder row's tier-name label,
+  /// default (already-passed-tier) colour; callers `.copyWith` for the
+  /// current-tier (bold, ink) and future-tier (faint) variants.
+  static const TextStyle ladderTierLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 14,
+    color: AppColors.textMuted,
+  );
+
+  /// 12px Work Sans 400 - the Profile rank-ladder row's trailing metres/
+  /// "You're here" label, default colour; callers `.copyWith` for the
+  /// current-tier (bold, sage) variant.
+  static const TextStyle ladderMetresLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: AppColors.labelGrey,
+  );
+
+  /// 15px Work Sans 600 - Profile's "Climbing anonymously" account-status
+  /// title.
+  static const TextStyle accountStatusTitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 15,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 13px Work Sans 600 - Profile's "Create" account-status action label.
+  static const TextStyle accountCreateLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 13,
+    color: AppColors.terracotta,
+  );
+
+  /// 16px Zilla Slab 600 - a small card title (Profile's "Cairn Premium"
+  /// row).
+  static const TextStyle smallCardTitle = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w600,
+    fontSize: 16,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 15px Work Sans 400 - Profile's settings-row label.
+  static const TextStyle settingsRowLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 15,
+    color: AppColors.inkPrimary,
+  );
 }

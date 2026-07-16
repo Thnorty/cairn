@@ -17,21 +17,20 @@ import 'verification_chrome.dart';
 
 /// `Cairn Verify Failed.dc.html` / `Cairn Verify Failed - No Retries.dc.html`:
 /// one widget covering both design files (they share every part of the
-/// layout except the reason banner's copy and the footer action), plus a
-/// third outcome with no dedicated mockup: [CompletionRejectedStalePhoto].
-/// The spec is explicit that a stale photo reuses this same layout rather
-/// than inventing a new screen - see `stalePhotoReason` in the ARB and the
-/// phase-3 implementation report for that design gap.
+/// layout except the reason banner's copy and the footer action). A verdict
+/// rejection is the only outcome this screen handles now:
+/// [CompletionRejectedStalePhoto] used to reuse this layout as a stopgap
+/// (no canonical design existed for it yet) but now has its own screen,
+/// [VerifyTooOldScreen] - see `proof_outcome_routing.dart`'s routing.
 ///
 /// [attemptsRemaining] is the sole discriminator between the two design
 /// files: `> 0` renders the "retries remain" footer (Retake photo / tries
-/// left / Cancel) with [reason] shown verbatim (the verifier's own text, or
-/// the stale-photo client message - neither burns an attempt, so both land
-/// here with retries still available); `<= 0` renders the "No Retries"
-/// footer (disabled "Try again tomorrow" / resets-at-midnight / Cancel) with
-/// the design's own static copy, ignoring [reason] entirely - see this
-/// project's ARB comment on `allAttemptsUsedDetail` for why that copy stays
-/// static rather than interpolating a dynamic reason.
+/// left / Cancel) with [reason] shown verbatim (the verifier's own freeform
+/// text); `<= 0` renders the "No Retries" footer (disabled "Try again
+/// tomorrow" / resets-at-midnight / Cancel) with the design's own static
+/// copy, ignoring [reason] entirely - see this project's ARB comment on
+/// `allAttemptsUsedDetail` for why that copy stays static rather than
+/// interpolating a dynamic reason.
 class VerifyFailedScreen extends StatelessWidget {
   const VerifyFailedScreen({
     super.key,
@@ -183,20 +182,31 @@ class VerifyFailedScreen extends StatelessWidget {
                       ),
                     ),
                   ] else ...[
+                    // Elevated from a small muted footer caption to the same
+                    // clear card treatment `VerifyTooOldScreen` uses for its
+                    // own remaining-attempts figure - the plain caption was
+                    // too easy to miss (see this run's spec); the wording
+                    // itself is unchanged, still sourced from
+                    // AppLocalizations.triesLeftToday with the real
+                    // [attemptsRemaining] from the repository.
+                    //
+                    // No explicit SizedBox between these two: `VerificationFooter`
+                    // already inserts its own 10px gap between every child in
+                    // this list (see its own build()) - an earlier run added
+                    // one here anyway, which (stacked with the two automatic
+                    // gaps on either side of it) pushed this footer 20px
+                    // taller than every sibling screen's, which was the root
+                    // cause of the cairn/meta-line/attempts-card overlap this
+                    // run's spec reported. Do not re-add it.
+                    AttemptsInfoCard(
+                      icon: const SealCheckmarkIcon(color: Color(0xFF6D7A52), size: 14),
+                      iconBackground: const Color(0x2E786C58),
+                      emphasisText: l10n.triesLeftToday(attemptsRemaining),
+                    ),
                     PrimaryButton(
                       label: l10n.retakePhotoButton,
                       onPressed: onRetake,
                       icon: const _RetakeCameraIcon(),
-                    ),
-                    Center(
-                      child: Text(
-                        l10n.triesLeftToday(attemptsRemaining),
-                        style: const TextStyle(
-                          fontFamily: AppFontFamilies.workSans,
-                          fontSize: 12.5,
-                          color: AppColors.labelGrey,
-                        ),
-                      ),
                     ),
                   ],
                   Center(

@@ -9,15 +9,18 @@ import 'db/database.dart';
 import 'models/proof_verdict.dart';
 import 'repo/completion_repository.dart';
 import 'repo/task_repository.dart';
+import 'services/app_settings_opener.dart';
 import 'services/auth_service.dart';
 import 'services/camera_session.dart';
 import 'services/home_service.dart';
 import 'services/occurrence_generator.dart';
 import 'services/photo_capture.dart';
 import 'services/points_service.dart';
+import 'services/profile_service.dart';
 import 'services/proof_flow.dart';
 import 'services/proof_retry_service.dart';
 import 'services/proof_verifier.dart';
+import 'services/recent_photo_library.dart';
 import 'services/streak_service.dart';
 import 'services/supabase_proof_verifier.dart';
 
@@ -141,6 +144,21 @@ final homeSnapshotProvider = StreamProvider<HomeSnapshot>((ref) {
   return ref.watch(homeServiceProvider).watchToday();
 });
 
+final profileServiceProvider = Provider<ProfileService>((ref) {
+  return ProfileService(
+    ref.watch(databaseProvider),
+    ref.watch(completionRepositoryProvider),
+    ref.watch(pointsServiceProvider),
+  );
+});
+
+/// Drives the Profile ("You") screen. Recomputes automatically on every
+/// relevant database change (see [ProfileService.watchProfile]'s doc
+/// comment), so the screen never needs a manual refresh.
+final profileSnapshotProvider = StreamProvider<ProfileSnapshot>((ref) {
+  return ref.watch(profileServiceProvider).watchProfile();
+});
+
 // Photo-library metadata is tried first (its timestamp is harder to forge
 // than in-file EXIF); EXIF is the fallback for cases where the library
 // lookup can't resolve a match at all, e.g. Android 13+'s system Photo
@@ -187,6 +205,20 @@ typedef CameraSessionFactory = CameraSession Function();
 
 final cameraSessionFactoryProvider = Provider<CameraSessionFactory>(
   (ref) => PluginCameraSession.new,
+);
+
+/// Backs `Cairn Camera Unavailable.dc.html`'s "Recent photos" quick-pick
+/// grid. A widget test overrides this with a fake, so no widget test ever
+/// touches `photo_manager`'s platform channel for this path either.
+final recentPhotoLibraryProvider = Provider<RecentPhotoLibrary>(
+  (ref) => const PhotoManagerRecentPhotoLibrary(),
+);
+
+/// Backs the Camera Unavailable screen's "Open camera settings" button. A
+/// widget test overrides this with a fake, so no widget test ever touches
+/// `permission_handler`'s platform channel.
+final appSettingsOpenerProvider = Provider<AppSettingsOpener>(
+  (ref) => const PermissionHandlerAppSettingsOpener(),
 );
 
 final proofRetryServiceProvider = Provider<ProofRetryService>((ref) {

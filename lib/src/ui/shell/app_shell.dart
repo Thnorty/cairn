@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../debug/debug_screen.dart';
 import '../home/home_screen.dart';
+import '../profile/profile_screen.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/screen_background.dart';
 import '../widgets/app_tab_bar.dart';
@@ -13,15 +14,16 @@ import '../widgets/wordmark_glyph.dart';
 /// each real screen (Home/Trail/Stats/Profile) can drop straight in over
 /// the next few runs instead of being built against a bare `Scaffold`.
 ///
-/// Today is the real [HomeScreen] (Phase 3's first screen); Trail/Stats/You
-/// remain placeholders until their own runs land. Trail, Stats and Profile
-/// each have a *different* header treatment in their own design files (see
-/// `Cairn Trail.dc.html`/`Cairn Profile.dc.html`), not the wordmark row
-/// used here - so [_WordmarkHeader] is only ever shown above a still-
-/// placeholder body; a real screen always brings its own full header
-/// (Home's brand row, in particular, already includes this same
-/// [WordmarkGlyph] plus its own controls) and this shared one is hidden for
-/// it instead of stacking two headers.
+/// Today is the real [HomeScreen] and You is the real [ProfileScreen]
+/// (Phase 3); Trail/Stats remain placeholders until their own runs land.
+/// Trail, Stats and Profile each have a *different* header treatment in
+/// their own design files (see `Cairn Trail.dc.html`/`Cairn Profile.dc.html`),
+/// not the wordmark row used here - so [_WordmarkHeader] is only ever shown
+/// above a still-placeholder body (Trail/Stats); a real screen always brings
+/// its own full header (Home's brand row, in particular, already includes
+/// this same [WordmarkGlyph] plus its own controls; Profile's own header is
+/// its "PROFILE" label + "You" title) and this shared one is hidden for it
+/// instead of stacking two headers.
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
@@ -44,7 +46,7 @@ class _AppShellState extends State<AppShell> {
       HomeScreen(onOpenDebug: _openDebugScreen),
       const _PlaceholderBody(label: 'Trail'),
       const _PlaceholderBody(label: 'Stats'),
-      const _PlaceholderBody(label: 'You'),
+      const ProfileScreen(),
     ];
 
     // `MaterialApp` (see main.dart) deliberately gives its root
@@ -69,8 +71,11 @@ class _AppShellState extends State<AppShell> {
               // real navigation yet. Long-pressing the wordmark is a
               // stand-in entry point until a real settings/debug affordance
               // exists; remove this once one does. Only shown above a
-              // still-placeholder body - see this class's doc comment.
-              if (_index != 0) _WordmarkHeader(onLongPress: _openDebugScreen),
+              // still-placeholder body (Trail/Stats) - see this class's doc
+              // comment; index 0 (Home) and index 3 (Profile) both bring
+              // their own real header instead.
+              if (_index != 0 && _index != 3)
+                _WordmarkHeader(onLongPress: _openDebugScreen),
               Expanded(
                 child: IndexedStack(index: _index, children: bodies),
               ),

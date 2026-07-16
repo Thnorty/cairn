@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&amp;family=Work+Sans:wght@400;450;500;600&amp;display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  a { color: #6e8156; text-decoration: none; }
+  a:hover { color: #5a6b44; }
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:44px 24px;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 80% at 50% -10%, rgba(140,120,95,.14), transparent 55%), repeating-radial-gradient(circle at 76% 8%, transparent 0 30px, rgba(90,78,58,.045) 30px 31px);">
+
+  <!-- ===== DEVICE ===== -->
+  <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+
+    <!-- ===== SCREEN ===== -->
+    <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#211d18;">
+
+      <!-- captured photo (still, full-bleed) -->
+      <div style="position:absolute;inset:0;background:linear-gradient(165deg,#3a4230,#2a2c22 45%,#20211b);background-image:radial-gradient(80% 50% at 30% 20%, rgba(150,166,120,.18), transparent 60%), radial-gradient(70% 45% at 80% 85%, rgba(120,90,60,.2), transparent 60%);"></div>
+      <!-- faux book subject (the captured proof) -->
+      <div style="position:absolute;left:50%;top:47%;transform:translate(-50%,-50%) rotate(-4deg);width:210px;height:150px;border-radius:8px;background:linear-gradient(150deg,#e9e3d6,#cabfa8);box-shadow:0 30px 50px -18px rgba(0,0,0,.6);">
+        <div style="position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(90,78,58,.35);"></div>
+        <div style="position:absolute;left:14px;right:52%;top:20px;height:5px;background:rgba(90,78,58,.2);border-radius:2px;"></div>
+        <div style="position:absolute;left:14px;right:56%;top:34px;height:5px;background:rgba(90,78,58,.18);border-radius:2px;"></div>
+        <div style="position:absolute;left:14px;right:60%;top:48px;height:5px;background:rgba(90,78,58,.16);border-radius:2px;"></div>
+        <div style="position:absolute;left:53%;right:14px;top:20px;height:5px;background:rgba(90,78,58,.2);border-radius:2px;"></div>
+        <div style="position:absolute;left:53%;right:18px;top:34px;height:5px;background:rgba(90,78,58,.18);border-radius:2px;"></div>
+      </div>
+      <!-- top + bottom gradient scrims so chrome stays legible over the photo -->
+      <div style="position:absolute;top:0;left:0;right:0;height:210px;pointer-events:none;background:linear-gradient(180deg,rgba(20,18,14,.55),rgba(20,18,14,0));"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:280px;pointer-events:none;background:linear-gradient(0deg,rgba(20,18,14,.72),rgba(20,18,14,0));"></div>
+
+      <!-- status bar (light) -->
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 30px 4px;color:#f2ede2;font-weight:600;font-size:15px;letter-spacing:.3px;text-shadow:0 1px 3px rgba(0,0,0,.4);">
+        <span>7:15</span>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="display:flex;align-items:flex-end;gap:2px;height:11px;">
+            <div style="width:3px;height:5px;background:#f2ede2;border-radius:1px;"></div>
+            <div style="width:3px;height:7px;background:#f2ede2;border-radius:1px;"></div>
+            <div style="width:3px;height:9px;background:#f2ede2;border-radius:1px;"></div>
+            <div style="width:3px;height:11px;background:#f2ede2;border-radius:1px;"></div>
+          </div>
+          <div style="width:16px;height:11px;border:1.5px solid #f2ede2;border-radius:3px;position:relative;padding:1.5px;"><div style="width:70%;height:100%;background:#f2ede2;border-radius:1px;"></div><div style="position:absolute;right:-3px;top:3px;width:2px;height:4px;background:#f2ede2;border-radius:0 1px 1px 0;"></div></div>
+        </div>
+      </div>
+
+      <!-- top bar: back out (X) -->
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:10px 20px 0;">
+        <div style="width:40px;height:40px;border-radius:50%;background:rgba(20,18,14,.4);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f2ede2" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </div>
+        <div style="width:40px;"></div>
+      </div>
+
+      <!-- task reminder pill -->
+      <div style="position:relative;display:flex;justify-content:center;margin-top:12px;">
+        <div style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;background:rgba(20,18,14,.42);backdrop-filter:blur(6px);padding:10px 20px;border-radius:22px;border:1px solid rgba(255,255,255,.1);">
+          <span style="font-size:10.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#c2cdae;">Proving</span>
+          <span style="font-family:'Zilla Slab',serif;font-weight:600;font-size:19px;color:#f4f0e6;line-height:1;">Read 20 pages</span>
+        </div>
+      </div>
+
+      <!-- review label -->
+      <div style="position:absolute;left:0;right:0;bottom:184px;display:flex;justify-content:center;">
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:20px;background:rgba(20,18,14,.4);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.08);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c2cdae" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7.5"></circle><path d="M16.5 16.5L21 21"></path></svg>
+          <span style="font-size:13px;font-weight:500;color:#e9e3d3;">Does this show your proof clearly?</span>
+        </div>
+      </div>
+
+      <!-- bottom actions -->
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:0 26px 30px;display:flex;flex-direction:column;gap:10px;">
+        <button style="width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:linear-gradient(155deg,#c07a54,#a6603d);color:#f6efe6;border:none;padding:17px;border-radius:26px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 10px 22px -8px rgba(140,74,42,.7),inset 0 1px 0 rgba(255,255,255,.3);">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#f6efe6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+          Use this photo
+        </button>
+        <button style="width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:rgba(40,36,28,.5);backdrop-filter:blur(6px);color:#f2ede2;border:1px solid rgba(255,255,255,.16);padding:15px;border-radius:24px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:15px;cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f2ede2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a8 8 0 0 1 13.5-4L20 6"></path><path d="M20 4v3.5h-3.5"></path><path d="M20 16a8 8 0 0 1-13.5 4L4 18"></path><path d="M4 20v-3.5h3.5"></path></svg>
+          Retake
+        </button>
+      </div>
+
+      <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(244,240,230,.4);"></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:940}}"></script>
+</body>
+</html>

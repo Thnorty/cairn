@@ -21,6 +21,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_gradients.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
@@ -30,9 +31,17 @@ import '../widgets/status_chip.dart';
 /// centered uppercase "VERIFICATION" label, and a matching spacer on the
 /// other side so the label stays visually centered.
 class VerificationHeader extends StatelessWidget {
-  const VerificationHeader({super.key, required this.onClose});
+  const VerificationHeader({super.key, required this.onClose, this.label});
 
   final VoidCallback onClose;
+
+  /// Overrides the centered label, defaulting to
+  /// [AppLocalizations.verificationHeaderLabel]. The Camera Unavailable
+  /// screen reuses this exact header shell with its own "PROVE IT" label
+  /// (`Cairn Camera Unavailable.dc.html`'s header row is structurally
+  /// identical to the verification-flow screens', just a different word)
+  /// rather than duplicating the close-button/spacer layout for one string.
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +52,7 @@ class VerificationHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           CloseCircleButton(onTap: onClose),
-          Text(l10n.verificationHeaderLabel, style: AppTextStyles.sectionLabel),
+          Text(label ?? l10n.verificationHeaderLabel, style: AppTextStyles.sectionLabel),
           const SizedBox(width: 38),
         ],
       ),
@@ -99,6 +108,7 @@ class SealCircle extends StatelessWidget {
     required this.ringColor,
     required this.shadowColor,
     required this.icon,
+    this.size = 60,
   });
 
   final List<Color> gradientColors;
@@ -106,11 +116,16 @@ class SealCircle extends StatelessWidget {
   final Color shadowColor;
   final Widget icon;
 
+  /// Diameter in logical pixels. 60 (the default) matches every
+  /// Result/Failed/Pending screen; the Camera Unavailable screen's own seal
+  /// is a shade larger (64px in `Cairn Camera Unavailable.dc.html`).
+  final double size;
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 60,
-      height: 60,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(
@@ -217,21 +232,48 @@ class ReasonBanner extends StatelessWidget {
     required this.backgroundColor,
     required this.iconColor,
     this.leadText,
-    required this.bodyText,
+    this.bodyText,
     required this.textColor,
     this.leadColor,
-  });
+    this.spans,
+  }) : assert(
+          spans != null || bodyText != null,
+          'ReasonBanner needs either bodyText (with an optional leadText) '
+          'or a fully custom spans list',
+        );
 
   final Color backgroundColor;
   final Color iconColor;
   final String? leadText;
-  final String bodyText;
+  final String? bodyText;
   final Color textColor;
   final Color? leadColor;
+
+  /// Fully custom rich-text content, for a design whose bold span sits in
+  /// the *middle* of the sentence rather than as a simple lead-then-body
+  /// (e.g. `Cairn Camera Unavailable.dc.html`'s Settings hint: "...allow
+  /// Cairn camera access in **Settings › Privacy**. Gallery proofs...").
+  /// When given, this replaces the [leadText]/[bodyText] composition
+  /// entirely; callers still get this banner's icon/box chrome and base
+  /// text style (family/size/colour), since child spans with no [TextStyle]
+  /// of their own inherit it.
+  final List<InlineSpan>? spans;
 
   @override
   Widget build(BuildContext context) {
     final lead = leadText;
+    final content = spans ??
+        [
+          if (lead != null)
+            TextSpan(
+              text: '$lead ',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: leadColor ?? textColor,
+              ),
+            ),
+          TextSpan(text: bodyText),
+        ];
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.symmetric(horizontal: 16, vertical: 14),
@@ -261,16 +303,84 @@ class ReasonBanner extends StatelessWidget {
               child: Text.rich(
                 TextSpan(
                   style: AppTextStyles.body.copyWith(color: textColor, height: 1.5),
+                  children: content,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The soft parchment "info card" treatment for a remaining-attempts figure:
+/// a small icon circle inside a rounded gradient card
+/// (`Cairn Verify Too Old.dc.html`'s "doesn't use a try" card), reused as-is
+/// by [VerifyFailedScreen] for its own tries-left figure - that screen used
+/// to render it as a small muted footer caption, easy to miss (see this
+/// run's spec), so it now gets this same clear card treatment instead of an
+/// invented new component style.
+///
+/// [leadText], when given, renders in the banner's plain body weight ahead
+/// of the always-bold [emphasisText] (matching the too-old screen's own
+/// "This didn't use a try. **You still have N left today.**" two-tone
+/// split); when omitted, [emphasisText] is the whole line, rendered bold in
+/// full (the too-old screen never needs this - `VerifyFailedScreen`'s own
+/// copy is already one complete sentence with no separate lead clause).
+class AttemptsInfoCard extends StatelessWidget {
+  const AttemptsInfoCard({
+    super.key,
+    required this.icon,
+    required this.iconBackground,
+    this.leadText,
+    required this.emphasisText,
+  });
+
+  final Widget icon;
+  final Color iconBackground;
+  final String? leadText;
+  final String emphasisText;
+
+  @override
+  Widget build(BuildContext context) {
+    final lead = leadText;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.symmetric(horizontal: 16, vertical: 13),
+      decoration: BoxDecoration(
+        gradient: AppGradients.card,
+        border: Border.all(color: AppColors.cardBorder),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(color: iconBackground, shape: BoxShape.circle),
+            alignment: Alignment.center,
+            child: icon,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Material(
+              type: MaterialType.transparency,
+              child: Text.rich(
+                TextSpan(
+                  style: const TextStyle(
+                    fontFamily: AppFontFamilies.workSans,
+                    fontSize: 12.5,
+                    height: 1.4,
+                    color: Color(0xFF544D40),
+                  ),
                   children: [
-                    if (lead != null)
-                      TextSpan(
-                        text: '$lead ',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: leadColor ?? textColor,
-                        ),
-                      ),
-                    TextSpan(text: bodyText),
+                    if (lead != null) TextSpan(text: '$lead '),
+                    TextSpan(
+                      text: emphasisText,
+                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF3F3A2F)),
+                    ),
                   ],
                 ),
               ),
@@ -447,6 +557,79 @@ class _SealClockPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SealClockPainter oldDelegate) => color != oldDelegate.color;
+}
+
+/// The clock-rewind/history glyph inside the Verify Too Old screen's muted
+/// seal (a near-full circular arrow with clock hands inside, matching
+/// `Cairn Verify Too Old.dc.html`'s `M3.5 10a8.5 8.5 0 1 1 .8 4.5` +
+/// `M3.2 5v4.4h4.4` + `M12 8.4v4.1l2.9 1.8`): a hand-approximated reading of
+/// that SVG rather than a literal path replication, matching this file's
+/// existing icon painters (e.g. [SealClockIcon], [SealExclamationIcon]).
+class SealHistoryIcon extends StatelessWidget {
+  const SealHistoryIcon({super.key, this.color = AppColors.richCream, this.size = 27});
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _SealHistoryPainter(color: color)),
+    );
+  }
+}
+
+class _SealHistoryPainter extends CustomPainter {
+  const _SealHistoryPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.0875
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final w = size.width / 24;
+    final h = size.height / 24;
+
+    // Near-full circle (the "rewind" ring), leaving a small gap at the
+    // upper-left for the arrow tip below.
+    final center = Offset(12 * w, 10.9 * h);
+    final radius = 8.5 * w;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      200 * (3.1415926535 / 180),
+      350 * (3.1415926535 / 180),
+      false,
+      paint,
+    );
+
+    // Arrow tip at the gap.
+    canvas.drawPath(
+      Path()
+        ..moveTo(3.2 * w, 5 * h)
+        ..lineTo(3.2 * w, 9.4 * h)
+        ..lineTo(7.6 * w, 9.4 * h),
+      paint,
+    );
+
+    // Clock hands inside the ring.
+    canvas.drawPath(
+      Path()
+        ..moveTo(12 * w, 8.4 * h)
+        ..lineTo(12 * w, 12.5 * h)
+        ..lineTo(14.9 * w, 14.3 * h),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_SealHistoryPainter oldDelegate) => color != oldDelegate.color;
 }
 
 /// Standard footer padding/background fade shared by every full-width

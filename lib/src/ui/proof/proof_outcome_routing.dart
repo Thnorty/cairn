@@ -5,16 +5,17 @@ import 'package:flutter/material.dart' show MaterialPageRoute;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../l10n/generated/app_localizations.dart';
 import '../../models/local_date.dart';
 import '../../models/proof_verdict.dart';
 import '../../providers.dart';
 import '../../repo/completion_repository.dart';
+import '../../services/stale_photo_age.dart';
 import 'camera_capture_screen.dart';
 import 'daily_limit_screen.dart';
 import 'verify_failed_screen.dart';
 import 'verify_pending_screen.dart';
 import 'verify_result_screen.dart';
+import 'verify_too_old_screen.dart';
 
 /// Routes to the correct outcome screen for a [CompleteOccurrenceResult], or
 /// does nothing and returns false for the handful of rejections "not
@@ -125,20 +126,35 @@ Future<bool> routeToProofOutcome(
       ));
       return true;
 
-    case CompletionRejectedStalePhoto():
-      final counts = await completionRepo.liveCompletionCountsByTask();
+    case CompletionRejectedStalePhoto(:final photoAgeMillis):
       final attemptsUsed = await completionRepo.attemptsUsedToday(taskId);
       if (!context.mounted) return true;
       final remaining = policy.attemptsPerTaskPerDay - attemptsUsed;
-      final l10n = AppLocalizations.of(context)!;
-      go(VerifyFailedScreen(
+      // A stale photo never burns an attempt (see
+      // CompletionRejectedStalePhoto's own doc comment), so [remaining] here
+      // is the task's full, un-decremented count - unaffected by this
+      // rejection.
+      final now = clock.nowEpochMillis();
+      // The repository computed photoAgeMillis as `now - photoTakenAt` at
+      // rejection time (its own Clock read, a moment before this one); this
+      // reconstructs that same photoTakenAt so the screen can show both the
+      // photo's own "taken HH:MM" time and its age, per
+      // `stalePhotoAgeMinutes`'s own doc comment on why that computation
+      // lives in a tested helper, not this routing function or the widget.
+      // photoAgeMillis is only ever null under a non-default ProofPolicy
+      // (allowUnknownPhotoTime: false); there is no design for an unknown
+      // photo age, so this degrades to treating the photo as taken "now".
+      final photoTakenAtMillis = photoAgeMillis == null ? now : now - photoAgeMillis;
+      go(VerifyTooOldScreen(
         taskTitle: taskTitle,
-        atMillis: clock.nowEpochMillis(),
-        imageBytes: imageBytes,
-        cairnNumber: cairnNumber,
-        stoneCount: counts[taskId] ?? 0,
+        photoTakenAtMillis: photoTakenAtMillis,
+        ageMinutes: stalePhotoAgeMinutes(
+          photoTakenAtMillis: photoTakenAtMillis,
+          nowMillis: now,
+        ),
+        imageBytes: imageBytes!,
         attemptsRemaining: remaining < 0 ? 0 : remaining,
-        reason: l10n.stalePhotoReason,
+        recencyWindowMinutes: policy.recencyWindow.inMinutes,
         onRetake: retake,
         onCancel: popToHome,
       ));

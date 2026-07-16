@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart' show MaterialLocalizations, Scaffold;
+import 'package:flutter/material.dart' show MaterialPageRoute, Scaffold;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,7 +13,10 @@ import '../../services/camera_session.dart';
 import '../../services/photo_capture.dart' show CapturedPhoto;
 import '../../services/proof_flow.dart';
 import '../theme/app_gradients.dart';
-import '../widgets/status_chip.dart' show CloseGlyph;
+import '../widgets/status_chip.dart' show GalleryGlyph;
+import 'camera_chrome.dart';
+import 'camera_unavailable_screen.dart';
+import 'photo_review_screen.dart';
 import 'proof_outcome_routing.dart';
 
 /// `Cairn Camera Capture.dc.html`: the custom in-app camera screen (live
@@ -28,11 +31,10 @@ import 'proof_outcome_routing.dart';
 /// Owns a [CameraSession] for exactly its own lifetime (acquired here in
 /// `initState`, released in `dispose`) - see `cameraSessionFactoryProvider`'s
 /// doc comment for why that's a factory, not a shared provider instance.
-/// Degrades gracefully to the gallery-only path when the camera can't be
-/// started at all (see [_CameraPhase.unavailable]): there is no canonical
-/// design for that state (a noted gap - see the phase-3 implementation
-/// report), so it reuses this same screen's own chrome and gallery control
-/// rather than inventing a new layout.
+/// Degrades gracefully when the camera can't be started at all: navigates
+/// (`pushReplacement`) to [CameraUnavailableScreen] - its own canonical
+/// design (`Cairn Camera Unavailable.dc.html`), not an inline fallback
+/// bolted onto this screen's own dark camera-app chrome.
 class CameraCaptureScreen extends ConsumerStatefulWidget {
   const CameraCaptureScreen({
     super.key,
@@ -53,12 +55,20 @@ class CameraCaptureScreen extends ConsumerStatefulWidget {
   ConsumerState<CameraCaptureScreen> createState() => _CameraCaptureScreenState();
 }
 
-enum _CameraPhase { initializing, live, unavailable, verifying }
+enum _CameraPhase { initializing, live, reviewing, verifying }
 
 class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
   late final CameraSession _session;
   _CameraPhase _phase = _CameraPhase.initializing;
   bool _busy = false;
+
+  /// Set once the shutter fires or a gallery pick succeeds, while
+  /// [_phase] is [_CameraPhase.reviewing]: the just-shot/picked photo
+  /// awaiting "Use this photo"/"Retake" (or "Choose another") on
+  /// [PhotoReviewScreen] - see [build]'s own short-circuit. Cleared again on
+  /// a camera retake; replaced (not cleared) by a fresh pick on "Choose
+  /// another".
+  CapturedPhoto? _reviewCapture;
 
   @override
   void initState() {
@@ -70,7 +80,26 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
   Future<void> _initCamera() async {
     final ok = await _session.initialize();
     if (!mounted) return;
-    setState(() => _phase = ok ? _CameraPhase.live : _CameraPhase.unavailable);
+    if (!ok) {
+      // The camera couldn't be started at all (no hardware, permission
+      // denied, or the plugin is unavailable): hand off to its own
+      // canonical screen rather than degrading in place. `pushReplacement`
+      // (not `push`): this screen's live camera resource is now pointless
+      // to keep around underneath, and closing the unavailable screen
+      // should return the user to wherever "Prove it" was tapped from, not
+      // back to a dead viewfinder.
+      Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
+        builder: (_) => CameraUnavailableScreen(
+          taskId: widget.taskId,
+          taskTitle: widget.taskTitle,
+          cairnNumber: widget.cairnNumber,
+          occurrenceDate: widget.occurrenceDate,
+          slot: widget.slot,
+        ),
+      ));
+      return;
+    }
+    setState(() => _phase = _CameraPhase.live);
   }
 
   @override
@@ -79,21 +108,100 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
     super.dispose();
   }
 
+  /// Fires the shutter and shows the just-shot still on [PhotoReviewScreen]
+  /// (`Cairn Photo Review.dc.html`) - does NOT submit. Submission only
+  /// happens if/when the user taps "Use this photo" (see [_handleUsePhoto]);
+  /// "Retake" (see [_handleRetakeCameraPhoto]) discards this capture and
+  /// returns here to [_CameraPhase.live] without ever calling
+  /// `ProofFlowService.submitCapturedProof`.
   Future<void> _handleShutter() async {
     if (_busy || _phase != _CameraPhase.live) return;
-    setState(() {
-      _busy = true;
-      _phase = _CameraPhase.verifying;
-    });
+    setState(() => _busy = true);
     try {
       final path = await _session.takePicture();
       if (!mounted) return;
       final clock = ref.read(clockProvider);
-      final captured = CapturedPhoto(
-        tempPath: path,
-        source: ProofSource.camera,
-        takenAtMillis: clock.nowEpochMillis(),
+      setState(() {
+        _reviewCapture = CapturedPhoto(
+          tempPath: path,
+          source: ProofSource.camera,
+          takenAtMillis: clock.nowEpochMillis(),
+        );
+        _phase = _CameraPhase.reviewing;
+      });
+    } catch (_) {
+      // The shutter hiccuped: stay on a live viewfinder rather than
+      // stranding the user on a broken review screen.
+      if (mounted) setState(() => _phase = _CameraPhase.live);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Runs [ProofFlowService.captureForReview] for the gallery path and acts
+  /// on its outcome. Shared by the live screen's own "Gallery" control (the
+  /// first pick) and the Photo Review screen's "Choose another" (every
+  /// re-pick) - both do exactly the same thing: reopen the gallery picker
+  /// and, on success, show (or replace) the review photo. A cancel leaves
+  /// whatever was on screen before untouched (the live camera on a first
+  /// pick, the previous review photo on a re-pick).
+  Future<void> _pickFromGallery() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final proofFlow = ref.read(proofFlowServiceProvider);
+      final outcome = await proofFlow.captureForReview(
+        taskId: widget.taskId,
+        occurrenceDate: widget.occurrenceDate,
+        slot: widget.slot,
+        source: ProofSource.gallery,
       );
+      if (!mounted) return;
+      switch (outcome) {
+        case GalleryCaptureCancelled():
+          break; // stay put; nothing to route
+        case GalleryCaptureRejected(:final result):
+          final handled = await routeToProofOutcome(
+            context,
+            ref,
+            result: result,
+            taskId: widget.taskId,
+            taskTitle: widget.taskTitle,
+            cairnNumber: widget.cairnNumber,
+            occurrenceDate: widget.occurrenceDate,
+            slot: widget.slot,
+            replace: true,
+          );
+          if (!handled && mounted) Navigator.of(context).pop();
+        case GalleryCapturePicked(:final captured):
+          setState(() {
+            _reviewCapture = captured;
+            _phase = _CameraPhase.reviewing;
+          });
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// The Photo Review screen's "Use this photo" action: submits
+  /// [_reviewCapture] via `ProofFlowService.submitCapturedProof` and routes
+  /// to the matching outcome screen, exactly as the pre-review shutter flow
+  /// always did. Only a just-shot camera photo switches to the
+  /// pulsing "Verifying…" overlay ([_CameraPhase.verifying]) while the
+  /// round trip runs, matching that overlay's own camera-shutter origin; a
+  /// gallery-sourced photo just stays on the (busy-disabled) review screen
+  /// until routing happens, matching this screen's pre-review gallery
+  /// behaviour (which never showed that overlay either).
+  Future<void> _handleUsePhoto() async {
+    final captured = _reviewCapture;
+    if (captured == null || _busy) return;
+    final isCameraSource = captured.source == ProofSource.camera;
+    setState(() {
+      _busy = true;
+      if (isCameraSource) _phase = _CameraPhase.verifying;
+    });
+    try {
       final proofFlow = ref.read(proofFlowServiceProvider);
       final (result, bytes) = await proofFlow.submitCapturedProof(
         taskId: widget.taskId,
@@ -118,47 +226,43 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
         Navigator.of(context).pop();
       }
     } catch (_) {
-      // The shutter/network hiccuped: back to a live viewfinder rather than
-      // stranding the user on a permanent "Verifying…" screen.
-      if (mounted) setState(() => _phase = _CameraPhase.live);
+      // The submit round trip hiccuped (e.g. a transient compress/IO
+      // error): back to reviewing the same photo rather than losing it or
+      // stranding the user on a permanent verifying overlay.
+      if (mounted) setState(() => _phase = _CameraPhase.reviewing);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
-  Future<void> _handleGallery() async {
-    if (_busy) return;
-    setState(() => _busy = true);
+  /// The Photo Review screen's "Retake" action for a just-shot camera
+  /// photo: discards [_reviewCapture] (best-effort deleting its raw temp
+  /// file - this app owns that file, unlike a gallery pick, whose file the
+  /// OS/photo library owns and this app must never delete) and returns to
+  /// the still-live camera. Never calls `submitCapturedProof`.
+  ///
+  /// Cleanup goes through the injected [ProofPhotoStore] (`delete` is a
+  /// generic "remove whatever's at this path, ignore failures" operation,
+  /// not tied to a path the store itself produced via `save`) rather than a
+  /// raw `dart:io` File call: every widget test already fakes that provider
+  /// (`FakeProofPhotoStore`), and real file I/O started directly from a
+  /// widget callback doesn't resolve reliably under `flutter_test`'s pumped
+  /// frames - the exact reason `PhotoCapture`/`ImageCompressor` are
+  /// injected abstractions here too, never touched directly.
+  Future<void> _handleRetakeCameraPhoto() async {
+    final captured = _reviewCapture;
+    if (captured == null) return;
     try {
-      final proofFlow = ref.read(proofFlowServiceProvider);
-      final flowResult = await proofFlow.completeWithProof(
-        taskId: widget.taskId,
-        occurrenceDate: widget.occurrenceDate,
-        slot: widget.slot,
-        source: ProofSource.gallery,
-      );
-      if (!mounted) return;
-      switch (flowResult) {
-        case ProofFlowCancelled():
-          break; // stay on this screen; nothing to route
-        case ProofFlowCompleted(result: final result, imageBytes: final bytes):
-          final handled = await routeToProofOutcome(
-            context,
-            ref,
-            result: result,
-            taskId: widget.taskId,
-            taskTitle: widget.taskTitle,
-            cairnNumber: widget.cairnNumber,
-            occurrenceDate: widget.occurrenceDate,
-            slot: widget.slot,
-            imageBytes: bytes,
-            replace: true,
-          );
-          if (!handled && mounted) Navigator.of(context).pop();
-      }
-    } finally {
-      if (mounted) setState(() => _busy = false);
+      await ref.read(proofPhotoStoreProvider).delete(captured.tempPath);
+    } catch (_) {
+      // Best-effort only: a stray temp file left behind costs only disk
+      // space, so this never surfaces an error to the user.
     }
+    if (!mounted) return;
+    setState(() {
+      _reviewCapture = null;
+      _phase = _CameraPhase.live;
+    });
   }
 
   Future<void> _handleFlip() async {
@@ -170,6 +274,22 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
+    final reviewCapture = _reviewCapture;
+    if (_phase == _CameraPhase.reviewing && reviewCapture != null) {
+      final isCameraSource = reviewCapture.source == ProofSource.camera;
+      return PhotoReviewScreen(
+        imagePath: reviewCapture.tempPath,
+        taskTitle: widget.taskTitle,
+        secondaryLabel: isCameraSource ? l10n.retakeButton : l10n.chooseAnotherPhotoButton,
+        onUsePhoto: _busy ? null : _handleUsePhoto,
+        onSecondaryAction: _busy
+            ? null
+            : (isCameraSource ? _handleRetakeCameraPhoto : _pickFromGallery),
+        onClose: () => Navigator.of(context).pop(),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF211D18),
       body: Stack(
@@ -198,9 +318,16 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
     switch (_phase) {
       case _CameraPhase.live:
       case _CameraPhase.verifying:
-        return _session.buildPreview();
+        return _CoverCameraPreview(
+          aspectRatio: _session.previewAspectRatio,
+          child: _session.buildPreview(),
+        );
+      case _CameraPhase.reviewing:
+        // Unreachable in practice: build() short-circuits to
+        // PhotoReviewScreen before ever calling this method while
+        // reviewing. Kept only so this switch stays exhaustive.
+        return const SizedBox.shrink();
       case _CameraPhase.initializing:
-      case _CameraPhase.unavailable:
         return const DecoratedBox(decoration: BoxDecoration(color: Color(0xFF211D18)));
     }
   }
@@ -209,27 +336,14 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
     return SafeArea(
       child: Column(
         children: [
-          _TopBar(onClose: () => Navigator.of(context).pop()),
+          CameraTopBar(onClose: () => Navigator.of(context).pop()),
           const SizedBox(height: 12),
-          _TaskPill(label: l10n.provingLabel, taskTitle: widget.taskTitle),
+          CameraTaskPill(label: l10n.provingLabel, taskTitle: widget.taskTitle),
           const Spacer(),
-          if (_phase == _CameraPhase.unavailable)
-            Padding(
-              padding: const EdgeInsetsDirectional.symmetric(horizontal: 32, vertical: 24),
-              child: Text(
-                l10n.cameraUnavailableMessage,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontFamily: 'Work Sans',
-                  fontSize: 14,
-                  color: Color(0xFFE4DECE),
-                ),
-              ),
-            ),
           _BottomControls(
             galleryLabel: l10n.galleryButton,
             flipLabel: l10n.flipCameraButton,
-            onGallery: _busy ? null : _handleGallery,
+            onGallery: _busy ? null : _pickFromGallery,
             onShutter: _phase == _CameraPhase.live && !_busy ? _handleShutter : null,
             onFlip: _phase == _CameraPhase.live && _session.hasMultipleCameras && !_busy
                 ? _handleFlip
@@ -242,82 +356,39 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
   }
 }
 
-class _TopBar extends StatelessWidget {
-  const _TopBar({required this.onClose});
+/// Sizes [child] (the live camera preview) to [aspectRatio] and scales it up
+/// to fill the viewfinder by center-cropping (`BoxFit.cover`), never by
+/// stretching.
+///
+/// Needed because this screen sits its preview inside a
+/// `Stack(fit: StackFit.expand)` (see `build()`/`_buildBackdrop()` above),
+/// which hands its non-positioned children *tight* constraints - and a
+/// tight-constrained `AspectRatio` (which is exactly what `package:camera`'s
+/// own `CameraPreview` wraps itself in) can't honour its own ratio and just
+/// stretches to fill instead, distorting the live feed. Wrapping the preview
+/// in a correctly-proportioned box first (whose absolute size doesn't
+/// matter, only its ratio), then letting `FittedBox(fit: cover)` do the
+/// scaling/cropping against an unconstrained `OverflowBox`, is the standard
+/// fix for that Stack/AspectRatio interaction - `CameraPreview`'s own inner
+/// `AspectRatio` still runs, but by the time it does, the box it's laying
+/// out into already has the right proportions, so being forced to fill it
+/// exactly causes no distortion.
+class _CoverCameraPreview extends StatelessWidget {
+  const _CoverCameraPreview({required this.aspectRatio, required this.child});
 
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    final closeLabel = MaterialLocalizations.of(context).closeButtonLabel;
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(20, 10, 20, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Semantics(
-            button: true,
-            label: closeLabel,
-            child: GestureDetector(
-              key: const ValueKey('camera-close'),
-              onTap: onClose,
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(color: Color(0x66141210), shape: BoxShape.circle),
-                alignment: Alignment.center,
-                child: const CloseGlyph(color: Color(0xFFF2EDE2), size: 16),
-              ),
-            ),
-          ),
-          const SizedBox(width: 40),
-        ],
-      ),
-    );
-  }
-}
-
-class _TaskPill extends StatelessWidget {
-  const _TaskPill({required this.label, required this.taskTitle});
-
-  final String label;
-  final String taskTitle;
+  final double aspectRatio;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: const EdgeInsetsDirectional.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0x6B141210),
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: const Color(0x1AFFFFFF)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontFamily: 'Work Sans',
-                fontWeight: FontWeight.w600,
-                fontSize: 10.5,
-                letterSpacing: 2,
-                color: Color(0xFFC2CDAE),
-              ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              taskTitle,
-              style: const TextStyle(
-                fontFamily: 'Zilla Slab',
-                fontWeight: FontWeight.w600,
-                fontSize: 19,
-                color: Color(0xFFF4F0E6),
-              ),
-            ),
-          ],
+    return ClipRect(
+      child: OverflowBox(
+        alignment: Alignment.center,
+        maxWidth: double.infinity,
+        maxHeight: double.infinity,
+        child: FittedBox(
+          fit: BoxFit.cover,
+          child: SizedBox(width: 100 * aspectRatio, height: 100, child: child),
         ),
       ),
     );
@@ -351,7 +422,7 @@ class _BottomControls extends StatelessWidget {
         children: [
           _IconLabelButton(
             key: const ValueKey('camera-gallery'),
-            icon: const _GalleryGlyph(),
+            icon: const GalleryGlyph(color: Color(0xFFF2EDE2)),
             label: galleryLabel,
             onTap: onGallery,
           ),
@@ -362,7 +433,7 @@ class _BottomControls extends StatelessWidget {
           if (showShutter)
             _IconLabelButton(
               key: const ValueKey('camera-flip'),
-              icon: const _FlipGlyph(),
+              icon: const RefreshCycleGlyph(),
               label: flipLabel,
               onTap: onFlip,
             )
@@ -459,88 +530,6 @@ class _ShutterButton extends StatelessWidget {
       ),
     );
   }
-}
-
-class _GalleryGlyph extends StatelessWidget {
-  const _GalleryGlyph();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(width: 24, height: 24, child: CustomPaint(painter: _GalleryGlyphPainter()));
-  }
-}
-
-class _GalleryGlyphPainter extends CustomPainter {
-  const _GalleryGlyphPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final stroke = Paint()
-      ..color = const Color(0xFFF2EDE2)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.7
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final w = size.width / 24;
-    final h = size.height / 24;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(3 * w, 4 * h, 18 * w, 16 * h),
-        Radius.circular(3 * w),
-      ),
-      stroke,
-    );
-    canvas.drawCircle(Offset(8.5 * w, 9.5 * h), 1.6 * w, stroke);
-    final path = Path()
-      ..moveTo(3.5 * w, 17 * h)
-      ..lineTo(8.5 * w, 12.5 * h)
-      ..lineTo(12.5 * w, 16 * h)
-      ..lineTo(15.5 * w, 13.5 * h)
-      ..lineTo(20.5 * w, 18 * h);
-    canvas.drawPath(path, stroke);
-  }
-
-  @override
-  bool shouldRepaint(_GalleryGlyphPainter oldDelegate) => false;
-}
-
-class _FlipGlyph extends StatelessWidget {
-  const _FlipGlyph();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(width: 23, height: 23, child: CustomPaint(painter: _FlipGlyphPainter()));
-  }
-}
-
-class _FlipGlyphPainter extends CustomPainter {
-  const _FlipGlyphPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final stroke = Paint()
-      ..color = const Color(0xFFF2EDE2)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.7
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final w = size.width / 24;
-    final h = size.height / 24;
-    final top = Path()..moveTo(4 * w, 8 * h);
-    top.arcToPoint(Offset(17.5 * w, 4 * h), radius: Radius.circular(8 * w), clockwise: true);
-    top.lineTo(20 * w, 6 * h);
-    canvas.drawPath(top, stroke);
-    canvas.drawPath(Path()..moveTo(20 * w, 4 * h)..lineTo(20 * w, 7.5 * h)..lineTo(16.5 * w, 7.5 * h), stroke);
-
-    final bottom = Path()..moveTo(20 * w, 16 * h);
-    bottom.arcToPoint(Offset(6.5 * w, 20 * h), radius: Radius.circular(8 * w), clockwise: true);
-    bottom.lineTo(4 * w, 18 * h);
-    canvas.drawPath(bottom, stroke);
-    canvas.drawPath(Path()..moveTo(4 * w, 20 * h)..lineTo(4 * w, 16.5 * h)..lineTo(7.5 * w, 16.5 * h), stroke);
-  }
-
-  @override
-  bool shouldRepaint(_FlipGlyphPainter oldDelegate) => false;
 }
 
 /// The "Verifying…" overlay (state 2 of `Cairn Camera Capture.dc.html`): a

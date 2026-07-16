@@ -36,6 +36,7 @@ class CairnStack extends StatelessWidget {
     required this.stoneCount,
     this.scale = 1.0,
     this.muted = false,
+    this.mutedOpacity = true,
     this.highlightTop = false,
     this.pendingTop = false,
   })  : assert(stoneCount >= 1, 'a cairn always has at least one stone'),
@@ -54,10 +55,23 @@ class CairnStack extends StatelessWidget {
   final double scale;
 
   /// The dimmed/desaturated variant used for a not-yet-due task (Home
-  /// Card 3): lower-saturation stone colours, lighter shadows, and the
-  /// whole stack at reduced opacity, matching the source file's
-  /// `opacity:.75` wrapper.
+  /// Card 3): lower-saturation stone colours and lighter shadows. By
+  /// default this also wraps the whole stack at reduced opacity, matching
+  /// the source file's `opacity:.75` wrapper - see [mutedOpacity] to keep
+  /// the muted colour palette without that extra fade.
   final bool muted;
+
+  /// Whether [muted] also applies the reduced-opacity wrapper. Defaults to
+  /// true (the original combined behaviour every existing caller/test
+  /// relies on); Home's scheduled-but-still-provable card (Card 3 in
+  /// `Cairn Home.dc.html`, updated 2026-07-16 to add a working "Prove it"
+  /// button) keeps this stack's muted stone colours but no longer applies
+  /// the opacity fade - the design file dropped the wrapping `opacity:.75`
+  /// from that card's mini-cairn while leaving every individual stone's own
+  /// (already muted) colour literals untouched, so the colour choice and
+  /// the fade are two independent things, not one. Ignored when [muted] is
+  /// false.
+  final bool mutedOpacity;
 
   /// Tints the topmost stone sage and gives it a soft glow ring, marking
   /// a freshly-placed stone from a just-verified completion (Home
@@ -205,7 +219,7 @@ class CairnStack extends StatelessWidget {
       ),
     );
 
-    return muted ? Opacity(opacity: 0.75, child: stack) : stack;
+    return muted && mutedOpacity ? Opacity(opacity: 0.75, child: stack) : stack;
   }
 
   List<_StoneLayout> _layout() {

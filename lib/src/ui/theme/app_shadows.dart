@@ -110,4 +110,25 @@ abstract final class AppShadows {
   static const List<BoxShadow> pendingStoneRing = [
     BoxShadow(color: AppColors.pendingRing, blurRadius: 4, spreadRadius: 3),
   ];
+
+  /// Profile rank hero card: `0 16px 30px -18px rgba(40,44,26,.7)`.
+  static const List<BoxShadow> heroCard = [
+    BoxShadow(
+      color: Color(0xB3282C1A),
+      offset: Offset(0, 16),
+      blurRadius: 30,
+      spreadRadius: -18,
+    ),
+  ];
+
+  /// Profile rank hero's circular mountain badge:
+  /// `0 6px 12px -6px rgba(0,0,0,.5)`.
+  static const List<BoxShadow> heroBadge = [
+    BoxShadow(
+      color: Color(0x80000000),
+      offset: Offset(0, 6),
+      blurRadius: 12,
+      spreadRadius: -6,
+    ),
+  ];
 }

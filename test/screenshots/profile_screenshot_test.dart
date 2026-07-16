@@ -1,0 +1,160 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:cairn/l10n/generated/app_localizations.dart';
+import 'package:cairn/src/clock.dart';
+import 'package:cairn/src/db/database.dart';
+import 'package:cairn/src/models/proof_verdict.dart';
+import 'package:cairn/src/providers.dart';
+import 'package:cairn/src/repo/completion_repository.dart';
+import 'package:cairn/src/repo/task_repository.dart';
+import 'package:cairn/src/services/proof_verifier.dart';
+import 'package:cairn/src/ui/shell/app_shell.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import '../helpers.dart';
+import '../support/load_app_fonts.dart';
+
+/// See `home_screenshot_test.dart`'s identical helper for the full
+/// rationale (a drift `.watch()` subscription's teardown timer needs an
+/// extra pump after the widget tree is replaced).
+void testScreenshotWidgets(
+  String description,
+  Future<void> Function(WidgetTester tester) body,
+) {
+  testWidgets(description, (tester) async {
+    await body(tester);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(Duration.zero);
+  });
+}
+
+/// Dev-only screenshot harness for the Profile ("You") screen - see
+/// `home_screenshot_test.dart`'s doc comment for the full rationale (no
+/// pixel-equality assertions; a quick visual spot check against
+/// `Cairn Profile.dc.html`).
+void main() {
+  const outputDir = 'test/screenshots/output';
+
+  setUpAll(() async {
+    await loadAppFonts();
+  });
+
+  Future<void> captureAt392x846(
+    WidgetTester tester,
+    String fileName,
+  ) async {
+    final view = tester.view;
+    const pixelRatio = 2.0;
+    view.physicalSize = const Size(392, 846) * pixelRatio;
+    view.devicePixelRatio = pixelRatio;
+    addTearDown(view.resetPhysicalSize);
+    addTearDown(view.resetDevicePixelRatio);
+
+    final boundaryFinder = find.byKey(const ValueKey('screenshot-boundary'));
+    await tester.pumpAndSettle();
+
+    await tester.runAsync(() async {
+      final boundary = tester
+          .renderObject<RenderRepaintBoundary>(boundaryFinder);
+      final image = await boundary.toImage(pixelRatio: pixelRatio);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final pngBytes = byteData!.buffer.asUint8List();
+
+      final dir = Directory(outputDir);
+      await dir.create(recursive: true);
+      final file = File('$outputDir/$fileName');
+      await file.writeAsBytes(pngBytes);
+      // ignore: avoid_print
+      print('Wrote screenshot: ${file.absolute.path}');
+    });
+  }
+
+  Widget appAt(AppDatabase db, Clock clock) {
+    return ProviderScope(
+      overrides: [
+        databaseProvider.overrideWithValue(db),
+        clockProvider.overrideWithValue(clock),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: RepaintBoundary(
+          key: const ValueKey('screenshot-boundary'),
+          child: const AppShell(),
+        ),
+      ),
+    );
+  }
+
+  testScreenshotWidgets('Profile, mid-tier altitude with no pending metres', (tester) async {
+    final clock = FixedClock(d(2026, 7, 10));
+    final db = inMemoryDatabase();
+    addTearDown(db.close);
+
+    final taskRepo = TaskRepository(db, clock);
+    final verifiedVerifier = FakeProofVerifier(
+      (_) => const VerdictReceived(
+        ProofVerdict(
+          taskShown: true,
+          confidence: 0.95,
+          isScreenshotOrScreen: false,
+          reason: 'clear photo',
+        ),
+      ),
+    );
+    final completionRepo = CompletionRepository(db, clock, verifier: verifiedVerifier);
+    final task = await taskRepo.createTask(
+      title: 'Morning workout',
+      recurrenceType: RecurrenceType.daily,
+      startDate: d(2026, 6, 1),
+    );
+
+    // A real multi-day streak, one occurrence per day (so every day is
+    // trivially a "perfect day"), long enough to cross into the Ridge tier -
+    // real data through the real pipeline, not a crafted number, matching
+    // this run's spec ("drive the ladder from the real Rank for the user's
+    // actual total, not the design's frozen example values").
+    for (var day = 1; day <= 24; day++) {
+      await CompletionRepository(db, FixedClock(d(2026, 6, day)), verifier: verifiedVerifier)
+          .completeOccurrence(taskId: task.id, occurrenceDate: d(2026, 6, day));
+    }
+    final total = await completionRepo.totalAltitude();
+    expect(total, greaterThanOrEqualTo(450)); // sanity: reached Ridge or beyond
+
+    await tester.pumpWidget(appAt(db, clock));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('You'));
+    await captureAt392x846(tester, 'profile_populated.png');
+  });
+
+  testScreenshotWidgets('Profile, with metres awaiting verification', (tester) async {
+    final clock = FixedClock(d(2026, 7, 10));
+    final db = inMemoryDatabase();
+    addTearDown(db.close);
+
+    final taskRepo = TaskRepository(db, clock);
+    final offlineVerifier = FakeProofVerifier((_) => const VerifierUnavailable('offline'));
+    final completionRepo = CompletionRepository(db, clock, verifier: offlineVerifier);
+
+    final task = await taskRepo.createTask(
+      title: 'Meditate 10 min',
+      recurrenceType: RecurrenceType.daily,
+      startDate: d(2026, 7, 1),
+    );
+    await completionRepo.completeWithProof(
+      taskId: task.id,
+      occurrenceDate: d(2026, 7, 10),
+      proof: ProofData(imageBytes: Uint8List.fromList([1, 2, 3])),
+    );
+
+    await tester.pumpWidget(appAt(db, clock));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('You'));
+    await captureAt392x846(tester, 'profile_pending_metres.png');
+  });
+}

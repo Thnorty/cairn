@@ -49,7 +49,7 @@ class HomeOccurrenceCardView extends StatelessWidget {
       case HomeCardStatus.due:
         return _DueCard(card: card, onProveIt: onProveIt);
       case HomeCardStatus.scheduled:
-        return _ScheduledCard(card: card);
+        return _ScheduledCard(card: card, onProveIt: onProveIt);
     }
   }
 }
@@ -213,10 +213,21 @@ class _DueCard extends StatelessWidget {
   }
 }
 
+/// The SCHEDULED state: a today occurrence not yet completed whose due time
+/// is still ahead. `Cairn Home.dc.html`'s Card 3 (updated 2026-07-16, real-
+/// device test feedback) shows the "Scheduled · HH:MM" chip as before *and*
+/// a working terracotta "Prove it" button beneath it - a task scheduled for
+/// later today is still completable *now* (the repository's own guard is
+/// "is this a generated occurrence for today", not "has its due time
+/// passed" - see `HomeService.isOccurrenceDueBy`'s doc comment and
+/// `CompletionRepository`'s no-back-fill rule, neither of which this card
+/// changes). [onProveIt] runs the exact same precheck-and-route path
+/// [_DueCard] does.
 class _ScheduledCard extends StatelessWidget {
-  const _ScheduledCard({required this.card});
+  const _ScheduledCard({required this.card, required this.onProveIt});
 
   final HomeOccurrenceCard card;
+  final VoidCallback onProveIt;
 
   @override
   Widget build(BuildContext context) {
@@ -231,7 +242,19 @@ class _ScheduledCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _CairnColumn(stoneCount: card.stoneCount, muted: true),
+          // Real-device fix: the design still gives this card its own
+          // paler surface (CardSurface's `dimmed` gradient/border/shadow,
+          // unaffected by this change) and its mini-cairn its own muted
+          // stone palette, but the design's whole-stack `opacity:.75` fade
+          // is gone - a scheduled task is now clearly actionable, not
+          // visually inert, so `mutedOpacity: false` keeps the muted
+          // colours without the extra dimming (see CairnStack's own doc
+          // comment on why those are two independent things).
+          _CairnColumn(
+            stoneCount: card.stoneCount,
+            muted: true,
+            mutedOpacity: false,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -247,6 +270,14 @@ class _ScheduledCard extends StatelessWidget {
                 StatusChip(
                   variant: StatusChipVariant.scheduled,
                   label: l10n.scheduledAt(time),
+                ),
+                const SizedBox(height: 12),
+                PrimaryButton(
+                  label: l10n.proveItButton,
+                  onPressed: onProveIt,
+                  size: PrimaryButtonSize.small,
+                  expand: false,
+                  icon: const _CameraGlyph(),
                 ),
               ],
             ),
@@ -278,12 +309,16 @@ class _CairnColumn extends StatelessWidget {
   const _CairnColumn({
     required this.stoneCount,
     this.muted = false,
+    this.mutedOpacity = true,
     this.highlightTop = false,
     this.pendingTop = false,
   });
 
   final int stoneCount;
   final bool muted;
+
+  /// Forwarded to [CairnStack.mutedOpacity]; see that widget's doc comment.
+  final bool mutedOpacity;
   final bool highlightTop;
   final bool pendingTop;
 
@@ -315,6 +350,7 @@ class _CairnColumn extends StatelessWidget {
     final stack = CairnStack(
       stoneCount: stoneCount,
       muted: muted,
+      mutedOpacity: mutedOpacity,
       highlightTop: highlightTop,
       pendingTop: pendingTop,
     );

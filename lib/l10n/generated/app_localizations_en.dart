@@ -267,10 +267,236 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get stalePhotoReason =>
-      'This photo looks too old to count as fresh proof. Try capturing it again right now.';
+  String get proveItHeaderLabel => 'PROVE IT';
 
   @override
-  String get cameraUnavailableMessage =>
-      'Camera unavailable. Choose a photo from your gallery instead.';
+  String get verifyTooOldTitle => 'This photo is too old';
+
+  @override
+  String taskNameTakenAt(String taskName, String time) {
+    return '$taskName · taken $time';
+  }
+
+  @override
+  String stalePhotoAgeBadge(num minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes min old',
+      one: '$minutes min old',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get stalePhotoReassuranceLead =>
+      'Proof has to be taken in the moment.';
+
+  @override
+  String stalePhotoReassuranceBody(int minutes) {
+    return 'Photos more than $minutes minutes old can\'t be verified, so snap a fresh one right as you finish.';
+  }
+
+  @override
+  String get stalePhotoAttemptsIntro =>
+      'This didn\'t use a try. You still have';
+
+  @override
+  String stalePhotoAttemptsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count left today',
+      one: '1 left today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get takeNewPhotoButton => 'Take a new photo';
+
+  @override
+  String get cameraUnavailableTitle => 'Camera unavailable';
+
+  @override
+  String get cameraUnavailableBodyLead =>
+      'Cairn couldn\'t open your camera. You can prove';
+
+  @override
+  String get cameraUnavailableBodyTrail =>
+      'with a photo from your gallery instead.';
+
+  @override
+  String get recentPhotosLabel => 'RECENT PHOTOS';
+
+  @override
+  String get recentPhotoThumbnailLabel => 'Recent photo';
+
+  @override
+  String get settingsHintLead =>
+      'To use the camera, allow Cairn camera access in';
+
+  @override
+  String get settingsHintEmphasis => 'Settings › Apps › Cairn › Permissions';
+
+  @override
+  String get settingsHintTrail =>
+      '. Gallery proofs still need a recent, in-the-moment photo.';
+
+  @override
+  String get chooseFromGalleryButton => 'Choose from gallery';
+
+  @override
+  String get openCameraSettingsButton => 'Open camera settings';
+
+  @override
+  String get newHabitScreenTitle => 'New habit';
+
+  @override
+  String get whatAreYouProvingLabel => 'WHAT ARE YOU PROVING?';
+
+  @override
+  String get howOftenLabel => 'HOW OFTEN?';
+
+  @override
+  String get recurrenceOnceLabel => 'Once';
+
+  @override
+  String get recurrenceDailyLabel => 'Daily';
+
+  @override
+  String get recurrenceWeeklyLabel => 'Weekly';
+
+  @override
+  String get recurrenceMonthlyLabel => 'Monthly';
+
+  @override
+  String get onTheseDaysLabel => 'On these days';
+
+  @override
+  String get dayOfTheMonthLabel => 'Day of the month';
+
+  @override
+  String get monthlyClampHelpText =>
+      'Months without this day will use the last day of the month.';
+
+  @override
+  String get whichWeekLabel => 'Which week';
+
+  @override
+  String get whichDayLabel => 'Which day';
+
+  @override
+  String monthlyDayToggleLabel(String day) {
+    return 'On the $day';
+  }
+
+  @override
+  String monthlyNthWeekdayToggleLabel(String nth, String weekday) {
+    return 'On the $nth $weekday';
+  }
+
+  @override
+  String get monthlyWeekLastLabel => 'Last';
+
+  @override
+  String get onThisDateLabel => 'On this date';
+
+  @override
+  String get timesOfDayLabel => 'TIMES OF DAY';
+
+  @override
+  String get timeOfDayLabel => 'TIME OF DAY';
+
+  @override
+  String get timesOfDayHelpText =>
+      'Each time is one proof - two times means a twice-a-day habit.';
+
+  @override
+  String get onceTimeHelpText =>
+      'Optional - a reminder to prove it on the day.';
+
+  @override
+  String get addTimeButton => 'Add a time';
+
+  @override
+  String get createHabitButton => 'Create habit';
+
+  @override
+  String get usePhotoButton => 'Use this photo';
+
+  @override
+  String get retakeButton => 'Retake';
+
+  @override
+  String get chooseAnotherPhotoButton => 'Choose another';
+
+  @override
+  String get photoReviewPrompt => 'Does this show your proof clearly?';
+
+  @override
+  String get profileHeaderLabel => 'PROFILE';
+
+  @override
+  String get profileCurrentRankLabel => 'CURRENT RANK';
+
+  @override
+  String profileMetresGainedLabel(String metres) {
+    return '$metres m gained';
+  }
+
+  @override
+  String profilePendingMetresLabel(String metres) {
+    return '+$metres m awaiting verification';
+  }
+
+  @override
+  String profileMetresToNextTier(String metres, String tier) {
+    return '$metres m to $tier';
+  }
+
+  @override
+  String get profileYoureHereLabel => 'You\'re here';
+
+  @override
+  String profileNextTierMetres(String metres) {
+    return '$metres m · next';
+  }
+
+  @override
+  String profileTierMetres(String metres) {
+    return '$metres m';
+  }
+
+  @override
+  String get profileClimbingAnonymouslyTitle => 'Climbing anonymously';
+
+  @override
+  String get profileCreateAccountBody =>
+      'Create an account so your trail is never lost.';
+
+  @override
+  String get profileCreateButton => 'Create';
+
+  @override
+  String get profilePremiumTitle => 'Cairn Premium';
+
+  @override
+  String get profilePremiumSubtitle =>
+      'Unlimited proofs, backup, deeper insights.';
+
+  @override
+  String get profileComingSoonSnackbar => 'Coming soon';
+
+  @override
+  String get profileSettingsSectionLabel => 'SETTINGS';
+
+  @override
+  String get profileNotificationsRow => 'Notifications';
+
+  @override
+  String get profilePrivacyRow => 'Privacy';
+
+  @override
+  String get profileRestorePurchaseRow => 'Restore purchase';
 }

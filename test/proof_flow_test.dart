@@ -421,4 +421,156 @@ void main() {
     expect(compressor.callCount, 0);
     expect(store.saved, isEmpty);
   });
+
+  group('captureForReview (the gallery path\'s precheck-then-capture half '
+      'of the review split)', () {
+    test('a clean pick returns GalleryCapturePicked, touching neither the '
+        'compressor nor the store nor the database - review has not '
+        'submitted anything yet', () async {
+      final capture = _FakePhotoCapture((source) => CapturedPhoto(
+            tempPath: '/tmp/photo.jpg',
+            source: source,
+            takenAtMillis: clock.nowEpochMillis(),
+          ));
+      final compressor = _FakeImageCompressor();
+      final store = _FakeProofPhotoStore();
+      final verifier =
+          FakeProofVerifier((_) => const VerdictReceived(_passingVerdict));
+      final completionRepo = CompletionRepository(db, clock, verifier: verifier);
+      final task = await makeTask();
+
+      final flow = ProofFlowService(
+        capture: capture,
+        compressor: compressor,
+        store: store,
+        completionRepository: completionRepo,
+      );
+
+      final outcome = await flow.captureForReview(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+        source: ProofSource.gallery,
+      );
+
+      expect(outcome, isA<GalleryCapturePicked>());
+      final captured = (outcome as GalleryCapturePicked).captured;
+      expect(captured.tempPath, '/tmp/photo.jpg');
+      expect(capture.callCount, 1);
+      expect(compressor.callCount, 0);
+      expect(store.saved, isEmpty);
+      expect(await db.select(db.completions).get(), isEmpty);
+    });
+
+    test('a cancelled pick returns GalleryCaptureCancelled', () async {
+      final capture = _FakePhotoCapture((_) => null);
+      final compressor = _FakeImageCompressor();
+      final store = _FakeProofPhotoStore();
+      final verifier =
+          FakeProofVerifier((_) => const VerdictReceived(_passingVerdict));
+      final completionRepo = CompletionRepository(db, clock, verifier: verifier);
+      final task = await makeTask();
+
+      final flow = ProofFlowService(
+        capture: capture,
+        compressor: compressor,
+        store: store,
+        completionRepository: completionRepo,
+      );
+
+      final outcome = await flow.captureForReview(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+        source: ProofSource.gallery,
+      );
+
+      expect(outcome, isA<GalleryCaptureCancelled>());
+      expect(capture.callCount, 1);
+    });
+
+    test(
+        'attempts already exhausted: the precheck rejects before the picker '
+        'is ever opened', () async {
+      final rejectingVerifier =
+          FakeProofVerifier((_) => const VerdictReceived(_rejectingVerdict));
+      final completionRepo =
+          CompletionRepository(db, clock, verifier: rejectingVerifier);
+      final task = await makeTask();
+
+      for (var i = 0; i < 3; i++) {
+        final r = await completionRepo.completeWithProof(
+          taskId: task.id,
+          occurrenceDate: d(2026, 7, 10),
+          proof: ProofData(imageBytes: Uint8List.fromList([1, 2, 3])),
+        );
+        expect(r, isA<CompletionRejectedByVerifier>());
+      }
+
+      final capture = _FakePhotoCapture((source) => CapturedPhoto(
+            tempPath: '/tmp/photo.jpg',
+            source: source,
+            takenAtMillis: clock.nowEpochMillis(),
+          ));
+      final compressor = _FakeImageCompressor();
+      final store = _FakeProofPhotoStore();
+      final flow = ProofFlowService(
+        capture: capture,
+        compressor: compressor,
+        store: store,
+        completionRepository: completionRepo,
+      );
+
+      final outcome = await flow.captureForReview(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+        source: ProofSource.gallery,
+      );
+
+      expect(outcome, isA<GalleryCaptureRejected>());
+      final rejected = (outcome as GalleryCaptureRejected).result;
+      expect(rejected, isA<CompletionRejectedAttemptsExhausted>());
+      expect(capture.callCount, 0); // never opened the picker
+    });
+
+    test(
+        'submitCapturedProof (the review screen\'s "Use this photo") '
+        'completes a photo captureForReview returned, going through the '
+        'exact same compress/save/verify core as completeWithProof',
+        () async {
+      final capture = _FakePhotoCapture((source) => CapturedPhoto(
+            tempPath: '/tmp/photo.jpg',
+            source: source,
+            takenAtMillis: clock.nowEpochMillis(),
+          ));
+      final compressor = _FakeImageCompressor();
+      final store = _FakeProofPhotoStore();
+      final verifier =
+          FakeProofVerifier((_) => const VerdictReceived(_passingVerdict));
+      final completionRepo = CompletionRepository(db, clock, verifier: verifier);
+      final task = await makeTask();
+
+      final flow = ProofFlowService(
+        capture: capture,
+        compressor: compressor,
+        store: store,
+        completionRepository: completionRepo,
+      );
+
+      final outcome = await flow.captureForReview(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+        source: ProofSource.gallery,
+      );
+      final captured = (outcome as GalleryCapturePicked).captured;
+
+      final (result, _) = await flow.submitCapturedProof(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+        captured: captured,
+      );
+
+      expect(result, isA<CompletionRecorded>());
+      expect(compressor.callCount, 1);
+      expect(store.saved, hasLength(1));
+    });
+  });
 }

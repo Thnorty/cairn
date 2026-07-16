@@ -292,6 +292,64 @@ class _ClockGlyphPainter extends CustomPainter {
       color != oldDelegate.color || drawCircle != oldDelegate.drawCircle;
 }
 
+/// The gallery/photo-stack glyph (rounded frame + lens dot + mountain
+/// silhouette), matching `Cairn Camera Capture.dc.html`'s gallery control
+/// and reused verbatim (same SVG path, `Cairn Camera Unavailable.dc.html`
+/// draws the identical icon) on the Camera Unavailable screen's "Choose
+/// from gallery" buttons - hence public and colour-parameterised here
+/// rather than a private painter duplicated in each screen file.
+class GalleryGlyph extends StatelessWidget {
+  const GalleryGlyph({super.key, required this.color, this.size = 24});
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _GalleryGlyphPainter(color: color)),
+    );
+  }
+}
+
+class _GalleryGlyphPainter extends CustomPainter {
+  const _GalleryGlyphPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.7
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final w = size.width / 24;
+    final h = size.height / 24;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(3 * w, 4 * h, 18 * w, 16 * h),
+        Radius.circular(3 * w),
+      ),
+      stroke,
+    );
+    canvas.drawCircle(Offset(8.5 * w, 9.5 * h), 1.6 * w, stroke);
+    final path = Path()
+      ..moveTo(3.5 * w, 17 * h)
+      ..lineTo(8.5 * w, 12.5 * h)
+      ..lineTo(12.5 * w, 16 * h)
+      ..lineTo(15.5 * w, 13.5 * h)
+      ..lineTo(20.5 * w, 18 * h);
+    canvas.drawPath(path, stroke);
+  }
+
+  @override
+  bool shouldRepaint(_GalleryGlyphPainter oldDelegate) => color != oldDelegate.color;
+}
+
 /// Minimal close/X glyph, matching the not-verified chip SVG
 /// (`M6 6l12 12M18 6L6 18`). Public (not just this file's own chip icon) so
 /// the verification-flow screens' header close button

@@ -398,13 +398,339 @@
     }
   },
 
-  "stalePhotoReason": "This photo looks too old to count as fresh proof. Try capturing it again right now.",
-  "@stalePhotoReason": {
-    "description": "Reason banner text shown on the Verify Failed layout when a photo is rejected for being too old (its own capture timestamp fell outside the recency window), reused because there is no dedicated canonical design for this outcome (a noted design gap - see the phase-3 implementation report). Unlike a verifier rejection's reason, this is client-side policy copy, not server-generated text, and this rejection does not burn an attempt."
+  "proveItHeaderLabel": "PROVE IT",
+  "@proveItHeaderLabel": {
+    "description": "All-caps header label on the Camera Unavailable screen (Cairn Camera Unavailable.dc.html's header row). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel/verificationHeaderLabel; do not uppercase at runtime. Distinct from proveItButton ('Prove it'), which is a button label stored in mixed case for a different context."
   },
 
-  "cameraUnavailableMessage": "Camera unavailable. Choose a photo from your gallery instead.",
-  "@cameraUnavailableMessage": {
-    "description": "Shown on the Camera Capture screen in place of the live preview when the device camera can't be started (no hardware, permission denied, or the plugin is unavailable), so the gallery path stays reachable instead of dead-ending on a broken viewfinder. Not part of any canonical design (a noted design gap - see the phase-3 implementation report)."
+  "verifyTooOldTitle": "This photo is too old",
+  "@verifyTooOldTitle": {
+    "description": "Title on the Verify Too Old screen (Cairn Verify Too Old.dc.html), shown for a proof photo rejected for being outside the recency window."
+  },
+
+  "taskNameTakenAt": "{taskName} · taken {time}",
+  "@taskNameTakenAt": {
+    "description": "Subtitle on the Verify Too Old screen showing the task name and the photo's own capture time, e.g. 'Read 20 pages · taken 7:15 AM'. Distinct from taskNameAtTime (which has no 'taken' wording and is used for the completion/rejection event time on the other verification screens): this screen specifically calls out that the time shown is when the PHOTO was taken, per the canonical design. time is pre-formatted by the caller via intl.",
+    "placeholders": {
+      "taskName": { "type": "String", "example": "Read 20 pages" },
+      "time": { "type": "String", "example": "7:15 AM" }
+    }
+  },
+
+  "stalePhotoAgeBadge": "{minutes, plural, one{{minutes} min old} other{{minutes} min old}}",
+  "@stalePhotoAgeBadge": {
+    "description": "Age badge overlaid on the proof photo on the Verify Too Old screen, e.g. '17 min old'. Deliberately identical one/other text (English doesn't inflect 'min'), same pattern as tasksDoneCount, so a language whose grammar needs to change around the count has somewhere to do it.",
+    "placeholders": {
+      "minutes": { "type": "num", "example": "17" }
+    }
+  },
+
+  "stalePhotoReassuranceLead": "Proof has to be taken in the moment.",
+  "@stalePhotoReassuranceLead": {
+    "description": "Bold lead-in sentence of the reassurance banner on the Verify Too Old screen."
+  },
+  "stalePhotoReassuranceBody": "Photos more than {minutes} minutes old can't be verified, so snap a fresh one right as you finish.",
+  "@stalePhotoReassuranceBody": {
+    "description": "Regular-weight remainder of the reassurance banner on the Verify Too Old screen, following stalePhotoReassuranceLead. minutes is ProofPolicy.recencyWindow in whole minutes, sourced from policy rather than hardcoded.",
+    "placeholders": {
+      "minutes": { "type": "int", "example": "15" }
+    }
+  },
+
+  "stalePhotoAttemptsIntro": "This didn't use a try. You still have",
+  "@stalePhotoAttemptsIntro": {
+    "description": "Plain lead-in clause of the 'doesn't cost an attempt' info card on the Verify Too Old screen, immediately preceding the bold stalePhotoAttemptsCount clause. The canonical design's own copy is 'This didn't use a try [em dash, U+2014] you still have {n} left today.'; CLAUDE.md bans that character, so the em dash is replaced here with a period and the sentence continues ('This didn't use a try. You still have...') - the wording is unchanged, only the punctuation. Do not restore the em dash."
+  },
+  "stalePhotoAttemptsCount": "{count, plural, one{1 left today} other{{count} left today}}",
+  "@stalePhotoAttemptsCount": {
+    "description": "Bold clause of the 'doesn't cost an attempt' info card on the Verify Too Old screen, following stalePhotoAttemptsIntro, e.g. 'This didn't use a try. You still have 3 left today.' count is the task's full remaining attempts today (attemptsPerTaskPerDay - attemptsUsedToday), unaffected by this rejection since a stale photo never burns an attempt.",
+    "placeholders": {
+      "count": { "type": "num", "example": "3" }
+    }
+  },
+
+  "takeNewPhotoButton": "Take a new photo",
+  "@takeNewPhotoButton": {
+    "description": "Primary footer button on the Verify Too Old screen. Distinct wording from retakePhotoButton ('Retake photo') on the Verify Failed screen, per the canonical design."
+  },
+
+  "cameraUnavailableTitle": "Camera unavailable",
+  "@cameraUnavailableTitle": {
+    "description": "Title on the Camera Unavailable screen (Cairn Camera Unavailable.dc.html), shown when the live camera can't be started at all."
+  },
+  "cameraUnavailableBodyLead": "Cairn couldn't open your camera. You can prove",
+  "@cameraUnavailableBodyLead": {
+    "description": "Plain lead clause of the Camera Unavailable screen's body copy, immediately preceding the bold task name, e.g. 'Cairn couldn't open your camera. You can prove **Read 20 pages** with a photo from your gallery instead.' Split into lead/task-name/trail fragments (the task name is interpolated as its own bold TextSpan by the widget, not part of any ARB string) to reproduce the design's <strong> span around the task name - the same rationale as ReasonBanner's leadText/bodyText split elsewhere in this app."
+  },
+  "cameraUnavailableBodyTrail": "with a photo from your gallery instead.",
+  "@cameraUnavailableBodyTrail": {
+    "description": "Plain trailing clause of the Camera Unavailable screen's body copy, following the bold task name - see cameraUnavailableBodyLead."
+  },
+
+  "recentPhotosLabel": "RECENT PHOTOS",
+  "@recentPhotosLabel": {
+    "description": "All-caps section label above the recent-photos quick-pick grid on the Camera Unavailable screen. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+  "recentPhotoThumbnailLabel": "Recent photo",
+  "@recentPhotoThumbnailLabel": {
+    "description": "Accessibility label read by screen readers for each tappable thumbnail in the Camera Unavailable screen's recent-photos grid (the grid itself has no per-photo visible caption)."
+  },
+
+  "settingsHintLead": "To use the camera, allow Cairn camera access in",
+  "@settingsHintLead": {
+    "description": "Plain lead clause of the Camera Unavailable screen's Settings hint banner, immediately preceding the bold settingsHintEmphasis clause."
+  },
+  "settingsHintEmphasis": "Settings › Apps › Cairn › Permissions",
+  "@settingsHintEmphasis": {
+    "description": "Bold middle clause of the Camera Unavailable screen's Settings hint banner, between settingsHintLead and settingsHintTrail, matching the design's own <strong> span in the middle of the sentence. This is the Android system Settings path to this app's permissions screen (Settings > Apps > Cairn > Permissions), where camera access is actually granted."
+  },
+  "settingsHintTrail": ". Gallery proofs still need a recent, in-the-moment photo.",
+  "@settingsHintTrail": {
+    "description": "Plain trailing clause of the Camera Unavailable screen's Settings hint banner, immediately following settingsHintEmphasis. The leading period is deliberate: it closes the sentence right after the bold span, matching the design's own punctuation placement."
+  },
+
+  "chooseFromGalleryButton": "Choose from gallery",
+  "@chooseFromGalleryButton": {
+    "description": "Button label that opens the photo gallery picker: the Camera Unavailable screen's primary footer action, and also its own fallback body button shown in place of the recent-photos grid when the photo library can't be read or has no photos."
+  },
+
+  "openCameraSettingsButton": "Open camera settings",
+  "@openCameraSettingsButton": {
+    "description": "Secondary footer button on the Camera Unavailable screen that opens the OS app-settings screen so the user can grant camera permission."
+  },
+
+  "newHabitScreenTitle": "New habit",
+  "@newHabitScreenTitle": {
+    "description": "Header title on the New Habit screen (Cairn New Habit.dc.html and its Once/Monthly variants). Distinct from newHabitButton ('New habit'), which is a button label paired with a '+' icon in a different context (Home's app bar / Empty Today CTA) - same pattern as proveItButton vs proveItHeaderLabel elsewhere in this catalogue, kept separate in case a translation ever needs to phrase a screen title differently from a button that opens it."
+  },
+
+  "whatAreYouProvingLabel": "WHAT ARE YOU PROVING?",
+  "@whatAreYouProvingLabel": {
+    "description": "Section label above the habit-title input on the New Habit screen. The source file is mixed-case with a CSS text-transform:uppercase; stored already uppercased here for the same Turkish dotted-i reason as todaySectionLabel - do not uppercase at runtime."
+  },
+
+  "howOftenLabel": "HOW OFTEN?",
+  "@howOftenLabel": {
+    "description": "Section label above the recurrence-type selector on the New Habit screen. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+
+  "recurrenceOnceLabel": "Once",
+  "@recurrenceOnceLabel": {
+    "description": "Recurrence-type chip label on the New Habit screen: a one-off habit due on a single date."
+  },
+  "recurrenceDailyLabel": "Daily",
+  "@recurrenceDailyLabel": {
+    "description": "Recurrence-type chip label on the New Habit screen: a habit scheduled every day."
+  },
+  "recurrenceWeeklyLabel": "Weekly",
+  "@recurrenceWeeklyLabel": {
+    "description": "Recurrence-type chip label on the New Habit screen: a habit scheduled on chosen days of the week."
+  },
+  "recurrenceMonthlyLabel": "Monthly",
+  "@recurrenceMonthlyLabel": {
+    "description": "Recurrence-type chip label on the New Habit screen: a habit scheduled monthly, either by day-of-month or by nth weekday."
+  },
+
+  "onTheseDaysLabel": "On these days",
+  "@onTheseDaysLabel": {
+    "description": "Label above the day-of-week picker in the Weekly recurrence panel on the New Habit screen."
+  },
+
+  "dayOfTheMonthLabel": "Day of the month",
+  "@dayOfTheMonthLabel": {
+    "description": "Label above the 1-31 day grid in the Monthly (day-of-month mode) recurrence panel on the New Habit screen."
+  },
+
+  "monthlyClampHelpText": "Months without this day will use the last day of the month.",
+  "@monthlyClampHelpText": {
+    "description": "Info note under the day-of-month grid on the New Habit screen, describing the hand-rolled clamping generator's behaviour (day = min(monthDay, lastDayOfMonth)) in user-facing terms; the generator itself is not reimplemented here, only its behaviour surfaced."
+  },
+
+  "whichWeekLabel": "Which week",
+  "@whichWeekLabel": {
+    "description": "Label above the 1st/2nd/3rd/4th/Last ordinal chip row in the Monthly (nth-weekday mode) recurrence panel on the New Habit screen."
+  },
+  "whichDayLabel": "Which day",
+  "@whichDayLabel": {
+    "description": "Label above the day-of-week row in the Monthly (nth-weekday mode) recurrence panel on the New Habit screen."
+  },
+
+  "monthlyDayToggleLabel": "On the {day}",
+  "@monthlyDayToggleLabel": {
+    "description": "Left segment of the Monthly mode toggle, summarizing the currently chosen day-of-month, e.g. 'On the 31st'. day is pre-formatted by the caller as an English ordinal (e.g. '31st') - see monthly_ordinal.dart's englishOrdinal, which is deliberately English-only (intl has no public ordinal-number API and this app currently ships a single locale).",
+    "placeholders": {
+      "day": { "type": "String", "example": "31st" }
+    }
+  },
+  "monthlyNthWeekdayToggleLabel": "On the {nth} {weekday}",
+  "@monthlyNthWeekdayToggleLabel": {
+    "description": "Right segment of the Monthly mode toggle, summarizing the currently chosen nth-weekday, e.g. 'On the 3rd Friday'. Both nth and weekday are pre-formatted by the caller (nth via englishOrdinal or monthlyWeekLastLabel for month_nth = -1; weekday via the date_number_formatting.dart weekdayFullName intl helper).",
+    "placeholders": {
+      "nth": { "type": "String", "example": "3rd" },
+      "weekday": { "type": "String", "example": "Friday" }
+    }
+  },
+  "monthlyWeekLastLabel": "Last",
+  "@monthlyWeekLastLabel": {
+    "description": "Ordinal chip label for month_nth = -1 (the last occurrence of the chosen weekday in the month), and the nth value substituted into monthlyNthWeekdayToggleLabel in that same case."
+  },
+
+  "onThisDateLabel": "On this date",
+  "@onThisDateLabel": {
+    "description": "Label above the date-picker row in the Once recurrence panel on the New Habit screen."
+  },
+
+  "timesOfDayLabel": "TIMES OF DAY",
+  "@timesOfDayLabel": {
+    "description": "Section label above the due-times editor for the Daily/Weekly/Monthly recurrence variants of the New Habit screen (plural: more than one time slot is expected to be common). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime. Distinct from timeOfDayLabel (singular), used by the Once variant."
+  },
+  "timeOfDayLabel": "TIME OF DAY",
+  "@timeOfDayLabel": {
+    "description": "Section label above the due-times editor for the Once recurrence variant of the New Habit screen (singular: capped at a single optional reminder time). Stored already uppercased for the same reason as timesOfDayLabel."
+  },
+
+  "timesOfDayHelpText": "Each time is one proof - two times means a twice-a-day habit.",
+  "@timesOfDayHelpText": {
+    "description": "Helper copy under timesOfDayLabel on the Daily/Weekly/Monthly variants of the New Habit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character)."
+  },
+  "onceTimeHelpText": "Optional - a reminder to prove it on the day.",
+  "@onceTimeHelpText": {
+    "description": "Helper copy under timeOfDayLabel on the Once variant of the New Habit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character)."
+  },
+
+  "addTimeButton": "Add a time",
+  "@addTimeButton": {
+    "description": "Dashed-outline affordance that appends a new due-time slot on the New Habit screen. Hidden once the Once variant already has its one allowed slot."
+  },
+
+  "createHabitButton": "Create habit",
+  "@createHabitButton": {
+    "description": "Primary footer button on the New Habit screen that submits the form via TaskRepository.createTask."
+  },
+
+  "usePhotoButton": "Use this photo",
+  "@usePhotoButton": {
+    "description": "Primary footer button on the Photo Review screen (Cairn Photo Review.dc.html), shown after a photo is captured/picked and before it is ever submitted for verification. Accepts the photo and proceeds to submit it."
+  },
+
+  "retakeButton": "Retake",
+  "@retakeButton": {
+    "description": "Secondary footer button on the Photo Review screen for a just-shot camera photo: discards the capture and returns to the live camera. Distinct from retakePhotoButton ('Retake photo'), the Verify Failed screen's wording for reopening the camera after a rejection - this screen's own canonical design says just 'Retake'."
+  },
+
+  "chooseAnotherPhotoButton": "Choose another",
+  "@chooseAnotherPhotoButton": {
+    "description": "Secondary footer button on the Photo Review screen for a gallery-picked photo: reopens the gallery picker so the user can pick a different photo. This is the gallery-path equivalent of retakeButton ('Retake'), shown instead when the reviewed photo came from the gallery rather than the live camera; the canonical design only shows the camera variant ('Retake'), so this wording was chosen to fill the same slot for a picked (rather than shot) photo."
+  },
+
+  "photoReviewPrompt": "Does this show your proof clearly?",
+  "@photoReviewPrompt": {
+    "description": "Prompt pill on the Photo Review screen, above the accept/retake actions, asking the user to check the photo before submitting it for verification."
+  },
+
+  "profileHeaderLabel": "PROFILE",
+  "@profileHeaderLabel": {
+    "description": "Small all-caps section label above the 'You' title on the Profile screen (Cairn Profile.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+
+  "profileCurrentRankLabel": "CURRENT RANK",
+  "@profileCurrentRankLabel": {
+    "description": "All-caps label on the Profile screen's rank hero card, above the current rank tier name. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+
+  "profileMetresGainedLabel": "{metres} m gained",
+  "@profileMetresGainedLabel": {
+    "description": "Profile rank hero's total-altitude line, e.g. '840 m gained'. metres is pre-formatted by the caller via NumberFormat (formatMetresNumber).",
+    "placeholders": {
+      "metres": { "type": "String", "example": "840" }
+    }
+  },
+
+  "profilePendingMetresLabel": "+{metres} m awaiting verification",
+  "@profilePendingMetresLabel": {
+    "description": "Profile rank hero's withheld-metres line, shown only while CompletionRepository.pendingAltitude() > 0, e.g. '+13 m awaiting verification'. metres is pre-formatted by the caller via NumberFormat.",
+    "placeholders": {
+      "metres": { "type": "String", "example": "13" }
+    }
+  },
+
+  "profileMetresToNextTier": "{metres} m to {tier}",
+  "@profileMetresToNextTier": {
+    "description": "Profile rank hero's progress-row trailing label, e.g. '260 m to Crag'. metres is pre-formatted by the caller via NumberFormat; tier is the next RankTier's own label (domain vocabulary, not translated - see profile_screen.dart's doc comment).",
+    "placeholders": {
+      "metres": { "type": "String", "example": "260" },
+      "tier": { "type": "String", "example": "Crag" }
+    }
+  },
+
+  "profileYoureHereLabel": "You're here",
+  "@profileYoureHereLabel": {
+    "description": "Marks the user's current tier row in the Profile rank ladder."
+  },
+
+  "profileNextTierMetres": "{metres} m · next",
+  "@profileNextTierMetres": {
+    "description": "Trailing label on the rank-ladder row for the tier immediately after the user's current one, e.g. '1,100 m · next'. metres is pre-formatted by the caller via NumberFormat.",
+    "placeholders": {
+      "metres": { "type": "String", "example": "1,100" }
+    }
+  },
+
+  "profileTierMetres": "{metres} m",
+  "@profileTierMetres": {
+    "description": "Trailing label on a Profile rank-ladder row for any tier that isn't the user's current one or the very next one, e.g. '2,400 m'. metres is pre-formatted by the caller via NumberFormat.",
+    "placeholders": {
+      "metres": { "type": "String", "example": "2,400" }
+    }
+  },
+
+  "profileClimbingAnonymouslyTitle": "Climbing anonymously",
+  "@profileClimbingAnonymouslyTitle": {
+    "description": "Title of the Profile screen's account-status row, shown while there is no upgraded account (Phase 4)."
+  },
+
+  "profileCreateAccountBody": "Create an account so your trail is never lost.",
+  "@profileCreateAccountBody": {
+    "description": "Subtitle of the Profile screen's account-status row."
+  },
+
+  "profileCreateButton": "Create",
+  "@profileCreateButton": {
+    "description": "Action label on the Profile screen's account-status row. Phase 4 wires this to the real email/password upgrade flow; for now it is a no-op-for-now (see profileComingSoonSnackbar)."
+  },
+
+  "profilePremiumTitle": "Cairn Premium",
+  "@profilePremiumTitle": {
+    "description": "Title of the Profile screen's Cairn Premium upsell row."
+  },
+
+  "profilePremiumSubtitle": "Unlimited proofs, backup, deeper insights.",
+  "@profilePremiumSubtitle": {
+    "description": "Subtitle of the Profile screen's Cairn Premium upsell row."
+  },
+
+  "profileComingSoonSnackbar": "Coming soon",
+  "@profileComingSoonSnackbar": {
+    "description": "Snackbar shown when tapping the Profile screen's 'Create' account action or its Cairn Premium row, both of which are out of scope for this phase (Phase 4 accounts, post-MVP Premium) and are deliberate no-ops-for-now rather than a fake/invented flow."
+  },
+
+  "profileSettingsSectionLabel": "SETTINGS",
+  "@profileSettingsSectionLabel": {
+    "description": "All-caps section label above the Profile screen's settings list. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+
+  "profileNotificationsRow": "Notifications",
+  "@profileNotificationsRow": {
+    "description": "Row label in the Profile screen's settings list. A navigational placeholder for now - later phases wire a real destination."
+  },
+
+  "profilePrivacyRow": "Privacy",
+  "@profilePrivacyRow": {
+    "description": "Row label in the Profile screen's settings list. A navigational placeholder for now - later phases wire a real destination."
+  },
+
+  "profileRestorePurchaseRow": "Restore purchase",
+  "@profileRestorePurchaseRow": {
+    "description": "Row label in the Profile screen's settings list. A navigational placeholder for now - later phases wire a real destination."
   }
 }

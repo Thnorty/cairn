@@ -10,6 +10,7 @@ import '../../repo/completion_repository.dart';
 import '../../services/home_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../new_habit/new_habit_screen.dart';
 import '../proof/camera_capture_screen.dart';
 import '../proof/proof_outcome_routing.dart';
 import '../widgets/buttons.dart';
@@ -17,6 +18,15 @@ import '../widgets/plus_glyph.dart';
 import '../widgets/wordmark_glyph.dart';
 import 'empty_today_view.dart';
 import 'home_occurrence_card.dart';
+
+/// Opens `NewHabitScreen` on top of the current route. Shared by both of
+/// Home's "New habit" entry points (the header pill and the Empty Today
+/// CTA) so they navigate identically.
+void _openNewHabitScreen(BuildContext context) {
+  Navigator.of(context).push(MaterialPageRoute<void>(
+    builder: (_) => const NewHabitScreen(),
+  ));
+}
 
 /// The Today/Home screen (`Cairn Home.dc.html` / `Cairn Empty Today.dc.html`):
 /// the app's default tab, showing every occurrence scheduled today across
@@ -171,7 +181,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(
               child: snapshotAsync.when(
                 data: (snapshot) => snapshot.activeTaskCount == 0
-                    ? EmptyTodayView(onNewHabit: () {})
+                    ? EmptyTodayView(onNewHabit: () => _openNewHabitScreen(context))
                     : _PopulatedBody(
                         snapshot: snapshot,
                         l10n: l10n,
@@ -303,12 +313,7 @@ class _BrandRow extends StatelessWidget {
           children: [
             TintedPillButton(
               label: l10n.newHabitButton,
-              // Not wired to a real destination yet: the New Habit screens
-              // are a separate, not-yet-built run (see CLAUDE.md's Phase 3
-              // note that screens parallelize across runs). Left inert
-              // rather than opening the Phase 1 debug dialog, which would
-              // mix debug-only UI into a real screen.
-              onPressed: () {},
+              onPressed: () => _openNewHabitScreen(context),
               icon: const PlusGlyph(color: AppColors.terracottaChipText),
             ),
             const SizedBox(width: 10),

@@ -74,8 +74,12 @@ void main() {
     expect(find.byType(CameraCaptureScreen), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('camera-shutter')));
-    // Not pumpAndSettle across the shutter tap: the Verifying… overlay's
-    // animation repeats forever.
+    await tester.pumpAndSettle();
+    expect(find.text('Use this photo'), findsOneWidget); // Photo Review first
+
+    await tester.tap(find.byKey(const ValueKey('photo-review-use')));
+    // Not pumpAndSettle across the "Use this photo" tap: the Verifying…
+    // overlay's animation repeats forever.
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pumpAndSettle();
@@ -133,8 +137,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(CameraCaptureScreen), findsOneWidget);
 
-    // First attempt: rejected, 2 tries left.
+    // First attempt: rejected, 2 tries left. The shutter shows the Photo
+    // Review screen first; "Use this photo" is what actually submits.
     await tester.tap(find.byKey(const ValueKey('camera-shutter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('photo-review-use')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pumpAndSettle();
@@ -149,6 +156,8 @@ void main() {
     // left. If the retry loop had captured a stale context/navigator from
     // the first camera screen, this would crash instead of routing.
     await tester.tap(find.byKey(const ValueKey('camera-shutter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('photo-review-use')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pumpAndSettle();

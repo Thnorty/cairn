@@ -53,6 +53,30 @@ void main() {
       expect(find.byType(Opacity), findsNothing);
     });
 
+    testWidgets(
+        'muted + mutedOpacity:false keeps the muted stone palette but drops '
+        'the opacity wrapper (Home\'s scheduled-but-provable card)',
+        (tester) async {
+      await pump(
+        tester,
+        const CairnStack(stoneCount: 6, muted: true, mutedOpacity: false),
+      );
+
+      expect(find.byType(Opacity), findsNothing);
+      final topContainer = tester.widget<Container>(
+        find.descendant(
+          of: find.byKey(stoneKey(0)),
+          matching: find.byType(Container),
+        ),
+      );
+      final decoration = topContainer.decoration! as BoxDecoration;
+      final gradient = decoration.gradient! as LinearGradient;
+      expect(gradient.colors, [
+        AppColors.stoneGradientsMuted[0].$1,
+        AppColors.stoneGradientsMuted[0].$2,
+      ]);
+    });
+
     testWidgets('highlightTop tints the topmost stone sage', (tester) async {
       await pump(
         tester,

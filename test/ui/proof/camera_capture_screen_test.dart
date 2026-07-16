@@ -4,6 +4,7 @@ import 'package:cairn/src/db/database.dart';
 import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/ui/proof/camera_capture_screen.dart';
+import 'package:cairn/src/ui/proof/camera_unavailable_screen.dart';
 import 'package:cairn/src/ui/proof/daily_limit_screen.dart';
 import 'package:cairn/src/ui/proof/verify_failed_screen.dart';
 import 'package:cairn/src/ui/proof/verify_pending_screen.dart';
@@ -15,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../helpers.dart';
 import '../../support/fake_camera_session.dart';
 import '../../support/fake_proof_pipeline.dart';
+import '../../support/fake_recent_photos.dart';
 
 void main() {
   late AppDatabase db;
@@ -42,6 +44,7 @@ void main() {
     Task task, {
     required FakeCameraSession session,
     DebugVerifierMode verifierMode = DebugVerifierMode.pass,
+    FakePhotoCapture? photoCapture,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -53,8 +56,14 @@ void main() {
           imageCompressorProvider.overrideWithValue(FakeImageCompressor()),
           proofPhotoStoreProvider.overrideWithValue(FakeProofPhotoStore()),
           photoCaptureProvider.overrideWithValue(
-            FakePhotoCapture(takenAtMillis: clock.nowEpochMillis()),
+            photoCapture ?? FakePhotoCapture(takenAtMillis: clock.nowEpochMillis()),
           ),
+          // Only exercised by the camera-unavailable-navigation test below,
+          // but harmless to override everywhere: keeps every test in this
+          // file off the real `photo_manager`/`permission_handler` platform
+          // channels, which `flutter test` cannot exercise.
+          recentPhotoLibraryProvider.overrideWithValue(FakeRecentPhotoLibrary()),
+          appSettingsOpenerProvider.overrideWithValue(FakeAppSettingsOpener()),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -87,40 +96,76 @@ void main() {
   });
 
   testWidgets(
-      'degrades to the gallery-only fallback when the camera is unavailable',
-      (tester) async {
+      'navigates to CameraUnavailableScreen (not an inline fallback) when '
+      'the camera cannot be started', (tester) async {
     final task = await makeTask();
     final session = FakeCameraSession(initializeResult: false);
     await pumpScreen(tester, task, session: session);
 
-    expect(
-      find.text('Camera unavailable. Choose a photo from your gallery instead.'),
-      findsOneWidget,
-    );
-    expect(find.byKey(const ValueKey('camera-flip')), findsNothing);
-    expect(find.byKey(const ValueKey('camera-shutter')), findsNothing);
-    expect(find.byKey(const ValueKey('camera-gallery')), findsOneWidget);
+    expect(find.byType(CameraUnavailableScreen), findsOneWidget);
+    expect(find.byType(CameraCaptureScreen), findsNothing);
+    expect(find.text('Camera unavailable'), findsOneWidget);
   });
 
-  testWidgets('flip camera calls CameraSession.switchCamera', (tester) async {
+  testWidgets('flip camera selects the other camera, not just calling '
+      'switchCamera with no visible effect', (tester) async {
     final task = await makeTask();
     final session = FakeCameraSession();
     await pumpScreen(tester, task, session: session);
 
+    final startingLens = session.currentLens;
     await tester.tap(find.byKey(const ValueKey('camera-flip')));
     await tester.pumpAndSettle();
 
     expect(session.switchCameraCalls, 1);
+    expect(session.currentLens, isNot(startingLens));
+
+    // Flipping again returns to the original lens: a real two-camera device
+    // only ever has the one "other" camera to switch to.
+    await tester.tap(find.byKey(const ValueKey('camera-flip')));
+    await tester.pumpAndSettle();
+    expect(session.currentLens, startingLens);
   });
 
   testWidgets(
-      'tapping the shutter captures via the session, submits the proof, '
-      'and routes to Verify Result on a pass', (tester) async {
+      'the flip control is disabled (not a dead-looking active button) '
+      'when only one camera is available', (tester) async {
+    final task = await makeTask();
+    final session = FakeCameraSession(hasMultipleCameras: false);
+    await pumpScreen(tester, task, session: session);
+
+    // Still rendered (so its layout slot doesn't jump around), but tapping
+    // it does nothing - see _IconLabelButton's dimmed-opacity treatment for
+    // a null onTap, matching how this same screen already disables (rather
+    // than hides) the shutter/gallery controls while busy.
+    expect(find.byKey(const ValueKey('camera-flip')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('camera-flip')));
+    await tester.pumpAndSettle();
+
+    expect(session.switchCameraCalls, 0);
+  });
+
+  testWidgets(
+      'tapping the shutter captures via the session and shows the Photo '
+      'Review screen WITHOUT submitting - only "Use this photo" submits and '
+      'routes to Verify Result on a pass', (tester) async {
     final task = await makeTask();
     final session = FakeCameraSession();
     await pumpScreen(tester, task, session: session, verifierMode: DebugVerifierMode.pass);
 
     await tester.tap(find.byKey(const ValueKey('camera-shutter')));
+    await tester.pumpAndSettle();
+
+    // Captured, but not yet submitted: the review screen shows, "Verifying…"
+    // does not, and nothing was written to the database.
+    expect(session.takePictureCalls, 1);
+    expect(find.text('Use this photo'), findsOneWidget);
+    expect(find.text('Retake'), findsOneWidget);
+    expect(find.text('Verifying…'), findsNothing);
+    expect(find.byType(VerifyResultScreen), findsNothing);
+    expect(await db.select(db.completions).get(), isEmpty);
+
+    await tester.tap(find.byKey(const ValueKey('photo-review-use')));
     // Deliberately not pumpAndSettle here: the "Verifying…" overlay runs a
     // repeating animation, which never settles.
     await tester.pump();
@@ -130,9 +175,81 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pumpAndSettle();
 
-    expect(session.takePictureCalls, 1);
     expect(find.byType(VerifyResultScreen), findsOneWidget);
     expect(find.byType(CameraCaptureScreen), findsNothing);
+  });
+
+  testWidgets(
+      'Retake discards the capture (no submit) and returns to the live '
+      'camera', (tester) async {
+    final task = await makeTask();
+    final session = FakeCameraSession();
+    await pumpScreen(tester, task, session: session);
+
+    await tester.tap(find.byKey(const ValueKey('camera-shutter')));
+    await tester.pumpAndSettle();
+    expect(find.text('Retake'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('photo-review-secondary')));
+    await tester.pumpAndSettle();
+
+    // Back to the live viewfinder - not a freshly re-initialized one either.
+    expect(find.byKey(const ValueKey('camera-shutter')), findsOneWidget);
+    expect(find.text('Retake'), findsNothing);
+    expect(session.initializeCalls, 1);
+    expect(await db.select(db.completions).get(), isEmpty);
+  });
+
+  testWidgets(
+      'closing the Photo Review screen (X) backs out without ever '
+      'submitting', (tester) async {
+    final task = await makeTask();
+    final session = FakeCameraSession();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+          clockProvider.overrideWithValue(clock),
+          cameraSessionFactoryProvider.overrideWithValue(() => session),
+          imageCompressorProvider.overrideWithValue(FakeImageCompressor()),
+          proofPhotoStoreProvider.overrideWithValue(FakeProofPhotoStore()),
+          photoCaptureProvider.overrideWithValue(
+            FakePhotoCapture(takenAtMillis: clock.nowEpochMillis()),
+          ),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (_) => CameraCaptureScreen(
+                  taskId: task.id,
+                  taskTitle: task.title,
+                  cairnNumber: 1,
+                  occurrenceDate: d(2026, 7, 10),
+                  slot: 0,
+                ),
+              )),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('camera-shutter')));
+    await tester.pumpAndSettle();
+    expect(find.text('Use this photo'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('camera-close')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CameraCaptureScreen), findsNothing);
+    expect(await db.select(db.completions).get(), isEmpty);
   });
 
   testWidgets('a rejected submit with attempts remaining routes to Verify Failed',
@@ -142,6 +259,8 @@ void main() {
     await pumpScreen(tester, task, session: session, verifierMode: DebugVerifierMode.reject);
 
     await tester.tap(find.byKey(const ValueKey('camera-shutter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('photo-review-use')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pumpAndSettle();
@@ -159,6 +278,8 @@ void main() {
     await pumpScreen(tester, task, session: session, verifierMode: DebugVerifierMode.offline);
 
     await tester.tap(find.byKey(const ValueKey('camera-shutter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('photo-review-use')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pumpAndSettle();
@@ -167,8 +288,9 @@ void main() {
   });
 
   testWidgets(
-      'the gallery button goes through image_picker and lands in the same '
-      'result routing as the shutter', (tester) async {
+      'the gallery button shows the Photo Review screen ("Choose another") '
+      'without submitting, and "Use this photo" lands in the same result '
+      'routing as the shutter', (tester) async {
     final task = await makeTask();
     final session = FakeCameraSession();
     await pumpScreen(tester, task, session: session, verifierMode: DebugVerifierMode.pass);
@@ -176,8 +298,44 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('camera-gallery')));
     await tester.pumpAndSettle();
 
-    expect(find.byType(VerifyResultScreen), findsOneWidget);
+    expect(find.byType(VerifyResultScreen), findsNothing);
+    expect(find.text('Choose another'), findsOneWidget);
+    expect(find.text('Retake'), findsNothing);
     expect(session.takePictureCalls, 0); // never touched the live camera
+    expect(await db.select(db.completions).get(), isEmpty);
+
+    await tester.tap(find.byKey(const ValueKey('photo-review-use')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(VerifyResultScreen), findsOneWidget);
+    expect(session.takePictureCalls, 0);
+  });
+
+  testWidgets(
+      '"Choose another" reopens the gallery picker (not a submit) and shows '
+      'whatever it returns', (tester) async {
+    final task = await makeTask();
+    final session = FakeCameraSession();
+    final capture = FakePhotoCapture(takenAtMillis: clock.nowEpochMillis());
+    await pumpScreen(
+      tester,
+      task,
+      session: session,
+      verifierMode: DebugVerifierMode.pass,
+      photoCapture: capture,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('camera-gallery')));
+    await tester.pumpAndSettle();
+    expect(capture.callCount, 1);
+
+    await tester.tap(find.byKey(const ValueKey('photo-review-secondary')));
+    await tester.pumpAndSettle();
+
+    expect(capture.callCount, 2); // the picker was asked again
+    expect(find.byType(VerifyResultScreen), findsNothing);
+    expect(find.text('Choose another'), findsOneWidget); // still reviewing
+    expect(await db.select(db.completions).get(), isEmpty);
   });
 
   testWidgets('tapping close pops back without recording anything',

@@ -14,6 +14,7 @@ import 'package:cairn/src/ui/proof/proof_outcome_routing.dart';
 import 'package:cairn/src/ui/proof/verify_failed_screen.dart';
 import 'package:cairn/src/ui/proof/verify_pending_screen.dart';
 import 'package:cairn/src/ui/proof/verify_result_screen.dart';
+import 'package:cairn/src/ui/proof/verify_too_old_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -226,11 +227,11 @@ void main() {
   });
 
   testWidgets(
-      'a stale photo routes to the Verify Failed layout, with its own copy, '
-      'and does NOT burn an attempt (tries left is unaffected)', (tester) async {
+      'a stale photo routes to VerifyTooOldScreen (not VerifyFailedScreen), '
+      'and does NOT burn an attempt (remaining count is unaffected)', (tester) async {
     final task = await makeTask();
-    // Burn exactly one *real* verifier rejection first, so tries-left starts
-    // at 3 - 1 = 2.
+    // Burn exactly one *real* verifier rejection first, so the remaining
+    // count starts at 3 - 1 = 2.
     final rejectingRepo = CompletionRepository(
       db,
       clock,
@@ -260,17 +261,15 @@ void main() {
     await tester.tap(find.text('trigger'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(VerifyFailedScreen), findsOneWidget);
-    expect(
-      find.text(
-        'This photo looks too old to count as fresh proof. Try capturing it again right now.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.byType(VerifyTooOldScreen), findsOneWidget);
+    expect(find.byType(VerifyFailedScreen), findsNothing);
     // 3 - 1 (the one real rejection above) = 2 left; the stale rejection
     // itself must not have burned a second one, proving it never wrote a
     // verification_attempts row.
-    expect(find.text('2 tries left today'), findsOneWidget);
+    expect(
+      find.text("This didn't use a try. You still have 2 left today."),
+      findsOneWidget,
+    );
     final attemptsRows = await db.select(db.verificationAttempts).get();
     expect(attemptsRows, hasLength(1)); // only the earlier real rejection
   });

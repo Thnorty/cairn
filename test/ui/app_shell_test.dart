@@ -147,9 +147,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Stats - coming soon'), findsOneWidget);
 
+      // You is now the real ProfileScreen (Phase 3), not a placeholder - a
+      // fresh in-memory database has zero altitude, so it renders Pebble's
+      // rank hero rather than "You - coming soon".
       await tester.tap(find.text('You'));
       await tester.pumpAndSettle();
-      expect(find.text('You - coming soon'), findsOneWidget);
+      expect(find.text('You - coming soon'), findsNothing);
+      expect(find.text('CURRENT RANK'), findsOneWidget);
     });
 
     testAppShellWidgets('long-pressing the wordmark opens the debug screen', (

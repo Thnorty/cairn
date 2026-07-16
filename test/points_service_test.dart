@@ -130,4 +130,16 @@ void main() {
       expect(service.rankFor(50000).metresToNext, isNull);
     });
   });
+
+  group('nextTier', () {
+    test('reports the tier immediately after the current one', () {
+      expect(service.rankFor(100).nextTier, RankTier.cairn);
+      expect(service.rankFor(450).nextTier, RankTier.crag);
+    });
+
+    test('is null at the top tier (Summit)', () {
+      expect(service.rankFor(8849).nextTier, isNull);
+      expect(service.rankFor(50000).nextTier, isNull);
+    });
+  });
 }
