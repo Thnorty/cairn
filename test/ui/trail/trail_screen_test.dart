@@ -205,7 +205,11 @@ void main() {
       });
       addTearDown(db.close);
 
-      await tester.tap(find.bySemanticsLabel('New habit').last);
+      // The dashed "+" chip's own on-screen glyph is a literal "+" (its
+      // accessible label is 'New habit', but semantics matching needs a
+      // live SemanticsHandle this test doesn't otherwise need); the "+" is
+      // unique on screen.
+      await tester.tap(find.text('+'));
       await tester.pumpAndSettle();
 
       expect(find.byType(NewHabitScreen), findsOneWidget);
@@ -242,9 +246,13 @@ void main() {
       addTearDown(db.close);
 
       expect(find.text('GROWING NOW'), findsOneWidget);
-      expect(find.text('10 stones · capped'), findsOneWidget);
+      // Cairn 1 (days 1-10) is both capped AND the trailhead here (it's the
+      // very first cairn), and the trailhead caption replaces the usual
+      // "N stones · capped" wording (see _SettledCairnNode's doc comment) -
+      // so "10 stones · capped" itself never renders in this scenario.
+      expect(find.text('10 stones · capped'), findsNothing);
+      expect(find.text('The trailhead · Jul 1'), findsOneWidget);
       expect(find.text('broken · 3 stones'), findsOneWidget);
-      expect(find.textContaining('The trailhead ·'), findsOneWidget);
       expect(find.text('WHERE YOU STARTED'), findsOneWidget);
       // One CairnStack per cairn (growing 4, capped 10, broken 3): none of
       // this history's cairns has zero stones, so no GhostCairnStack.

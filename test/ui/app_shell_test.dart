@@ -1,6 +1,8 @@
 import 'package:cairn/l10n/generated/app_localizations.dart';
 import 'package:cairn/src/clock.dart';
+import 'package:cairn/src/db/database.dart' show RecurrenceType;
 import 'package:cairn/src/providers.dart';
+import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/ui/shell/app_shell.dart';
 import 'package:cairn/src/ui/theme/app_colors.dart';
 import 'package:cairn/src/ui/theme/app_text_styles.dart';
@@ -137,11 +139,34 @@ void main() {
     );
 
     testAppShellWidgets('switching tabs changes the visible body', (tester) async {
-      await pumpShell(tester);
+      // Trail is now the real TrailScreen (this run), not a placeholder -
+      // seeding one task (rather than using pumpShell's fresh/empty
+      // database) so its real header/chips render instead of the Empty
+      // Today state it'd otherwise share with a task-less Home.
+      final db = inMemoryDatabase();
+      addTearDown(db.close);
+      final clock = FixedClock(d(2026, 7, 1));
+      final taskRepo = TaskRepository(db, clock);
+      await taskRepo.createTask(
+        title: 'Read 20 pages',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            clockProvider.overrideWithValue(clock),
+          ],
+          child: wrap(const AppShell()),
+        ),
+      );
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Trail'));
       await tester.pumpAndSettle();
-      expect(find.text('Trail - coming soon'), findsOneWidget);
+      expect(find.text('TRAIL OF'), findsOneWidget);
+      expect(find.text('Trail - coming soon'), findsNothing);
 
       await tester.tap(find.text('Stats'));
       await tester.pumpAndSettle();
@@ -197,14 +222,17 @@ void main() {
     testAppShellWidgets('a still-placeholder body renders with the themed style', (
       tester,
     ) async {
+      // Stats, not Trail: Trail is now the real TrailScreen (this run) and
+      // no longer a placeholder body - Stats is the only tab this
+      // regression check still applies to (see AppShell's own doc comment).
       await pumpShell(tester);
 
-      await tester.tap(find.text('Trail'));
+      await tester.tap(find.text('Stats'));
       await tester.pumpAndSettle();
 
       final style = resolvedStyle(
         tester,
-        find.text('Trail - coming soon'),
+        find.text('Stats - coming soon'),
       );
       expectThemedNotFallback(style);
       expect(style.fontFamily, AppTextStyles.body.fontFamily);
