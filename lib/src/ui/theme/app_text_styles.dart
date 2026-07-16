@@ -366,4 +366,123 @@ abstract final class AppTextStyles {
     fontSize: 15,
     color: AppColors.inkPrimary,
   );
+
+  // ---- Trail screen ---------------------------------------------------
+
+  /// 15px Zilla Slab 600 - the Trail screen's per-task rank pill tier name
+  /// ("Ridge"). Distinct from Profile's 26px [heroTierTitle]: the Trail
+  /// pill is a small header chip, not a hero card.
+  static const TextStyle trailRankPillTier = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w600,
+    fontSize: 15,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 11px Work Sans 400 - the Trail screen's per-task rank pill's bare
+  /// metres line ("840 m").
+  static const TextStyle trailRankPillMetres = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 11,
+    color: AppColors.textMuted,
+  );
+
+  /// 13px Work Sans 600 - the Trail screen's selected (dark-filled) habit
+  /// selector chip label.
+  static const TextStyle trailChipLabelSelected = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 13,
+    color: AppColors.darkChipText,
+  );
+
+  /// 13px Work Sans 500 - the Trail screen's unselected habit selector
+  /// chip label.
+  static const TextStyle trailChipLabelUnselected = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w500,
+    fontSize: 13,
+    color: AppColors.inkDimmed,
+  );
+
+  /// 10px Work Sans 700, 1.5px letter-spacing, uppercase - the "GROWING NOW"
+  /// badge above the Trail screen's currently-growing cairn. Callers must
+  /// pass already-uppercased text, same Turkish dotted-i reason as
+  /// [sectionLabel].
+  static const TextStyle trailGrowingBadgeLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w700,
+    fontSize: 10,
+    letterSpacing: 1.5,
+    color: AppColors.sageText,
+  );
+
+  /// 14px Zilla Slab 600 - the task title shown under the Trail screen's
+  /// currently-growing cairn.
+  static const TextStyle trailGrowingTaskTitle = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w600,
+    fontSize: 14,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 11.5px Work Sans 400 - the "Cairn N · N stones" caption under the
+  /// Trail screen's currently-growing cairn.
+  static const TextStyle trailGrowingCaption = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 11.5,
+    color: AppColors.textMuted,
+  );
+
+  /// 13.5px Zilla Slab 600 - a capped or broken cairn's "Cairn N" title on
+  /// the Trail screen (capped colour; see [trailBrokenCairnTitleStyle] for
+  /// the broken variant).
+  static const TextStyle trailCairnTitle = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w600,
+    fontSize: 13.5,
+    color: AppColors.inkDimmed,
+  );
+
+  /// 13.5px Zilla Slab 600 - a broken cairn's "Cairn N" title on the Trail
+  /// screen, using [AppColors.trailBrokenCairnTitle] instead of
+  /// [trailCairnTitle]'s darker colour.
+  static const TextStyle trailBrokenCairnTitleStyle = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w600,
+    fontSize: 13.5,
+    color: AppColors.trailBrokenCairnTitle,
+  );
+
+  /// 11px Work Sans 400 - a capped cairn's "N stones · capped" caption, and
+  /// the trailhead's "The trailhead · date" caption, on the Trail screen.
+  static const TextStyle trailCairnCaption = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 11,
+    color: AppColors.textMuted,
+  );
+
+  /// 11px Work Sans 400 - a broken cairn's "broken · N stones" caption on
+  /// the Trail screen, paired with its small lightning glyph.
+  static const TextStyle trailBrokenCaption = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 11,
+    color: AppColors.textFaint,
+  );
+
+  /// 11px Work Sans 600, 2px letter-spacing, uppercase - the "WHERE YOU
+  /// STARTED" marker below the Trail screen's trailhead cairn. Callers must
+  /// pass already-uppercased text, same Turkish dotted-i reason as
+  /// [sectionLabel].
+  static const TextStyle trailWhereYouStartedLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: AppColors.trailWhereYouStartedText,
+  );
 }

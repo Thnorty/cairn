@@ -805,6 +805,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restore purchase'**
   String get profileRestorePurchaseRow;
+
+  /// Small all-caps eyebrow label above the selected task's title on the Trail screen (Cairn Trail.dc.html), e.g. 'TRAIL OF' above 'Read 20 pages'. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'TRAIL OF'**
+  String get trailHeaderEyebrow;
+
+  /// Bare metres line under the tier name in the Trail screen's per-task rank pill, e.g. '840 m'. Distinct from profileMetresGainedLabel ('840 m gained'): the Trail rank pill's canonical design shows just the bare number. metres is pre-formatted by the caller via NumberFormat (formatMetresNumber).
+  ///
+  /// In en, this message translates to:
+  /// **'{metres} m'**
+  String trailRankMetresLabel(String metres);
+
+  /// All-caps badge shown above the task's currently-growing cairn on the Trail screen. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'GROWING NOW'**
+  String get trailGrowingNowBadge;
+
+  /// Caption under the growing cairn on the Trail screen, e.g. 'Cairn 6 · 4 stones'. Same pattern as taskSummaryScheduled on the Home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Cairn {cairnNumber} · {stoneCount, plural, one{1 stone} other{{stoneCount} stones}}'**
+  String trailCairnStoneCount(int cairnNumber, num stoneCount);
+
+  /// Title line above a capped or broken cairn on the Trail screen, e.g. 'Cairn 5'.
+  ///
+  /// In en, this message translates to:
+  /// **'Cairn {cairnNumber}'**
+  String trailCairnLabel(int cairnNumber);
+
+  /// Caption under a capped cairn on the Trail screen, e.g. '14 stones · capped'.
+  ///
+  /// In en, this message translates to:
+  /// **'{stoneCount, plural, one{1 stone} other{{stoneCount} stones}} · capped'**
+  String trailCappedCaption(num stoneCount);
+
+  /// Caption under a broken cairn on the Trail screen, e.g. 'broken · 5 stones'.
+  ///
+  /// In en, this message translates to:
+  /// **'broken · {stoneCount, plural, one{1 stone} other{{stoneCount} stones}}'**
+  String trailBrokenCaption(num stoneCount);
+
+  /// Caption under the first cairn (index 1) on the Trail screen, replacing that cairn's usual status caption, e.g. 'The trailhead · Apr 2'. date is pre-formatted by the caller via formatShortMonthDay.
+  ///
+  /// In en, this message translates to:
+  /// **'The trailhead · {date}'**
+  String trailTrailheadCaption(String date);
+
+  /// All-caps marker below the trailhead cairn at the very bottom of the Trail screen's scrollable history. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'WHERE YOU STARTED'**
+  String get trailWhereYouStartedLabel;
+
+  /// Body copy shown in place of the winding trail when the selected task has active tasks overall but this particular task has zero completions yet (its cairn history is empty). Not part of the canonical Cairn Trail.dc.html design (which has no such example) - this exact wording was specified as the state's copy since no static mockup covers it.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first stone starts the trail.'**
+  String get trailEmptyTrailBody;
 }
 
 class _AppLocalizationsDelegate

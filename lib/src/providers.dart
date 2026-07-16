@@ -23,6 +23,7 @@ import 'services/proof_verifier.dart';
 import 'services/recent_photo_library.dart';
 import 'services/streak_service.dart';
 import 'services/supabase_proof_verifier.dart';
+import 'services/trail_service.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase(driftDatabase(name: 'cairn'));
@@ -157,6 +158,31 @@ final profileServiceProvider = Provider<ProfileService>((ref) {
 /// comment), so the screen never needs a manual refresh.
 final profileSnapshotProvider = StreamProvider<ProfileSnapshot>((ref) {
   return ref.watch(profileServiceProvider).watchProfile();
+});
+
+final trailServiceProvider = Provider<TrailService>((ref) {
+  return TrailService(
+    ref.watch(databaseProvider),
+    ref.watch(taskRepositoryProvider),
+    ref.watch(completionRepositoryProvider),
+    ref.watch(pointsServiceProvider),
+    ref.watch(clockProvider),
+  );
+});
+
+/// Which task's trail the Trail screen currently shows; null defaults to
+/// the first task (by cairn number) - see [TrailService]'s doc comment on
+/// effective selection. Tapping a habit-selector chip sets this.
+final selectedTrailTaskIdProvider = StateProvider<String?>((ref) => null);
+
+/// Drives the Trail screen. Recomputes automatically on every relevant
+/// database change (see [TrailService.watchTrail]'s doc comment, the same
+/// reactivity recipe as [homeSnapshotProvider]/[profileSnapshotProvider]),
+/// and re-runs whenever [selectedTrailTaskIdProvider] changes.
+final trailSnapshotProvider = StreamProvider<TrailSnapshot>((ref) {
+  return ref.watch(trailServiceProvider).watchTrail(
+        selectedTaskId: ref.watch(selectedTrailTaskIdProvider),
+      );
 });
 
 // Photo-library metadata is tried first (its timestamp is harder to forge

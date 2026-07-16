@@ -364,4 +364,16 @@ abstract final class AppColors {
   /// (160deg).
   static const Color premiumBgLight = Color(0xFFF4EFE4);
   static const Color premiumBgDark = Color(0xFFE6DECB);
+
+  // ---- Trail screen --------------------------------------------------------
+
+  /// `#6f685b` - a broken cairn's "Cairn N" title colour on the Trail
+  /// screen, distinct from a capped cairn's darker [inkDimmed] title.
+  static const Color trailBrokenCairnTitle = Color(0xFF6F685B);
+
+  /// `#a19795` - the "WHERE YOU STARTED" trailhead marker's text colour.
+  /// One byte off [textInactive] (`#a19785`) in the source file; kept as
+  /// its own token rather than collapsed, per this file's own precedent of
+  /// preserving literal per-use distinctions.
+  static const Color trailWhereYouStartedText = Color(0xFFA19795);
 }

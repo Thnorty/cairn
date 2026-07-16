@@ -104,6 +104,12 @@ void main() {
     });
   });
 
+  group('formatShortMonthDay', () {
+    test('formats a month/day with no weekday for en', () {
+      expect(formatShortMonthDay(d(2026, 4, 2), const Locale('en')), 'Apr 2');
+    });
+  });
+
   group('localeAwareToUpperCase (the Turkish dotted/dotless-i trap)', () {
     test('uppercases a plain "i" as a regular "I" for en', () {
       expect(localeAwareToUpperCase('istanbul', const Locale('en')), 'ISTANBUL');

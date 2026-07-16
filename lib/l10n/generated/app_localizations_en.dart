@@ -499,4 +499,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileRestorePurchaseRow => 'Restore purchase';
+
+  @override
+  String get trailHeaderEyebrow => 'TRAIL OF';
+
+  @override
+  String trailRankMetresLabel(String metres) {
+    return '$metres m';
+  }
+
+  @override
+  String get trailGrowingNowBadge => 'GROWING NOW';
+
+  @override
+  String trailCairnStoneCount(int cairnNumber, num stoneCount) {
+    String _temp0 = intl.Intl.pluralLogic(
+      stoneCount,
+      locale: localeName,
+      other: '$stoneCount stones',
+      one: '1 stone',
+    );
+    return 'Cairn $cairnNumber · $_temp0';
+  }
+
+  @override
+  String trailCairnLabel(int cairnNumber) {
+    return 'Cairn $cairnNumber';
+  }
+
+  @override
+  String trailCappedCaption(num stoneCount) {
+    String _temp0 = intl.Intl.pluralLogic(
+      stoneCount,
+      locale: localeName,
+      other: '$stoneCount stones',
+      one: '1 stone',
+    );
+    return '$_temp0 · capped';
+  }
+
+  @override
+  String trailBrokenCaption(num stoneCount) {
+    String _temp0 = intl.Intl.pluralLogic(
+      stoneCount,
+      locale: localeName,
+      other: '$stoneCount stones',
+      one: '1 stone',
+    );
+    return 'broken · $_temp0';
+  }
+
+  @override
+  String trailTrailheadCaption(String date) {
+    return 'The trailhead · $date';
+  }
+
+  @override
+  String get trailWhereYouStartedLabel => 'WHERE YOU STARTED';
+
+  @override
+  String get trailEmptyTrailBody => 'Your first stone starts the trail.';
 }

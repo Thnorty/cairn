@@ -8,6 +8,7 @@ import '../clock.dart';
 import '../db/database.dart';
 import '../models/local_date.dart';
 import '../models/proof_verdict.dart';
+import '../services/cairn_grouping.dart';
 import '../services/occurrence_generator.dart';
 import '../services/points_service.dart';
 import '../services/proof_verifier.dart';
@@ -113,6 +114,7 @@ class CompletionRepository {
   final OccurrenceGenerator _generator;
   final StreakService _streaks;
   final PointsService _points;
+  final CairnGrouping _cairns;
   final ProofVerifier _verifier;
   final ProofPolicy _policy;
   final String? Function() _currentUserId;
@@ -129,6 +131,7 @@ class CompletionRepository {
     OccurrenceGenerator generator = const OccurrenceGenerator(),
     StreakService streaks = const StreakService(),
     PointsService points = const PointsService(),
+    CairnGrouping cairns = const CairnGrouping(),
     required ProofVerifier verifier,
     ProofPolicy policy = const ProofPolicy(),
     String? Function() currentUserId = _noCurrentUserId,
@@ -136,6 +139,7 @@ class CompletionRepository {
         _generator = generator,
         _streaks = streaks,
         _points = points,
+        _cairns = cairns,
         _verifier = verifier,
         _policy = policy,
         _currentUserId = currentUserId;
@@ -169,9 +173,11 @@ class CompletionRepository {
         excludingSlot: slot,
         today: today,
       );
+      final capsACairn = await _capsACairn(liveTask, today);
       final points = _points.pointsForCompletion(
         streakLengthIncludingThis: streakLength,
         isPerfectDayFinalOccurrence: isPerfectDay,
+        capsACairn: capsACairn,
       );
 
       final now = _clock.nowEpochMillis();
@@ -208,6 +214,16 @@ class CompletionRepository {
     });
   }
 
+  /// Live (non-tombstoned) completions for [taskId], verified or pending
+  /// alike, as they stand *before* the stone currently being inserted. Shared
+  /// by [_streakLengthIncludingThis] (streak) and [_capsACairn] (cairn cap
+  /// bonus), both of which need the same "this task's history so far" read.
+  Future<List<Completion>> _liveCompletionsForTask(String taskId) {
+    return (_db.select(_db.completions)
+          ..where((c) => c.taskId.equals(taskId) & c.deletedAt.isNull()))
+        .get();
+  }
+
   /// The task's current streak as of today, simulating this slot (and any
   /// other slots already done today) as complete.
   Future<int> _streakLengthIncludingThis(
@@ -215,9 +231,7 @@ class CompletionRepository {
     LocalDate today,
     int slot,
   ) async {
-    final taskCompletions = await (_db.select(_db.completions)
-          ..where((c) => c.taskId.equals(task.id) & c.deletedAt.isNull()))
-        .get();
+    final taskCompletions = await _liveCompletionsForTask(task.id);
     final done = <(LocalDate, int)>{
       for (final c in taskCompletions) (c.occurrenceDate, c.slot),
     };
@@ -227,6 +241,21 @@ class CompletionRepository {
       today,
       (date, s) => done.contains((date, s)),
     );
+  }
+
+  /// True iff the stone about to be inserted for [task] is the one that
+  /// fills its current per-task cairn to [PointsService.cairnCapStones]
+  /// stones (see [CairnGrouping]). Reads the task's live completions as they
+  /// stand *before* this insert, so the just-started next stone is exactly
+  /// `growingCairnStoneCount + 1`.
+  Future<bool> _capsACairn(Task task, LocalDate today) async {
+    final existing = await _liveCompletionsForTask(task.id);
+    final growingSoFar = _cairns.growingCairnStoneCount(
+      task: task,
+      today: today,
+      liveCompletions: existing,
+    );
+    return growingSoFar + 1 == PointsService.cairnCapStones;
   }
 
   /// True iff every occurrence scheduled today across all active tasks,
@@ -514,9 +543,11 @@ class CompletionRepository {
       excludingSlot: slot,
       today: today,
     );
+    final capsACairn = await _capsACairn(task, today);
     final points = _points.pointsForCompletion(
       streakLengthIncludingThis: streakLength,
       isPerfectDayFinalOccurrence: isPerfectDay,
+      capsACairn: capsACairn,
     );
 
     final now = _clock.nowEpochMillis();
@@ -706,6 +737,29 @@ class CompletionRepository {
         .get();
     return _points.totalAltitude(rows.map((c) => c.pointsAwarded));
   }
+
+  /// Verified altitude scoped to one task: sum of points_awarded over that
+  /// task's live (deletedAt IS NULL) *verified* completions only. This is
+  /// the Trail screen's per-task rank pill figure ("Trail of {task}" and its
+  /// own altitude) - the same verified-only filter [totalAltitude] applies
+  /// globally, scoped here to a single task via [taskId].
+  Future<int> verifiedAltitudeForTask(String taskId) async {
+    final rows = await (_db.select(_db.completions)
+          ..where((c) =>
+              c.taskId.equals(taskId) &
+              c.deletedAt.isNull() &
+              c.verificationStatus.equalsValue(VerificationStatus.verified)))
+        .get();
+    return _points.totalAltitude(rows.map((c) => c.pointsAwarded));
+  }
+
+  /// Live (non-tombstoned) completions for [taskId], verified or pending
+  /// alike: the same read [CairnGrouping] needs to build a task's cairn
+  /// history. Public wrapper around [_liveCompletionsForTask] so callers
+  /// outside this repository (the Trail screen's [TrailService]) can build a
+  /// [CairnGrouping] without duplicating this query.
+  Future<List<Completion>> liveCompletionsForTask(String taskId) =>
+      _liveCompletionsForTask(taskId);
 
   /// Each task's stone count for the Home/Trail cairn illustration: the
   /// count of that task's live (non-tombstoned) completions, verified or

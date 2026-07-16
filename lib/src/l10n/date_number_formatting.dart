@@ -89,6 +89,18 @@ String formatShortWeekdayMonthDay(LocalDate date, Locale locale) {
   return '$weekday, $monthDay';
 }
 
+/// Formats [date] as an abbreviated "month day" with no weekday (e.g.
+/// "Apr 2" for `en`), used by the Trail screen's trailhead caption ("The
+/// trailhead · Apr 2" in `Cairn Trail.dc.html`). Distinct from
+/// [formatShortWeekdayMonthDay] (which also prepends the abbreviated
+/// weekday): the Trail trailhead caption's canonical design omits the
+/// weekday entirely.
+String formatShortMonthDay(LocalDate date, Locale locale) {
+  final localeTag = locale.toLanguageTag();
+  final dt = DateTime(date.year, date.month, date.day);
+  return DateFormat.MMMd(localeTag).format(dt);
+}
+
 /// Formats a short time-of-day (e.g. "7:14 AM" for `en`) for the `time`
 /// placeholders used throughout the verification-flow ARB messages
 /// (`verifiedAt`, `scheduledAt`, `taskNameAtTime`, ...). Callers pass the

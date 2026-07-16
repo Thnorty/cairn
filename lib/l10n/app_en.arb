@@ -732,5 +732,74 @@
   "profileRestorePurchaseRow": "Restore purchase",
   "@profileRestorePurchaseRow": {
     "description": "Row label in the Profile screen's settings list. A navigational placeholder for now - later phases wire a real destination."
+  },
+
+  "trailHeaderEyebrow": "TRAIL OF",
+  "@trailHeaderEyebrow": {
+    "description": "Small all-caps eyebrow label above the selected task's title on the Trail screen (Cairn Trail.dc.html), e.g. 'TRAIL OF' above 'Read 20 pages'. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+
+  "trailRankMetresLabel": "{metres} m",
+  "@trailRankMetresLabel": {
+    "description": "Bare metres line under the tier name in the Trail screen's per-task rank pill, e.g. '840 m'. Distinct from profileMetresGainedLabel ('840 m gained'): the Trail rank pill's canonical design shows just the bare number. metres is pre-formatted by the caller via NumberFormat (formatMetresNumber).",
+    "placeholders": {
+      "metres": { "type": "String", "example": "840" }
+    }
+  },
+
+  "trailGrowingNowBadge": "GROWING NOW",
+  "@trailGrowingNowBadge": {
+    "description": "All-caps badge shown above the task's currently-growing cairn on the Trail screen. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+
+  "trailCairnStoneCount": "Cairn {cairnNumber} · {stoneCount, plural, one{1 stone} other{{stoneCount} stones}}",
+  "@trailCairnStoneCount": {
+    "description": "Caption under the growing cairn on the Trail screen, e.g. 'Cairn 6 · 4 stones'. Same pattern as taskSummaryScheduled on the Home screen.",
+    "placeholders": {
+      "cairnNumber": { "type": "int", "example": "6" },
+      "stoneCount": { "type": "num", "example": "4" }
+    }
+  },
+
+  "trailCairnLabel": "Cairn {cairnNumber}",
+  "@trailCairnLabel": {
+    "description": "Title line above a capped or broken cairn on the Trail screen, e.g. 'Cairn 5'.",
+    "placeholders": {
+      "cairnNumber": { "type": "int", "example": "5" }
+    }
+  },
+
+  "trailCappedCaption": "{stoneCount, plural, one{1 stone} other{{stoneCount} stones}} · capped",
+  "@trailCappedCaption": {
+    "description": "Caption under a capped cairn on the Trail screen, e.g. '14 stones · capped'.",
+    "placeholders": {
+      "stoneCount": { "type": "num", "example": "14" }
+    }
+  },
+
+  "trailBrokenCaption": "broken · {stoneCount, plural, one{1 stone} other{{stoneCount} stones}}",
+  "@trailBrokenCaption": {
+    "description": "Caption under a broken cairn on the Trail screen, e.g. 'broken · 5 stones'.",
+    "placeholders": {
+      "stoneCount": { "type": "num", "example": "5" }
+    }
+  },
+
+  "trailTrailheadCaption": "The trailhead · {date}",
+  "@trailTrailheadCaption": {
+    "description": "Caption under the first cairn (index 1) on the Trail screen, replacing that cairn's usual status caption, e.g. 'The trailhead · Apr 2'. date is pre-formatted by the caller via formatShortMonthDay.",
+    "placeholders": {
+      "date": { "type": "String", "example": "Apr 2" }
+    }
+  },
+
+  "trailWhereYouStartedLabel": "WHERE YOU STARTED",
+  "@trailWhereYouStartedLabel": {
+    "description": "All-caps marker below the trailhead cairn at the very bottom of the Trail screen's scrollable history. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+
+  "trailEmptyTrailBody": "Your first stone starts the trail.",
+  "@trailEmptyTrailBody": {
+    "description": "Body copy shown in place of the winding trail when the selected task has active tasks overall but this particular task has zero completions yet (its cairn history is empty). Not part of the canonical Cairn Trail.dc.html design (which has no such example) - this exact wording was specified as the state's copy since no static mockup covers it."
   }
 }

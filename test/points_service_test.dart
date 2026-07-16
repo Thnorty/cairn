@@ -68,6 +68,40 @@ void main() {
         10 + 10 + 15,
       );
     });
+
+    test('capsACairn adds the cairn cap bonus on top of everything else',
+        () {
+      expect(
+        service.pointsForCompletion(
+          streakLengthIncludingThis: 3,
+          isPerfectDayFinalOccurrence: false,
+          capsACairn: true,
+        ),
+        10 + 3 + PointsService.cairnCapBonus,
+      );
+    });
+
+    test('capsACairn stacks with the perfect-day and streak bonuses', () {
+      expect(
+        service.pointsForCompletion(
+          streakLengthIncludingThis: 40,
+          isPerfectDayFinalOccurrence: true,
+          capsACairn: true,
+        ),
+        10 + 10 + 15 + PointsService.cairnCapBonus,
+      );
+    });
+
+    test('capsACairn defaults to false, leaving existing callers unchanged',
+        () {
+      expect(
+        service.pointsForCompletion(
+          streakLengthIncludingThis: 1,
+          isPerfectDayFinalOccurrence: false,
+        ),
+        11,
+      );
+    });
   });
 
   group('totalAltitude', () {

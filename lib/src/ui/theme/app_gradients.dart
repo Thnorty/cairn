@@ -152,4 +152,18 @@ abstract final class AppGradients {
       colors: const [AppColors.accountAvatarLight, AppColors.accountAvatarDark],
     );
   }
+
+  /// Trail screen's scrollable-body background wash, 180deg (top to
+  /// bottom) `#e9e1d3 0% -> #e7e4d4 30% -> #e8e6d6 60% -> #e6ddcd 100%`.
+  static const LinearGradient trailBackground = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color(0xFFE9E1D3),
+      Color(0xFFE7E4D4),
+      Color(0xFFE8E6D6),
+      Color(0xFFE6DDCD),
+    ],
+    stops: [0, 0.3, 0.6, 1.0],
+  );
 }

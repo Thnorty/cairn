@@ -7,6 +7,7 @@ import '../home/home_screen.dart';
 import '../profile/profile_screen.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/screen_background.dart';
+import '../trail/trail_screen.dart';
 import '../widgets/app_tab_bar.dart';
 import '../widgets/wordmark_glyph.dart';
 
@@ -14,15 +15,17 @@ import '../widgets/wordmark_glyph.dart';
 /// each real screen (Home/Trail/Stats/Profile) can drop straight in over
 /// the next few runs instead of being built against a bare `Scaffold`.
 ///
-/// Today is the real [HomeScreen] and You is the real [ProfileScreen]
-/// (Phase 3); Trail/Stats remain placeholders until their own runs land.
-/// Trail, Stats and Profile each have a *different* header treatment in
-/// their own design files (see `Cairn Trail.dc.html`/`Cairn Profile.dc.html`),
-/// not the wordmark row used here - so [_WordmarkHeader] is only ever shown
-/// above a still-placeholder body (Trail/Stats); a real screen always brings
+/// Today is the real [HomeScreen], Trail is the real [TrailScreen], and You
+/// is the real [ProfileScreen] (Phase 3); Stats remains a placeholder until
+/// its own run lands. Trail, Stats and Profile each have a *different*
+/// header treatment in their own design files (see
+/// `Cairn Trail.dc.html`/`Cairn Profile.dc.html`), not the wordmark row used
+/// here - so [_WordmarkHeader] is only ever shown above a still-placeholder
+/// body (Stats only, now that Trail is real); a real screen always brings
 /// its own full header (Home's brand row, in particular, already includes
 /// this same [WordmarkGlyph] plus its own controls; Profile's own header is
-/// its "PROFILE" label + "You" title) and this shared one is hidden for it
+/// its "PROFILE" label + "You" title; Trail's own header is its "TRAIL OF"
+/// eyebrow + task title + rank pill) and this shared one is hidden for it
 /// instead of stacking two headers.
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -44,7 +47,7 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final bodies = [
       HomeScreen(onOpenDebug: _openDebugScreen),
-      const _PlaceholderBody(label: 'Trail'),
+      const TrailScreen(),
       const _PlaceholderBody(label: 'Stats'),
       const ProfileScreen(),
     ];
@@ -70,11 +73,11 @@ class _AppShellState extends State<AppShell> {
               // verifier without spending Gemini calls) has no home in the
               // real navigation yet. Long-pressing the wordmark is a
               // stand-in entry point until a real settings/debug affordance
-              // exists; remove this once one does. Only shown above a
-              // still-placeholder body (Trail/Stats) - see this class's doc
-              // comment; index 0 (Home) and index 3 (Profile) both bring
-              // their own real header instead.
-              if (_index != 0 && _index != 3)
+              // exists; remove this once one does. Only shown above the
+              // still-placeholder Stats body - see this class's doc comment;
+              // index 0 (Home), index 1 (Trail) and index 3 (Profile) all
+              // bring their own real header instead.
+              if (_index != 0 && _index != 1 && _index != 3)
                 _WordmarkHeader(onLongPress: _openDebugScreen),
               Expanded(
                 child: IndexedStack(index: _index, children: bodies),

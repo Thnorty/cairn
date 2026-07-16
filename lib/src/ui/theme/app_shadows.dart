@@ -131,4 +131,25 @@ abstract final class AppShadows {
       spreadRadius: -6,
     ),
   ];
+
+  /// Trail screen's per-task rank pill: `0 8px 14px -9px rgba(60,50,35,.5)`.
+  static const List<BoxShadow> trailRankPill = [
+    BoxShadow(
+      color: Color(0x803C3223),
+      offset: Offset(0, 8),
+      blurRadius: 14,
+      spreadRadius: -9,
+    ),
+  ];
+
+  /// Trail screen's selected (dark) habit-selector chip:
+  /// `0 6px 12px -6px rgba(45,38,26,.5)`.
+  static const List<BoxShadow> trailSelectedChip = [
+    BoxShadow(
+      color: Color(0x802D261A),
+      offset: Offset(0, 6),
+      blurRadius: 12,
+      spreadRadius: -6,
+    ),
+  ];
 }

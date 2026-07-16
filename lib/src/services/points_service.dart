@@ -57,19 +57,31 @@ class PointsService {
   static const int maxStreakBonus = 10;
   static const int perfectDayBonus = 15;
 
+  /// Per-task cairn cap: a stack of this many stones is "capped" and awards
+  /// [cairnCapBonus]. See [CairnGrouping].
+  static const int cairnCapStones = 10;
+  static const int cairnCapBonus = 25;
+
   const PointsService();
 
   /// Points for a single completion, given the task's streak length
   /// *including* this completion, and whether it was the day's final
   /// scheduled occurrence to complete.
+  ///
+  /// [capsACairn] is true when this completion is the stone that fills a
+  /// per-task cairn to [cairnCapStones] (see [CairnGrouping]); it adds
+  /// [cairnCapBonus] on top of the base/streak/perfect-day totals. Defaults
+  /// to false so every existing caller is unaffected.
   int pointsForCompletion({
     required int streakLengthIncludingThis,
     required bool isPerfectDayFinalOccurrence,
+    bool capsACairn = false,
   }) {
     final streakBonus =
         streakLengthIncludingThis.clamp(0, maxStreakBonus);
     var points = basePoints + streakBonus;
     if (isPerfectDayFinalOccurrence) points += perfectDayBonus;
+    if (capsACairn) points += cairnCapBonus;
     return points;
   }
 

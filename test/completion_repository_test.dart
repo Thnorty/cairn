@@ -13,6 +13,13 @@ import 'helpers.dart';
 ProofData _proof([List<int> bytes = const [1, 2, 3]]) =>
     ProofData(imageBytes: Uint8List.fromList(bytes));
 
+const _passingVerdict = ProofVerdict(
+  taskShown: true,
+  confidence: 0.95,
+  isScreenshotOrScreen: false,
+  reason: 'clear photo',
+);
+
 void main() {
   late AppDatabase db;
 
@@ -252,7 +259,11 @@ void main() {
         );
         final points = (result as CompletionRecorded).completion.pointsAwarded;
         final expectedStreakBonus = day.clamp(0, 10);
-        expect(points, 10 + expectedStreakBonus + 15, reason: 'day $day');
+        // Day 10 is this lone task's 10th live stone, so it also caps the
+        // cairn (+25), on top of base/streak/perfect-day.
+        final expectedCapBonus = day == 10 ? 25 : 0;
+        expect(points, 10 + expectedStreakBonus + 15 + expectedCapBonus,
+            reason: 'day $day');
       }
     });
 
@@ -337,6 +348,210 @@ void main() {
 
       await completionRepo.tombstoneDelete(completion.id);
       expect(await completionRepo.totalAltitude(), 0);
+    });
+  });
+
+  group('verifiedAltitudeForTask', () {
+    test(
+        'sums only the given task\'s verified points, excluding another '
+        'task\'s completions, a pending completion, and a tombstoned one',
+        () async {
+      final clock = FixedClock(d(2026, 7, 10));
+      final taskRepo = TaskRepository(db, clock);
+      final verifiedRepo =
+          CompletionRepository(db, clock, verifier: FakeProofVerifier());
+      final pendingRepo = CompletionRepository(db, clock,
+          verifier: FakeProofVerifier((_) => const VerifierUnavailable('offline')));
+
+      final taskA = await taskRepo.createTask(
+        title: 'A',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      final taskB = await taskRepo.createTask(
+        title: 'B',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      // Verified stone on task A: counts.
+      final resultA = await verifiedRepo.completeOccurrence(
+        taskId: taskA.id,
+        occurrenceDate: d(2026, 7, 10),
+      );
+      final completionA = (resultA as CompletionRecorded).completion;
+
+      // Verified stone on task B: must not leak into task A's total.
+      await verifiedRepo.completeOccurrence(
+        taskId: taskB.id,
+        occurrenceDate: d(2026, 7, 10),
+      );
+
+      expect(await verifiedRepo.verifiedAltitudeForTask(taskA.id),
+          completionA.pointsAwarded);
+
+      // A tombstoned task-A completion must not count either.
+      await verifiedRepo.tombstoneDelete(completionA.id);
+      expect(await verifiedRepo.verifiedAltitudeForTask(taskA.id), 0);
+
+      // A pending (unverified) task-A completion contributes zero until
+      // verified, mirroring totalAltitude()'s own rule.
+      final freshClock = FixedClock(d(2026, 7, 11));
+      final freshTaskRepo = TaskRepository(db, freshClock);
+      final freshTaskA = await freshTaskRepo.createTask(
+        title: 'Fresh A',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 11),
+      );
+      final freshPendingRepo = CompletionRepository(db, freshClock,
+          verifier: FakeProofVerifier((_) => const VerifierUnavailable('offline')));
+      await freshPendingRepo.completeWithProof(
+        taskId: freshTaskA.id,
+        occurrenceDate: d(2026, 7, 11),
+        proof: _proof(),
+      );
+      expect(await pendingRepo.verifiedAltitudeForTask(freshTaskA.id), 0);
+    });
+  });
+
+  group('cairn cap bonus', () {
+    test(
+        'the 10th live stone of a task earns the +25 cairn cap bonus; the '
+        '9th and 11th do not', () async {
+      final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
+      final task = await taskRepo.createTask(
+        title: 'Push-ups',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      final pointsByDay = <int, int>{};
+      for (var day = 1; day <= 11; day++) {
+        final repo = CompletionRepository(db, FixedClock(d(2026, 7, day)),
+            verifier: FakeProofVerifier());
+        final result = await repo.completeOccurrence(
+          taskId: task.id,
+          occurrenceDate: d(2026, 7, day),
+        );
+        pointsByDay[day] =
+            (result as CompletionRecorded).completion.pointsAwarded;
+      }
+
+      // This lone task makes every day its own perfect day too: base 10 +
+      // streak bonus (day, capped at 10) + perfect-day 15, plus +25 only on
+      // the stone that fills the cairn to 10.
+      expect(pointsByDay[9], 10 + 9 + 15); // 34, no cap bonus yet
+      expect(pointsByDay[10], 10 + 10 + 15 + 25); // 60, caps the cairn
+      expect(pointsByDay[11], 10 + 10 + 15); // 35, a fresh cairn just started
+    });
+
+    test(
+        'a streak break resets the count: the cap bonus is earned within '
+        'the current run, not by lifetime completion total', () async {
+      final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
+      final task = await taskRepo.createTask(
+        title: 'Push-ups',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      Future<int> complete(int day) async {
+        final repo = CompletionRepository(db, FixedClock(d(2026, 7, day)),
+            verifier: FakeProofVerifier());
+        final result = await repo.completeOccurrence(
+          taskId: task.id,
+          occurrenceDate: d(2026, 7, day),
+        );
+        return (result as CompletionRecorded).completion.pointsAwarded;
+      }
+
+      // Run 1: 9 stones (days 1-9). Day 10 is left incomplete entirely (a
+      // break once elapsed). Run 2 then needs its own 10 stones to cap,
+      // even though its 10th stone (day 20) is only the task's 19th
+      // completion ever - proving the cap is per-run, not lifetime.
+      for (final day in [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+        await complete(day);
+      }
+
+      int? pointsDay19;
+      int? pointsDay20;
+      for (final day in [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]) {
+        final points = await complete(day);
+        if (day == 19) pointsDay19 = points;
+        if (day == 20) pointsDay20 = points;
+      }
+
+      // Day 19 is run 2's 9th stone: streak 9, no cap bonus.
+      expect(pointsDay19, 10 + 9 + 15);
+      // Day 20 is run 2's 10th stone: streak 10, plus the +25 cap bonus.
+      expect(pointsDay20, 10 + 10 + 15 + 25);
+
+      final rows = await (db.select(db.completions)
+            ..where((c) => c.taskId.equals(task.id)))
+          .get();
+      // Lifetime total is 19, not a multiple of 10: the bonus could only
+      // have come from counting within run 2, not the lifetime total.
+      expect(rows, hasLength(19));
+    });
+
+    test(
+        'a pending 10th stone stores the cap bonus but withholds it from '
+        'totalAltitude until verified, then it counts', () async {
+      final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
+      final task = await taskRepo.createTask(
+        title: 'Push-ups',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      for (var day = 1; day <= 9; day++) {
+        final repo = CompletionRepository(db, FixedClock(d(2026, 7, day)),
+            verifier: FakeProofVerifier());
+        await repo.completeOccurrence(
+            taskId: task.id, occurrenceDate: d(2026, 7, day));
+      }
+
+      final baselineRepo = CompletionRepository(
+          db, FixedClock(d(2026, 7, 9)),
+          verifier: FakeProofVerifier());
+      final baseline = await baselineRepo.totalAltitude();
+      // Sum over days 1..9 of (10 base + day streak + 15 perfect-day), none
+      // of which cap the cairn yet.
+      expect(baseline, 270);
+
+      final day10Clock = FixedClock(d(2026, 7, 10));
+      final pendingVerifier =
+          FakeProofVerifier((_) => const VerifierUnavailable('offline'));
+      final pendingRepo =
+          CompletionRepository(db, day10Clock, verifier: pendingVerifier);
+      final result = await pendingRepo.completeWithProof(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+        proof: _proof(),
+      );
+      final pending = (result as CompletionPendingVerification).completion;
+
+      // The 10th stone caps the cairn: base 10 + streak 10 + perfect-day 15
+      // + cairn cap 25 = 60, stored on the row even while it's pending.
+      expect(pending.pointsAwarded, 60);
+      // But withheld from altitude until the verdict lands.
+      expect(await pendingRepo.totalAltitude(), baseline);
+
+      final passingVerifier =
+          FakeProofVerifier((_) => const VerdictReceived(_passingVerdict));
+      final retryRepo =
+          CompletionRepository(db, day10Clock, verifier: passingVerifier);
+      final report = await retryRepo.retryPendingVerifications(
+        loadBytes: (completion) async => Uint8List.fromList([9]),
+      );
+      expect(report.verified, 1);
+
+      // Once verified, the same stored points (including the cap bonus)
+      // start counting, unrecomputed.
+      expect(
+        await retryRepo.totalAltitude(),
+        baseline + pending.pointsAwarded,
+      );
     });
   });
 
