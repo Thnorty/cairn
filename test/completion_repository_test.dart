@@ -351,69 +351,6 @@ void main() {
     });
   });
 
-  group('verifiedAltitudeForTask', () {
-    test(
-        'sums only the given task\'s verified points, excluding another '
-        'task\'s completions, a pending completion, and a tombstoned one',
-        () async {
-      final clock = FixedClock(d(2026, 7, 10));
-      final taskRepo = TaskRepository(db, clock);
-      final verifiedRepo =
-          CompletionRepository(db, clock, verifier: FakeProofVerifier());
-      final pendingRepo = CompletionRepository(db, clock,
-          verifier: FakeProofVerifier((_) => const VerifierUnavailable('offline')));
-
-      final taskA = await taskRepo.createTask(
-        title: 'A',
-        recurrenceType: RecurrenceType.daily,
-        startDate: d(2026, 7, 1),
-      );
-      final taskB = await taskRepo.createTask(
-        title: 'B',
-        recurrenceType: RecurrenceType.daily,
-        startDate: d(2026, 7, 1),
-      );
-
-      // Verified stone on task A: counts.
-      final resultA = await verifiedRepo.completeOccurrence(
-        taskId: taskA.id,
-        occurrenceDate: d(2026, 7, 10),
-      );
-      final completionA = (resultA as CompletionRecorded).completion;
-
-      // Verified stone on task B: must not leak into task A's total.
-      await verifiedRepo.completeOccurrence(
-        taskId: taskB.id,
-        occurrenceDate: d(2026, 7, 10),
-      );
-
-      expect(await verifiedRepo.verifiedAltitudeForTask(taskA.id),
-          completionA.pointsAwarded);
-
-      // A tombstoned task-A completion must not count either.
-      await verifiedRepo.tombstoneDelete(completionA.id);
-      expect(await verifiedRepo.verifiedAltitudeForTask(taskA.id), 0);
-
-      // A pending (unverified) task-A completion contributes zero until
-      // verified, mirroring totalAltitude()'s own rule.
-      final freshClock = FixedClock(d(2026, 7, 11));
-      final freshTaskRepo = TaskRepository(db, freshClock);
-      final freshTaskA = await freshTaskRepo.createTask(
-        title: 'Fresh A',
-        recurrenceType: RecurrenceType.daily,
-        startDate: d(2026, 7, 11),
-      );
-      final freshPendingRepo = CompletionRepository(db, freshClock,
-          verifier: FakeProofVerifier((_) => const VerifierUnavailable('offline')));
-      await freshPendingRepo.completeWithProof(
-        taskId: freshTaskA.id,
-        occurrenceDate: d(2026, 7, 11),
-        proof: _proof(),
-      );
-      expect(await pendingRepo.verifiedAltitudeForTask(freshTaskA.id), 0);
-    });
-  });
-
   group('cairn cap bonus', () {
     test(
         'the 10th live stone of a task earns the +25 cairn cap bonus; the '

@@ -275,6 +275,7 @@ class _ProgressToNext extends StatelessWidget {
                 FractionallySizedBox(
                   alignment: AlignmentDirectional.centerStart,
                   widthFactor: fraction,
+                  heightFactor: 1.0,
                   child: DecoratedBox(
                     decoration: BoxDecoration(gradient: AppGradients.heroProgressFill),
                   ),

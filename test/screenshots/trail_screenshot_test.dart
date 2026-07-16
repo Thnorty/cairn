@@ -119,4 +119,37 @@ void main() {
     await tester.tap(find.text('Trail'));
     await captureAt392x846(tester, 'trail_history.png');
   });
+
+  testScreenshotWidgets(
+      'Trail, a single still-growing cairn that is also the trailhead '
+      '(the tallest node this layout renders - see the "WHERE YOU STARTED" '
+      'marker-clearance fix)', (tester) async {
+    final clock = FixedClock(d(2026, 7, 9));
+    final db = inMemoryDatabase();
+    addTearDown(db.close);
+
+    final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
+    final task = await taskRepo.createTask(
+      title: 'Read 20 pages',
+      recurrenceType: RecurrenceType.daily,
+      startDate: d(2026, 7, 1),
+    );
+
+    // Days 1-9: 9 stones, one short of PointsService.cairnCapStones (10), so
+    // this cairn never caps and is still growing as of today (day 9) - the
+    // maximum stone count a growing cairn can ever show, and since it's also
+    // cairn 1, it's simultaneously the trailhead: badge + a 9-stone stack +
+    // title + the trailhead caption, the tallest single node this layout
+    // ever has to clear with the "WHERE YOU STARTED" marker below it.
+    for (var day = 1; day <= 9; day++) {
+      await CompletionRepository(db, FixedClock(d(2026, 7, day)),
+              verifier: FakeProofVerifier())
+          .completeOccurrence(taskId: task.id, occurrenceDate: d(2026, 7, day));
+    }
+
+    await tester.pumpWidget(appAt(db, clock));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Trail'));
+    await captureAt392x846(tester, 'trail_single_growing_trailhead.png');
+  });
 }

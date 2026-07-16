@@ -42,9 +42,19 @@ void _openNewHabitScreen(BuildContext context) {
 /// [TrailService.watchTrail]'s doc comment): a completion recorded
 /// elsewhere, or a pending proof resolving in the background, updates this
 /// screen with no manual refresh. This screen brings its own fixed header
-/// (eyebrow + task title + per-task rank pill) and its own habit-selector
-/// chip row, unlike Trail's placeholder predecessor - see [AppShell]'s doc
-/// comment on why the shared wordmark header is now hidden for this tab.
+/// (eyebrow + task title + the global rank pill - see this run's report on
+/// why it's app-wide, not per-task) and its own habit-selector chip row,
+/// unlike Trail's placeholder predecessor - see [AppShell]'s doc comment on
+/// why the shared wordmark header is now hidden for this tab.
+///
+/// [_TrailScreenBackground] paints one continuous opaque parchment wash +
+/// topo contour behind the *whole* screen (header, chips and the scrollable
+/// body alike), rather than each area painting its own: `AppShell` wraps
+/// every tab in `ScreenBackground`, whose default washes are tuned for Home
+/// (warm-clay + sage radial tints) and read as a visible seam if only part
+/// of this screen covers them. Painting one full-bleed layer here hides
+/// those washes entirely and guarantees the header's tone and the body's
+/// top tone are the same pixels, not just similar ones.
 class TrailScreen extends ConsumerWidget {
   const TrailScreen({super.key});
 
@@ -59,24 +69,73 @@ class TrailScreen extends ConsumerWidget {
     // transparent one rather than depending on the caller remembering one.
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: snapshotAsync.when(
-        data: (snapshot) {
-          if (snapshot.chips.isEmpty) {
-            // No tasks at all, anywhere in the app: the same empty-state
-            // illustration/copy Home shows for the identical condition (see
-            // this run's spec: "reuse Empty Today's visual language").
-            return EmptyTodayView(
-              onNewHabit: () => _openNewHabitScreen(context),
-            );
-          }
-          return _TrailScreenBody(snapshot: snapshot, ref: ref);
-        },
-        // The stream's first emission is effectively synchronous (see
-        // HomeService.watchToday's doc comment; TrailService follows the
-        // same recipe), so there's no meaningful loading UI to design here.
-        loading: () => const SizedBox.shrink(),
-        error: (error, stackTrace) => Center(child: Text('$error')),
+      body: Stack(
+        children: [
+          // Opaque and full-bleed: sits behind the header, the chip row and
+          // the scrollable body, covering AppShell's shared ScreenBackground
+          // washes for every state (including the empty states below), not
+          // just the populated trail.
+          const Positioned.fill(child: _TrailScreenBackground()),
+          snapshotAsync.when(
+            data: (snapshot) {
+              if (snapshot.chips.isEmpty) {
+                // No tasks at all, anywhere in the app: the same empty-state
+                // illustration/copy Home shows for the identical condition
+                // (see this run's spec: "reuse Empty Today's visual
+                // language").
+                return EmptyTodayView(
+                  onNewHabit: () => _openNewHabitScreen(context),
+                );
+              }
+              return _TrailScreenBody(snapshot: snapshot, ref: ref);
+            },
+            // The stream's first emission is effectively synchronous (see
+            // HomeService.watchToday's doc comment; TrailService follows
+            // the same recipe), so there's no meaningful loading UI to
+            // design here.
+            loading: () => const SizedBox.shrink(),
+            error: (error, stackTrace) => Center(child: Text('$error')),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+/// The Trail screen's one continuous background layer: the parchment
+/// gradient + faint topo contour `Cairn Trail.dc.html`'s scrollable body
+/// uses (`#e9e1d3` at the top fading to `#e6ddcd` at the bottom), now
+/// painted once behind the entire screen instead of only behind the
+/// scrollable trail - see [TrailScreen]'s own doc comment for why. Static
+/// (it does not scroll with the trail content below it): it only needs to
+/// cover the fixed viewport, not the trail's full scrollable height, and a
+/// non-scrolling backdrop is what makes the header and the body read as one
+/// unbroken surface.
+class _TrailScreenBackground extends StatelessWidget {
+  const _TrailScreenBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(gradient: AppGradients.trailBackground),
+          ),
+        ),
+        Positioned.fill(
+          child: Opacity(
+            opacity: 0.5,
+            child: CustomPaint(
+              painter: TopographicContourPainter(
+                origin: const Alignment(0.2, -0.88),
+                ringSpacing: 30,
+                ringColor: const Color(0x0D5A6448),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -451,9 +510,11 @@ class _DashedChipBorderPainter extends CustomPainter {
 /// newest/growing at the top, the trailhead at the bottom ("scroll down =
 /// back in time"). Data-driven for any number of cairns: layout is derived
 /// from fixed per-node spacing/alternation rather than the design's
-/// hardcoded pixel coordinates, reproducing its visual language (a parchment
-/// wash, a topo contour overlay, a winding dashed connector threading
-/// through alternating left/right anchor points) instead.
+/// hardcoded pixel coordinates, reproducing its visual language (a winding
+/// dashed connector threading through alternating left/right anchor points)
+/// instead. The parchment wash and topo contour are no longer painted here -
+/// see [_TrailScreenBackground], which now covers the whole screen instead
+/// of just this scrollable body.
 class _TrailBody extends StatelessWidget {
   const _TrailBody({required this.cairns, required this.taskTitle});
 
@@ -470,9 +531,20 @@ class _TrailBody extends StatelessWidget {
   /// sits (roughly the node's own visual centre).
   static const double _anchorYOffset = 78;
 
-  /// Extra vertical gap between the last (trailhead) node and the "WHERE
-  /// YOU STARTED" marker below it.
-  static const double _markerGap = 96;
+  /// Extra vertical gap between the last (trailhead) node's own top and the
+  /// "WHERE YOU STARTED" marker below it. Deliberately reuses [_rowSpacing]
+  /// - the same vertical budget this layout already reserves between any
+  /// two consecutive nodes - rather than a smaller constant of its own: the
+  /// trailhead can *also* be the single still-growing cairn of a brand-new
+  /// task (badge + up to a 9-stone stack, [PointsService.cairnCapStones] -
+  /// 1 + title + caption), the tallest node this layout ever renders, and a
+  /// fixed 96px clearance landed the marker on top of that content instead
+  /// of below it. [_rowSpacing] is already this layout's own assumption of
+  /// "enough room for one node's content" (every node, growing or settled,
+  /// must fit within it before the next node starts), so reusing it here
+  /// guarantees the marker clears the trailhead's content too, verified
+  /// against `trail_screenshot_test.dart`'s single-growing-cairn scenario.
+  static const double _markerGap = _rowSpacing;
 
   static const double _bottomPadding = 56;
 
@@ -500,6 +572,7 @@ class _TrailBody extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
+        final viewportHeight = constraints.maxHeight;
         final anchors = [
           for (var i = 0; i < n; i++)
             Offset(
@@ -508,54 +581,54 @@ class _TrailBody extends StatelessWidget {
             ),
         ];
 
-        return SingleChildScrollView(
-          child: SizedBox(
-            width: width,
-            height: contentHeight,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(gradient: AppGradients.trailBackground),
-                  ),
-                ),
-                Positioned.fill(
-                  child: Opacity(
-                    opacity: 0.5,
-                    child: CustomPaint(
-                      painter: TopographicContourPainter(
-                        origin: const Alignment(0.2, -0.88),
-                        ringSpacing: 30,
-                        ringColor: const Color(0x0D5A6448),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned.fill(
-                  child: CustomPaint(painter: _WindingTrailPainter(anchors: anchors)),
-                ),
-                for (var i = 0; i < n; i++)
-                  Positioned(
-                    top: _topPad + i * _rowSpacing,
-                    left: 0,
-                    right: 0,
-                    child: Align(
-                      alignment: Alignment(_xFractionFor(i) * 2 - 1, 0),
-                      child: _CairnNode(cairn: display[i], taskTitle: taskTitle),
-                    ),
-                  ),
+        final trailStack = SizedBox(
+          width: width,
+          height: contentHeight,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(painter: _WindingTrailPainter(anchors: anchors)),
+              ),
+              for (var i = 0; i < n; i++)
                 Positioned(
-                  top: _topPad + (n - 1) * _rowSpacing + _markerGap,
+                  top: _topPad + i * _rowSpacing,
                   left: 0,
                   right: 0,
-                  child: Center(
-                    child: Text(
-                      AppLocalizations.of(context)!.trailWhereYouStartedLabel,
-                      style: AppTextStyles.trailWhereYouStartedLabel,
-                    ),
+                  child: Align(
+                    alignment: Alignment(_xFractionFor(i) * 2 - 1, 0),
+                    child: _CairnNode(cairn: display[i], taskTitle: taskTitle),
                   ),
                 ),
-              ],
+              Positioned(
+                top: _topPad + (n - 1) * _rowSpacing + _markerGap,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Text(
+                    AppLocalizations.of(context)!.trailWhereYouStartedLabel,
+                    style: AppTextStyles.trailWhereYouStartedLabel,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+
+        // Center-if-short, scroll-if-tall: a short trail (e.g. a single
+        // still-growing trailhead cairn) would otherwise sit pinned to the
+        // top of the viewport with a large dead expanse below it. Forcing
+        // the scroll child's minimum height up to the viewport's own height
+        // gives `Column`'s `MainAxisAlignment.center` room to centre
+        // `trailStack` when it's shorter than the viewport, while a taller
+        // trail simply exceeds that minimum and scrolls exactly as before -
+        // the trailhead and "WHERE YOU STARTED" remain reachable at the
+        // bottom for `trail_history.png`'s multi-cairn scenario.
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: viewportHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [trailStack],
             ),
           ),
         );

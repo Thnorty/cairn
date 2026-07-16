@@ -49,6 +49,13 @@ void main() {
 
   group('chips and selection', () {
     test('chips are ordered by cairn number (task creation order)', () async {
+      // Distinct createdAt per task (see this file's own FixedClock(d(...),
+      // nowMillis: ...) precedent): the same FixedClock instance always
+      // returns the same nowEpochMillis(), so two createTask calls on one
+      // clock tie on created_at and cairnNumbers()' ordering (createdAt
+      // only) falls back to whatever order the database happens to return
+      // ties in - nondeterministic, not the creation order this test
+      // asserts. Advancing the clock between creates removes the tie.
       final clock = FixedClock(d(2026, 7, 20));
       final taskRepo = TaskRepository(db, clock);
       final taskA = await taskRepo.createTask(
@@ -56,7 +63,11 @@ void main() {
         recurrenceType: RecurrenceType.daily,
         startDate: d(2026, 7, 1),
       );
-      final taskB = await taskRepo.createTask(
+      final laterTaskRepo = TaskRepository(
+        db,
+        FixedClock(d(2026, 7, 20), nowMillis: clock.nowEpochMillis() + 1000),
+      );
+      final taskB = await laterTaskRepo.createTask(
         title: 'B',
         recurrenceType: RecurrenceType.daily,
         startDate: d(2026, 7, 1),
@@ -74,6 +85,8 @@ void main() {
 
     test('with no selectedTaskId, defaults to the first task by cairn number',
         () async {
+      // Distinct createdAt per task - see the identical rationale in
+      // 'chips are ordered by cairn number' above.
       final clock = FixedClock(d(2026, 7, 20));
       final taskRepo = TaskRepository(db, clock);
       final taskA = await taskRepo.createTask(
@@ -81,7 +94,11 @@ void main() {
         recurrenceType: RecurrenceType.daily,
         startDate: d(2026, 7, 1),
       );
-      await taskRepo.createTask(
+      final laterTaskRepo = TaskRepository(
+        db,
+        FixedClock(d(2026, 7, 20), nowMillis: clock.nowEpochMillis() + 1000),
+      );
+      await laterTaskRepo.createTask(
         title: 'B',
         recurrenceType: RecurrenceType.daily,
         startDate: d(2026, 7, 1),
@@ -134,11 +151,11 @@ void main() {
     });
   });
 
-  group('cairns, altitude and rank for the selected task', () {
+  group('cairns for the selected task; altitude/rank are global', () {
     test(
         'a history spanning a capped cairn, a broken cairn and a growing '
-        'cairn renders all three, and altitude/rank match the repository '
-        'directly', () async {
+        'cairn renders all three, and altitude/rank match the repository\'s '
+        'app-wide total (not scoped to the selected task)', () async {
       final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
       final task = await taskRepo.createTask(
         title: 'Read 20 pages',
@@ -194,8 +211,7 @@ void main() {
       expect(cairn3.stoneCount, 4);
       expect(cairn3.status, CairnStatus.growing);
 
-      final expectedAltitude =
-          await completionRepo.verifiedAltitudeForTask(task.id);
+      final expectedAltitude = await completionRepo.totalAltitude();
       expect(snapshot.altitude, expectedAltitude);
       expect(snapshot.altitude, greaterThan(0));
       expect(snapshot.rank.tier, const PointsService().rankFor(expectedAltitude).tier);
@@ -217,6 +233,54 @@ void main() {
       expect(snapshot.cairns, isEmpty);
       expect(snapshot.altitude, 0);
       expect(snapshot.rank.tier, RankTier.pebble);
+    });
+
+    test(
+        'altitude/rank reflect every task\'s verified metres, and do not '
+        'change when a different chip is selected', () async {
+      final clock = FixedClock(d(2026, 7, 20));
+      final taskRepo = TaskRepository(db, clock);
+      final completionRepo =
+          CompletionRepository(db, clock, verifier: FakeProofVerifier());
+      final taskA = await taskRepo.createTask(
+        title: 'A',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      final laterTaskRepo = TaskRepository(
+        db,
+        FixedClock(d(2026, 7, 20), nowMillis: clock.nowEpochMillis() + 1000),
+      );
+      final taskB = await laterTaskRepo.createTask(
+        title: 'B',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      // Only task A ever gets a completion; task B has none of its own.
+      final result = await completionRepo.completeOccurrence(
+        taskId: taskA.id,
+        occurrenceDate: d(2026, 7, 20),
+      );
+      expect(result, isA<CompletionRecorded>());
+
+      final service = buildService(clock);
+      final snapshotOnA =
+          await service.buildSnapshot(selectedTaskId: taskA.id);
+      final snapshotOnB =
+          await service.buildSnapshot(selectedTaskId: taskB.id);
+
+      final expectedAltitude = await completionRepo.totalAltitude();
+      expect(expectedAltitude, greaterThan(0));
+      // Same altitude/rank regardless of which chip is selected: task B's
+      // own history is empty, yet its snapshot still reports task A's
+      // metres, because the pill is app-wide, not per-task.
+      expect(snapshotOnA.altitude, expectedAltitude);
+      expect(snapshotOnB.altitude, expectedAltitude);
+      expect(snapshotOnB.rank.tier, snapshotOnA.rank.tier);
+      // The cairn history itself does still differ per selected task.
+      expect(snapshotOnA.cairns, isNotEmpty);
+      expect(snapshotOnB.cairns, isEmpty);
     });
   });
 

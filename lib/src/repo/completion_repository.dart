@@ -738,21 +738,6 @@ class CompletionRepository {
     return _points.totalAltitude(rows.map((c) => c.pointsAwarded));
   }
 
-  /// Verified altitude scoped to one task: sum of points_awarded over that
-  /// task's live (deletedAt IS NULL) *verified* completions only. This is
-  /// the Trail screen's per-task rank pill figure ("Trail of {task}" and its
-  /// own altitude) - the same verified-only filter [totalAltitude] applies
-  /// globally, scoped here to a single task via [taskId].
-  Future<int> verifiedAltitudeForTask(String taskId) async {
-    final rows = await (_db.select(_db.completions)
-          ..where((c) =>
-              c.taskId.equals(taskId) &
-              c.deletedAt.isNull() &
-              c.verificationStatus.equalsValue(VerificationStatus.verified)))
-        .get();
-    return _points.totalAltitude(rows.map((c) => c.pointsAwarded));
-  }
-
   /// Live (non-tombstoned) completions for [taskId], verified or pending
   /// alike: the same read [CairnGrouping] needs to build a task's cairn
   /// history. Public wrapper around [_liveCompletionsForTask] so callers

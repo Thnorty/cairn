@@ -122,13 +122,24 @@ void main() {
         'the header and its own chip styling', (tester) async {
       final clock = FixedClock(d(2026, 7, 20));
       final db = await pumpTrail(tester, clock, (db) async {
+        // Distinct created_at per task: a single FixedClock instance always
+        // returns the same nowEpochMillis(), so two createTask calls on the
+        // *same* clock tie on created_at and TaskRepository.cairnNumbers()'
+        // ordering (created_at only) then falls back to whatever order the
+        // database happens to return ties in - nondeterministic, not the
+        // creation order this test's "default-selected task" assertion
+        // relies on. A second clock advanced by 1s removes the tie.
         final taskRepo = TaskRepository(db, clock);
         await taskRepo.createTask(
           title: 'Read 20 pages',
           recurrenceType: RecurrenceType.daily,
           startDate: d(2026, 7, 1),
         );
-        await taskRepo.createTask(
+        final laterTaskRepo = TaskRepository(
+          db,
+          FixedClock(d(2026, 7, 20), nowMillis: clock.nowEpochMillis() + 1000),
+        );
+        await laterTaskRepo.createTask(
           title: 'Morning workout',
           recurrenceType: RecurrenceType.daily,
           startDate: d(2026, 7, 1),
@@ -159,13 +170,23 @@ void main() {
     testTrailWidgets('tapping a chip switches the displayed trail', (tester) async {
       final clock = FixedClock(d(2026, 7, 20));
       final db = await pumpTrail(tester, clock, (db) async {
+        // Distinct created_at per task - see the identical rationale in
+        // 'chips render per task...' above. Here it also matters for *this*
+        // test's own setup: the tap below assumes "Morning workout" isn't
+        // already the default-selected task (so find.text for it is
+        // unambiguous before the tap), which only holds if it reliably
+        // sorts second.
         final taskRepo = TaskRepository(db, clock);
         await taskRepo.createTask(
           title: 'Read 20 pages',
           recurrenceType: RecurrenceType.daily,
           startDate: d(2026, 7, 1),
         );
-        await taskRepo.createTask(
+        final laterTaskRepo = TaskRepository(
+          db,
+          FixedClock(d(2026, 7, 20), nowMillis: clock.nowEpochMillis() + 1000),
+        );
+        await laterTaskRepo.createTask(
           title: 'Morning workout',
           recurrenceType: RecurrenceType.daily,
           startDate: d(2026, 7, 1),

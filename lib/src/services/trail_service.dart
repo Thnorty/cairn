@@ -13,15 +13,16 @@ class TrailTaskChip {
   const TrailTaskChip({required this.taskId, required this.title});
 }
 
-/// Everything the Trail screen shows for the currently-selected task,
-/// computed fresh from the repositories - see `Cairn Trail.dc.html`.
+/// Everything the Trail screen shows, computed fresh from the repositories -
+/// see `Cairn Trail.dc.html`. [cairns] is scoped to the selected task;
+/// [altitude]/[rank] are app-wide (see their own doc comments).
 class TrailSnapshot {
   /// One chip per active task, ordered the same way Home orders task cards
   /// (by [TaskRepository.cairnNumbers]).
   final List<TrailTaskChip> chips;
 
-  /// The task this snapshot's [cairns]/[altitude]/[rank] describe, or null
-  /// when there are no active tasks at all ([chips] is then also empty).
+  /// The task this snapshot's [cairns] describes, or null when there are no
+  /// active tasks at all ([chips] is then also empty).
   final String? selectedTaskId;
   final String? selectedTaskTitle;
 
@@ -30,11 +31,16 @@ class TrailSnapshot {
   /// screen, not this service, decides display order (newest at the top).
   final List<TaskCairn> cairns;
 
-  /// [CompletionRepository.verifiedAltitudeForTask] for the selected task:
-  /// this task's own verified metres, not the app-wide total.
+  /// [CompletionRepository.totalAltitude]: the app-wide verified metres
+  /// total, exactly the figure Profile's hero shows - not scoped to
+  /// [selectedTaskId]. Switching the habit-selector chip changes [cairns]
+  /// but never this: the rank pill is deliberately global (see this run's
+  /// spec/report), so completing *any* task moves it, not just the one
+  /// currently displayed.
   final int altitude;
 
-  /// [PointsService.rankFor] resolved from [altitude].
+  /// [PointsService.rankFor] resolved from [altitude] (global, not
+  /// per-task).
   final Rank rank;
 
   const TrailSnapshot({
@@ -126,7 +132,10 @@ class TrailService {
       today: today,
       liveCompletions: liveCompletions,
     );
-    final altitude = await _completionRepo.verifiedAltitudeForTask(effective.id);
+    // Global, not per-task (see TrailSnapshot.altitude's doc comment): the
+    // rank pill is the same app-wide total Profile's hero shows, so
+    // completing any task moves it, not just whichever one is selected.
+    final altitude = await _completionRepo.totalAltitude();
     final rank = _points.rankFor(altitude);
 
     return TrailSnapshot(
