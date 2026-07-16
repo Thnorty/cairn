@@ -40,7 +40,6 @@ Future<bool> routeToProofOutcome(
   required CompleteOccurrenceResult result,
   required String taskId,
   required String taskTitle,
-  required int cairnNumber,
   required LocalDate occurrenceDate,
   required int slot,
   Uint8List? imageBytes,
@@ -78,7 +77,6 @@ Future<bool> routeToProofOutcome(
       builder: (_) => CameraCaptureScreen(
         taskId: taskId,
         taskTitle: taskTitle,
-        cairnNumber: cairnNumber,
         occurrenceDate: occurrenceDate,
         slot: slot,
       ),
@@ -87,15 +85,18 @@ Future<bool> routeToProofOutcome(
 
   switch (result) {
     case CompletionRecorded(:final completion):
-      final counts = await completionRepo.liveCompletionCountsByTask();
+      // Read AFTER the completion above was already recorded, so this
+      // naturally reflects the new stone (including the cap bonus, when
+      // this stone caps the cairn: "Cairn N · 10 · new stone placed").
+      final cairn = await completionRepo.currentCairnFor(taskId);
       if (!context.mounted) return true;
       go(VerifyResultScreen(
         taskTitle: taskTitle,
         completedAtMillis: completion.completedAt,
         imageBytes: imageBytes!,
         reason: _verdictReasonFrom(completion.verificationMeta) ?? '',
-        cairnNumber: cairnNumber,
-        stoneCount: counts[taskId] ?? 0,
+        cairnNumber: cairn.index,
+        stoneCount: cairn.stoneCount,
         onDone: popToHome,
       ));
       return true;
@@ -111,14 +112,16 @@ Future<bool> routeToProofOutcome(
       return true;
 
     case CompletionRejectedByVerifier(:final verdict, :final attemptsRemaining):
-      final counts = await completionRepo.liveCompletionCountsByTask();
+      // No stone was placed on a rejection: this reflects the unchanged
+      // current cairn.
+      final cairn = await completionRepo.currentCairnFor(taskId);
       if (!context.mounted) return true;
       go(VerifyFailedScreen(
         taskTitle: taskTitle,
         atMillis: clock.nowEpochMillis(),
         imageBytes: imageBytes,
-        cairnNumber: cairnNumber,
-        stoneCount: counts[taskId] ?? 0,
+        cairnNumber: cairn.index,
+        stoneCount: cairn.stoneCount,
         attemptsRemaining: attemptsRemaining,
         reason: attemptsRemaining > 0 ? verdict.reason : null,
         onRetake: attemptsRemaining > 0 ? retake : null,
@@ -172,7 +175,7 @@ Future<bool> routeToProofOutcome(
       return true;
 
     case CompletionRejectedAttemptsExhausted():
-      final counts = await completionRepo.liveCompletionCountsByTask();
+      final cairn = await completionRepo.currentCairnFor(taskId);
       if (!context.mounted) return true;
       go(VerifyFailedScreen(
         taskTitle: taskTitle,
@@ -181,8 +184,8 @@ Future<bool> routeToProofOutcome(
         // ever captured this time (the exhausting attempt, if any, happened
         // earlier - see ProofPhotoPebble's placeholder fallback).
         imageBytes: imageBytes,
-        cairnNumber: cairnNumber,
-        stoneCount: counts[taskId] ?? 0,
+        cairnNumber: cairn.index,
+        stoneCount: cairn.stoneCount,
         attemptsRemaining: 0,
         onCancel: popToHome,
       ));

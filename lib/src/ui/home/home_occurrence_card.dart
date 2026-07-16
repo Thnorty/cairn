@@ -98,7 +98,7 @@ class _VerifiedCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   l10n.taskSummaryVerifiedNewStone(
-                    card.cairnNumber,
+                    card.currentCairnIndex,
                     card.stoneCount,
                   ),
                   style: AppTextStyles.caption,
@@ -153,7 +153,7 @@ class _AwaitingCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   l10n.taskSummaryAwaitingVerification(
-                    card.cairnNumber,
+                    card.currentCairnIndex,
                     card.stoneCount,
                     metres,
                   ),
@@ -193,7 +193,7 @@ class _DueCard extends StatelessWidget {
                 Text(card.taskTitle, style: AppTextStyles.taskTitle),
                 const SizedBox(height: 4),
                 Text(
-                  l10n.taskSummaryDueToday(card.cairnNumber, card.stoneCount),
+                  l10n.taskSummaryDueToday(card.currentCairnIndex, card.stoneCount),
                   style: AppTextStyles.body,
                 ),
                 const SizedBox(height: 14),
@@ -263,7 +263,7 @@ class _ScheduledCard extends StatelessWidget {
                 Text(card.taskTitle, style: AppTextStyles.taskTitleDimmed),
                 const SizedBox(height: 4),
                 Text(
-                  l10n.taskSummaryScheduled(card.cairnNumber, card.stoneCount),
+                  l10n.taskSummaryScheduled(card.currentCairnIndex, card.stoneCount),
                   style: AppTextStyles.body,
                 ),
                 const SizedBox(height: 13),

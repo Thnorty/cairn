@@ -43,14 +43,12 @@ class CameraUnavailableScreen extends ConsumerStatefulWidget {
     super.key,
     required this.taskId,
     required this.taskTitle,
-    required this.cairnNumber,
     required this.occurrenceDate,
     required this.slot,
   });
 
   final String taskId;
   final String taskTitle;
-  final int cairnNumber;
   final LocalDate occurrenceDate;
   final int slot;
 
@@ -93,7 +91,6 @@ class _CameraUnavailableScreenState extends ConsumerState<CameraUnavailableScree
       result: result,
       taskId: widget.taskId,
       taskTitle: widget.taskTitle,
-      cairnNumber: widget.cairnNumber,
       occurrenceDate: widget.occurrenceDate,
       slot: widget.slot,
       imageBytes: bytes,

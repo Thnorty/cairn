@@ -263,17 +263,21 @@ class TaskRepository {
         .get();
   }
 
-  /// Each task's permanent "Cairn N" ordinal (Home/Trail's "Cairn 2 · 9
-  /// stones"), 1-based by creation order among every non-tombstoned task
-  /// (archived tasks included, so archiving one never renumbers another
-  /// task's cairn). `id` is a tiebreaker for tasks created in the same
-  /// millisecond: it is *stable* (an id never changes, so a given database
-  /// always produces the same cairn numbers and a user never sees a task's
-  /// cairn number shift between sessions) but *not* chronological within that
-  /// tie. UUID v7's timestamp prefix is identical for ids created in the same
-  /// millisecond, so everything after that prefix is random bits; ordering on
-  /// `id` there is an arbitrary, consistent tiebreak, not a recovery of
-  /// creation order.
+  /// Each task's stable creation-order ordinal, 1-based among every
+  /// non-tombstoned task (archived tasks included, so archiving one never
+  /// renumbers another task's position). This is purely a task-*ordering*
+  /// key - Home/Trail's own card/chip order - and is NOT the "Cairn N"
+  /// displayed anywhere in the UI: that label is each task's own *current*
+  /// per-task cairn (`CairnGrouping.currentCairn`, surfaced via
+  /// `CompletionRepository.currentCairnFor`/`HomeService`/`TrailService`), a
+  /// value that has nothing to do with when the task was created. `id` is a
+  /// tiebreaker for tasks created in the same millisecond: it is *stable*
+  /// (an id never changes, so a given database always produces the same
+  /// ordinals and a user never sees a task's position shift between
+  /// sessions) but *not* chronological within that tie. UUID v7's timestamp
+  /// prefix is identical for ids created in the same millisecond, so
+  /// everything after that prefix is random bits; ordering on `id` there is
+  /// an arbitrary, consistent tiebreak, not a recovery of creation order.
   Future<Map<String, int>> cairnNumbers() async {
     final rows = await (_db.select(_db.tasks)
           ..where((t) => t.deletedAt.isNull())

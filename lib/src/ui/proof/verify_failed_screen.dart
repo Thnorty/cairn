@@ -53,6 +53,11 @@ class VerifyFailedScreen extends StatelessWidget {
   /// before any photo was taken this time - see `proof_outcome_routing.dart`).
   final Uint8List? imageBytes;
 
+  /// The task's *current* cairn: which of its own per-task cairns it is
+  /// currently "on" (see `CairnGrouping.currentCairn`), NOT a creation-order
+  /// ordinal across tasks and NOT its lifetime completion total. No stone
+  /// was placed on this outcome, so this simply reflects the task's
+  /// unchanged current cairn.
   final int cairnNumber;
   final int stoneCount;
 

@@ -310,4 +310,112 @@ void main() {
       );
     });
   });
+
+  group('currentCairn', () {
+    test('empty history: a brand-new task is on Cairn 1 with 0 stones', () {
+      final task = makeTask(startDate: d(2026, 7, 1));
+      final cairn = grouping.currentCairn(
+        task: task,
+        today: d(2026, 7, 1),
+        liveCompletions: const [],
+      );
+
+      expect(cairn.index, 1);
+      expect(cairn.stoneCount, 0);
+      expect(cairn.isTrailhead, isTrue);
+      expect(cairn.status, CairnStatus.growing);
+    });
+
+    test('mid-cairn growing: the in-progress cairn\'s own (index, count)', () {
+      final task = makeTask(startDate: d(2026, 7, 1));
+      final completions = [
+        for (var day = 1; day <= 4; day++) stone(task.id, d(2026, 7, day)),
+      ];
+      final cairn = grouping.currentCairn(
+        task: task,
+        today: d(2026, 7, 4),
+        liveCompletions: completions,
+      );
+
+      expect(cairn.index, 1);
+      expect(cairn.stoneCount, 4);
+      expect(cairn.status, CairnStatus.growing);
+    });
+
+    test(
+        'exactly capStones stones with an alive streak: the just-capped '
+        'cairn (index, capStones), not the fresh empty next one', () {
+      final task = makeTask(startDate: d(2026, 7, 1));
+      final completions = [
+        for (var day = 1; day <= 10; day++) stone(task.id, d(2026, 7, day)),
+      ];
+      final cairn = grouping.currentCairn(
+        task: task,
+        today: d(2026, 7, 10),
+        liveCompletions: completions,
+      );
+
+      expect(cairn.index, 1);
+      expect(cairn.stoneCount, 10);
+      expect(cairn.status, CairnStatus.capped);
+    });
+
+    test('13 stones with an alive streak: the growing cairn (index, 3)', () {
+      final task = makeTask(startDate: d(2026, 7, 1));
+      final completions = [
+        for (var day = 1; day <= 13; day++) stone(task.id, d(2026, 7, day)),
+      ];
+      final cairn = grouping.currentCairn(
+        task: task,
+        today: d(2026, 7, 13),
+        liveCompletions: completions,
+      );
+
+      expect(cairn.index, 2);
+      expect(cairn.stoneCount, 3);
+      expect(cairn.status, CairnStatus.growing);
+    });
+
+    test(
+        'a currently-broken streak: the last settled (broken) cairn\'s own '
+        '(index, count), not a synthetic fresh one', () {
+      final task = makeTask(startDate: d(2026, 7, 1));
+      final completions = [
+        for (var day = 1; day <= 3; day++) stone(task.id, d(2026, 7, day)),
+      ];
+      // Jul 4 elapsed and incomplete: the streak is broken as of Jul 5.
+      final cairn = grouping.currentCairn(
+        task: task,
+        today: d(2026, 7, 5),
+        liveCompletions: completions,
+      );
+
+      expect(cairn.index, 1);
+      expect(cairn.stoneCount, 3);
+      expect(cairn.status, CairnStatus.broken);
+    });
+
+    test(
+        'a multi-cairn history\'s index is right: a broken cairn still '
+        'consumes a cairn number, so the growing cairn after it is #3', () {
+      final task = makeTask(startDate: d(2026, 7, 1));
+      // Run 1: Jul 1-4 (4 stones), capStones 3 -> capped(3) + broken(1).
+      // Jul 5 elapsed and incomplete: a break.
+      // Run 2: Jul 6 (1 stone), today, streak alive -> growing(1), index 3.
+      final completions = [
+        for (var day = 1; day <= 4; day++) stone(task.id, d(2026, 7, day)),
+        stone(task.id, d(2026, 7, 6)),
+      ];
+      final cairn = grouping.currentCairn(
+        task: task,
+        today: d(2026, 7, 6),
+        liveCompletions: completions,
+        capStones: 3,
+      );
+
+      expect(cairn.index, 3);
+      expect(cairn.stoneCount, 1);
+      expect(cairn.status, CairnStatus.growing);
+    });
+  });
 }

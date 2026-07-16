@@ -98,7 +98,7 @@ void main() {
       expect(card.status, HomeCardStatus.due);
       expect(card.dueTime, isNull);
       expect(card.stoneCount, 0);
-      expect(card.cairnNumber, 1);
+      expect(card.currentCairnIndex, 1);
       expect(card.completion, isNull);
     });
 
@@ -225,9 +225,50 @@ void main() {
 
       expect(snapshot.cards, hasLength(2));
       expect(snapshot.cards[0].taskId, taskB.id);
-      expect(snapshot.cards[0].cairnNumber, 1);
+      // Both tasks are brand-new (zero completions), so each is on its own
+      // Cairn 1 regardless of creation order - only the *card ordering*
+      // (proven by taskId above) comes from TaskRepository.cairnNumbers.
+      expect(snapshot.cards[0].currentCairnIndex, 1);
       expect(snapshot.cards[1].taskId, taskA.id);
-      expect(snapshot.cards[1].cairnNumber, 2);
+      expect(snapshot.cards[1].currentCairnIndex, 1);
+    });
+
+    test(
+        "a task past its first cairn shows its own CURRENT cairn's index and "
+        'stone count, not its creation-order ordinal and not its lifetime '
+        'completion total (the bug this run fixes)', () async {
+      final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
+      // Created second, so its TaskRepository.cairnNumbers ordinal is 2 - a
+      // value that must NOT leak into the "Cairn N" label.
+      await taskRepo.createTask(
+        title: 'First task',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      final task = await taskRepo.createTask(
+        title: 'Fitness',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      // 13 consecutive completions: caps the first per-task cairn (10
+      // stones) and starts a second, now 3 stones in. The old, buggy
+      // reading would have shown "Cairn 2" (creation order) with a stone
+      // count of 13 (the lifetime total); the correct current cairn is
+      // index 2 (the task's OWN second cairn) with 3 stones.
+      for (var day = 1; day <= 13; day++) {
+        final repo = CompletionRepository(db, FixedClock(d(2026, 7, day)),
+            verifier: FakeProofVerifier());
+        await repo.completeOccurrence(
+            taskId: task.id, occurrenceDate: d(2026, 7, day));
+      }
+
+      final clock = FixedClock(d(2026, 7, 13));
+      final snapshot = await makeService(clock).buildSnapshot();
+
+      final card = snapshot.cards.firstWhere((c) => c.taskId == task.id);
+      expect(card.currentCairnIndex, 2);
+      expect(card.stoneCount, 3);
     });
 
     test('stonesThisWeek reflects completionsCountForWeekOf(today)',

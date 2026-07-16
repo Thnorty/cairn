@@ -83,7 +83,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           builder: (_) => CameraCaptureScreen(
             taskId: card.taskId,
             taskTitle: card.taskTitle,
-            cairnNumber: card.cairnNumber,
             occurrenceDate: today,
             slot: card.slot,
           ),
@@ -103,7 +102,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         result: rejection,
         taskId: card.taskId,
         taskTitle: card.taskTitle,
-        cairnNumber: card.cairnNumber,
         occurrenceDate: today,
         slot: card.slot,
       );

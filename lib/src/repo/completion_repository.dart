@@ -761,21 +761,47 @@ class CompletionRepository {
   Future<List<Completion>> liveCompletionsForTask(String taskId) =>
       _liveCompletionsForTask(taskId);
 
-  /// Each task's stone count for the Home/Trail cairn illustration: the
-  /// count of that task's live (non-tombstoned) completions, verified or
-  /// pending alike (a pending completion's stone is already placed - see
-  /// [pendingAltitude]'s doc comment - only its metres wait). Tasks with zero
-  /// completions are simply absent from the map; callers should treat a
-  /// missing key as zero.
-  Future<Map<String, int>> liveCompletionCountsByTask() async {
+  /// Every task's live (non-tombstoned) completions, verified or pending
+  /// alike, grouped by `taskId` in a single query - the same read
+  /// [CairnGrouping.currentCairn]/[CairnGrouping.cairnsFor] need per task,
+  /// fetched once rather than fanned out one query per task (Home's own
+  /// snapshot build). Tasks with zero completions are simply absent from the
+  /// map; callers should treat a missing key as an empty list.
+  Future<Map<String, List<Completion>>> liveCompletionsGroupedByTask() async {
     final rows = await (_db.select(_db.completions)
           ..where((c) => c.deletedAt.isNull()))
         .get();
-    final counts = <String, int>{};
+    final grouped = <String, List<Completion>>{};
     for (final row in rows) {
-      counts[row.taskId] = (counts[row.taskId] ?? 0) + 1;
+      grouped.putIfAbsent(row.taskId, () => []).add(row);
     }
-    return counts;
+    return grouped;
+  }
+
+  /// The task's current cairn (see [CairnGrouping.currentCairn]'s doc
+  /// comment for the exact rule): the index/stone-count pair every
+  /// "Cairn N · M stones" label in the app shows for this task. For the
+  /// proof-outcome screens ([routeToProofOutcome] in
+  /// `proof_outcome_routing.dart`), which only have a `taskId` to work
+  /// from, not a loaded [Task].
+  ///
+  /// Returns `(index: 1, stoneCount: 0)` - the same synthetic "brand-new
+  /// task" value [CairnGrouping.currentCairn] returns for an empty history -
+  /// when [taskId] doesn't name a live task at all (missing or tombstoned),
+  /// so a caller never has to special-case that lookup failure.
+  Future<({int index, int stoneCount})> currentCairnFor(String taskId) async {
+    final task = await (_db.select(_db.tasks)
+          ..where((t) => t.id.equals(taskId) & t.deletedAt.isNull()))
+        .getSingleOrNull();
+    if (task == null) return (index: 1, stoneCount: 0);
+
+    final liveCompletions = await _liveCompletionsForTask(taskId);
+    final cairn = _cairns.currentCairn(
+      task: task,
+      today: _clock.today(),
+      liveCompletions: liveCompletions,
+    );
+    return (index: cairn.index, stoneCount: cairn.stoneCount);
   }
 
   /// Every live (non-tombstoned) completion recorded for local date [date],

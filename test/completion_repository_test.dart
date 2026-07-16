@@ -555,9 +555,9 @@ void main() {
     });
   });
 
-  group('liveCompletionCountsByTask', () {
-    test('counts each task\'s live completions, tasks with none absent',
-        () async {
+  group('liveCompletionsGroupedByTask', () {
+    test('groups each task\'s live completions by taskId, tasks with none '
+        'absent', () async {
       final clock = FixedClock(d(2026, 7, 1));
       final taskRepo = TaskRepository(db, clock);
       final completionRepo =
@@ -583,13 +583,14 @@ void main() {
       await completionRepo.completeOccurrence(
           taskId: taskA.id, occurrenceDate: d(2026, 7, 1));
 
-      final counts = await completionRepo.liveCompletionCountsByTask();
-      expect(counts[taskA.id], 1);
-      expect(counts.containsKey(taskB.id), isFalse);
-      expect(counts.containsKey('nonexistent'), isFalse);
+      final grouped = await completionRepo.liveCompletionsGroupedByTask();
+      expect(grouped[taskA.id], hasLength(1));
+      expect(grouped[taskA.id]!.single.taskId, taskA.id);
+      expect(grouped.containsKey(taskB.id), isFalse);
+      expect(grouped.containsKey('nonexistent'), isFalse);
     });
 
-    test('tombstoned completions are excluded from the count', () async {
+    test('tombstoned completions are excluded from the grouping', () async {
       final clock = FixedClock(d(2026, 7, 1));
       final taskRepo = TaskRepository(db, clock);
       final completionRepo =
@@ -606,8 +607,8 @@ void main() {
       final completion = (result as CompletionRecorded).completion;
       await completionRepo.tombstoneDelete(completion.id);
 
-      final counts = await completionRepo.liveCompletionCountsByTask();
-      expect(counts.containsKey(task.id), isFalse);
+      final grouped = await completionRepo.liveCompletionsGroupedByTask();
+      expect(grouped.containsKey(task.id), isFalse);
     });
 
     test('a pending completion still counts (its stone is placed)',
@@ -632,8 +633,110 @@ void main() {
       );
       expect(result, isA<CompletionPendingVerification>());
 
-      final counts = await completionRepo.liveCompletionCountsByTask();
-      expect(counts[task.id], 1);
+      final grouped = await completionRepo.liveCompletionsGroupedByTask();
+      expect(grouped[task.id], hasLength(1));
+    });
+  });
+
+  group('currentCairnFor', () {
+    test('a brand-new task with no live completions is (1, 0)', () async {
+      final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
+      final completionRepo = CompletionRepository(db, FixedClock(d(2026, 7, 1)),
+          verifier: FakeProofVerifier());
+      final task = await taskRepo.createTask(
+        title: 'Push-ups',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      final cairn = await completionRepo.currentCairnFor(task.id);
+      expect(cairn.index, 1);
+      expect(cairn.stoneCount, 0);
+    });
+
+    test('a missing/tombstoned task id also returns (1, 0)', () async {
+      final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
+      final completionRepo = CompletionRepository(db, FixedClock(d(2026, 7, 1)),
+          verifier: FakeProofVerifier());
+      final task = await taskRepo.createTask(
+        title: 'Push-ups',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      await taskRepo.tombstoneDelete(task.id);
+
+      expect((await completionRepo.currentCairnFor('nonexistent')).index, 1);
+      expect(
+          (await completionRepo.currentCairnFor('nonexistent')).stoneCount, 0);
+      final tombstoned = await completionRepo.currentCairnFor(task.id);
+      expect(tombstoned.index, 1);
+      expect(tombstoned.stoneCount, 0);
+    });
+
+    test('reflects the in-progress growing cairn mid-stack', () async {
+      final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
+      final task = await taskRepo.createTask(
+        title: 'Push-ups',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      for (var day = 1; day <= 4; day++) {
+        final repo = CompletionRepository(db, FixedClock(d(2026, 7, day)),
+            verifier: FakeProofVerifier());
+        await repo.completeOccurrence(
+            taskId: task.id, occurrenceDate: d(2026, 7, day));
+      }
+
+      final repo = CompletionRepository(db, FixedClock(d(2026, 7, 4)),
+          verifier: FakeProofVerifier());
+      final cairn = await repo.currentCairnFor(task.id);
+      expect(cairn.index, 1);
+      expect(cairn.stoneCount, 4);
+    });
+
+    test(
+        'right after the 10th stone caps the cairn, returns the just-capped '
+        'cairn (index, 10), not the fresh empty one', () async {
+      final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
+      final task = await taskRepo.createTask(
+        title: 'Push-ups',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      for (var day = 1; day <= 10; day++) {
+        final repo = CompletionRepository(db, FixedClock(d(2026, 7, day)),
+            verifier: FakeProofVerifier());
+        await repo.completeOccurrence(
+            taskId: task.id, occurrenceDate: d(2026, 7, day));
+      }
+
+      final repo = CompletionRepository(db, FixedClock(d(2026, 7, 10)),
+          verifier: FakeProofVerifier());
+      final cairn = await repo.currentCairnFor(task.id);
+      expect(cairn.index, 1);
+      expect(cairn.stoneCount, 10);
+    });
+
+    test('reflects a broken streak\'s last settled cairn', () async {
+      final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
+      final task = await taskRepo.createTask(
+        title: 'Push-ups',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      for (var day = 1; day <= 3; day++) {
+        final repo = CompletionRepository(db, FixedClock(d(2026, 7, day)),
+            verifier: FakeProofVerifier());
+        await repo.completeOccurrence(
+            taskId: task.id, occurrenceDate: d(2026, 7, day));
+      }
+
+      // Jul 4 elapsed and incomplete: the streak is broken as of Jul 5.
+      final repo = CompletionRepository(db, FixedClock(d(2026, 7, 5)),
+          verifier: FakeProofVerifier());
+      final cairn = await repo.currentCairnFor(task.id);
+      expect(cairn.index, 1);
+      expect(cairn.stoneCount, 3);
     });
   });
 

@@ -115,7 +115,6 @@ void main() {
         child: boundaryApp(CameraCaptureScreen(
           taskId: task.id,
           taskTitle: task.title,
-          cairnNumber: 1,
           occurrenceDate: d(2026, 7, 10),
           slot: 0,
         )),
@@ -153,7 +152,6 @@ void main() {
         child: boundaryApp(CameraCaptureScreen(
           taskId: task.id,
           taskTitle: task.title,
-          cairnNumber: 1,
           occurrenceDate: d(2026, 7, 10),
           slot: 0,
         )),
@@ -280,7 +278,6 @@ void main() {
         child: boundaryApp(CameraUnavailableScreen(
           taskId: task.id,
           taskTitle: task.title,
-          cairnNumber: 1,
           occurrenceDate: d(2026, 7, 10),
           slot: 0,
         )),

@@ -38,6 +38,11 @@ class VerifyResultScreen extends StatelessWidget {
   /// the static "Looks good." lead-in. Server-generated, not ARB copy.
   final String reason;
 
+  /// The task's *current* cairn: which of its own per-task cairns it is
+  /// currently "on" (see `CairnGrouping.currentCairn`), NOT a creation-order
+  /// ordinal across tasks and NOT its lifetime completion total. Re-read
+  /// via `CompletionRepository.currentCairnFor` AFTER this completion was
+  /// already recorded, so [stoneCount] naturally includes the new stone.
   final int cairnNumber;
   final int stoneCount;
   final VoidCallback onDone;

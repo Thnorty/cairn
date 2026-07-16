@@ -56,7 +56,6 @@ void main() {
     WidgetTester tester,
     CompleteOccurrenceResult Function() resultBuilder, {
     required String taskId,
-    int cairnNumber = 1,
     Uint8List? imageBytes,
   }) async {
     await tester.pumpWidget(
@@ -76,7 +75,6 @@ void main() {
                 result: resultBuilder(),
                 taskId: taskId,
                 taskTitle: 'Read 20 pages',
-                cairnNumber: cairnNumber,
                 occurrenceDate: d(2026, 7, 10),
                 slot: 0,
                 imageBytes: imageBytes,
@@ -113,6 +111,43 @@ void main() {
   });
 
   testWidgets(
+      'a completion that caps the cairn (its 10th live stone) shows "Cairn '
+      'N · 10 stones · new stone placed", the current cairn re-read AFTER '
+      'the stone was recorded', (tester) async {
+    final task = await makeTask();
+    // 9 prior verified stones, then a 10th via completeWithProof (a pass):
+    // the same stone-caps-the-cairn scenario CLAUDE.md's per-task-cairns
+    // rule and completion_repository_test.dart's "cairn cap bonus" group
+    // both cover, exercised here through the routing this run unifies.
+    for (var day = 1; day <= 9; day++) {
+      final repo = CompletionRepository(db, FixedClock(d(2026, 7, day)),
+          verifier: FakeProofVerifier());
+      await repo.completeOccurrence(
+          taskId: task.id, occurrenceDate: d(2026, 7, day));
+    }
+    final tenthRepo =
+        CompletionRepository(db, clock, verifier: FakeProofVerifier());
+    final result = await tenthRepo.completeWithProof(
+      taskId: task.id,
+      occurrenceDate: d(2026, 7, 10),
+      proof: ProofData(imageBytes: Uint8List.fromList([1, 2, 3])),
+    );
+    expect(result, isA<CompletionRecorded>());
+
+    await pumpHarness(
+      tester,
+      () => result,
+      taskId: task.id,
+      imageBytes: kFakeImageBytes,
+    );
+    await tester.tap(find.text('trigger'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(VerifyResultScreen), findsOneWidget);
+    expect(find.text('Cairn 1 · 10 stones · new stone placed'), findsOneWidget);
+  });
+
+  testWidgets(
       'a rejected verdict with attempts remaining routes to Verify Failed, '
       "showing the verifier's own reason", (tester) async {
     final task = await makeTask();
@@ -136,6 +171,10 @@ void main() {
     expect(find.byType(VerifyFailedScreen), findsOneWidget);
     expect(find.text('No book visible in frame.'), findsOneWidget);
     expect(find.text('2 tries left today'), findsOneWidget);
+    // No stone was placed on a rejection: the caption reflects the task's
+    // unchanged current cairn (a brand-new task, still Cairn 1 with 0
+    // stones), not some stale or lifetime-total figure.
+    expect(find.text('Cairn 1 · 0 stones · no stone placed'), findsOneWidget);
   });
 
   testWidgets(

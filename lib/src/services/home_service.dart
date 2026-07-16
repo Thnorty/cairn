@@ -3,6 +3,7 @@ import '../db/database.dart';
 import '../models/local_date.dart';
 import '../repo/completion_repository.dart';
 import '../repo/task_repository.dart';
+import 'cairn_grouping.dart';
 import 'occurrence_generator.dart';
 
 /// The four card states the Home screen renders, mapping exactly onto the
@@ -22,13 +23,18 @@ class HomeOccurrenceCard {
   final String taskId;
   final String taskTitle;
 
-  /// The task's permanent "Cairn N" ordinal (see [TaskRepository.cairnNumbers]).
-  final int cairnNumber;
+  /// The task's current cairn's 1-based index (see
+  /// [CairnGrouping.currentCairn]) - which of the task's own per-task
+  /// cairns it is currently "on", not a creation-order ordinal across tasks
+  /// (see [TaskRepository.cairnNumbers], which is only ever used for card
+  /// ordering, never for this label).
+  final int currentCairnIndex;
 
-  /// The task's live completion count (its cairn's stone count), *after*
-  /// this occurrence's own completion if it has one - a pending
-  /// completion's stone is already placed, so it's included here exactly
-  /// like a verified one.
+  /// The number of stones in the task's *current* cairn (0..capStones) -
+  /// the same value the Trail screen's growing/just-capped cairn shows -
+  /// not the task's lifetime completion total. *After* this occurrence's
+  /// own completion if it has one - a pending completion's stone is
+  /// already placed, so it's included here exactly like a verified one.
   final int stoneCount;
 
   final int slot;
@@ -46,7 +52,7 @@ class HomeOccurrenceCard {
   const HomeOccurrenceCard({
     required this.taskId,
     required this.taskTitle,
-    required this.cairnNumber,
+    required this.currentCairnIndex,
     required this.stoneCount,
     required this.slot,
     required this.dueTime,
@@ -76,7 +82,10 @@ class HomeSnapshot {
   final int stonesThisWeek;
 
   /// One card per occurrence scheduled today, ordered by the owning task's
-  /// cairn number (creation order) and then by slot ascending within a task.
+  /// [TaskRepository.cairnNumbers] ordinal (a stable creation-order key used
+  /// purely for card ordering, never for the "Cairn N" label itself - see
+  /// [HomeOccurrenceCard.currentCairnIndex]) and then by slot ascending
+  /// within a task.
   final List<HomeOccurrenceCard> cards;
 
   const HomeSnapshot({
@@ -131,14 +140,16 @@ class HomeService {
   final CompletionRepository _completionRepo;
   final OccurrenceGenerator _generator;
   final Clock _clock;
+  final CairnGrouping _cairns;
 
   const HomeService(
     this._db,
     this._taskRepo,
     this._completionRepo,
     this._generator,
-    this._clock,
-  );
+    this._clock, {
+    CairnGrouping cairns = const CairnGrouping(),
+  }) : _cairns = cairns;
 
   Stream<HomeSnapshot> watchToday() {
     return _db
@@ -160,7 +171,7 @@ class HomeService {
 
     final tasks = await _taskRepo.activeTasks();
     final cairnNumbers = await _taskRepo.cairnNumbers();
-    final stoneCounts = await _completionRepo.liveCompletionCountsByTask();
+    final completionsByTask = await _completionRepo.liveCompletionsGroupedByTask();
     final todaysCompletions =
         await _completionRepo.liveCompletionsForDate(today);
     final stonesThisWeek =
@@ -177,6 +188,11 @@ class HomeService {
 
     final cards = <HomeOccurrenceCard>[];
     for (final task in sortedTasks) {
+      final currentCairn = _cairns.currentCairn(
+        task: task,
+        today: today,
+        liveCompletions: completionsByTask[task.id] ?? const [],
+      );
       final occurrences =
           _generator.occurrencesFor(task, DateRange(today, today));
       for (final occ in occurrences) {
@@ -185,8 +201,8 @@ class HomeService {
           HomeOccurrenceCard(
             taskId: task.id,
             taskTitle: task.title,
-            cairnNumber: cairnNumbers[task.id] ?? 0,
-            stoneCount: stoneCounts[task.id] ?? 0,
+            currentCairnIndex: currentCairn.index,
+            stoneCount: currentCairn.stoneCount,
             slot: occ.slot,
             dueTime: occ.time,
             status: _statusFor(completion, occ.time, now),
