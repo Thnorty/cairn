@@ -39,6 +39,7 @@ class CairnStack extends StatelessWidget {
     this.mutedOpacity = true,
     this.highlightTop = false,
     this.pendingTop = false,
+    this.groundShadowWidthFactor = 1.0,
   })  : assert(stoneCount >= 1, 'a cairn always has at least one stone'),
         assert(
           !(highlightTop && pendingTop),
@@ -83,6 +84,14 @@ class CairnStack extends StatelessWidget {
   /// (Home Card 1b). Mutually exclusive with [highlightTop]: a top stone
   /// is either freshly-verified or awaiting verification, never both.
   final bool pendingTop;
+
+  /// Widens (or narrows) only the soft ground shadow, without touching the
+  /// stones. Defaults to 1.0 (the shadow tracks the bottom stone's width, a
+  /// few px wider, matching every design file). The Cairn Complete
+  /// celebration hero uses a taller literal 10-stone stack whose bottom
+  /// stone is comparatively narrow, so a factor above 1 gives it a proper
+  /// stone-shadow ellipse instead of a dot beneath the tower.
+  final double groundShadowWidthFactor;
 
   /// Width envelope anchors `(stoneCount, width)`, narrowest-stone (top) and
   /// widest-stone (base) sides, sourced from `Cairn Home.dc.html`'s three
@@ -177,7 +186,8 @@ class CairnStack extends StatelessWidget {
       contentHeight = math.max(contentHeight, s.top + s.height);
       contentWidth = math.max(contentWidth, s.width);
     }
-    final groundWidth = _bottomWidthFor(stoneCount) * scale + 4 * scale;
+    final groundWidth =
+        (_bottomWidthFor(stoneCount) * scale + 4 * scale) * groundShadowWidthFactor;
     final groundHeight = _groundHeightBase * scale;
     contentWidth = math.max(contentWidth, groundWidth);
     final totalHeight = contentHeight + _groundGap * scale + groundHeight;
@@ -371,8 +381,34 @@ class _GroundShadow extends StatelessWidget {
         borderRadius: BorderRadius.circular(height / 2),
         gradient: RadialGradient(
           colors: [color, color.withAlpha(0)],
+          // Flutter sizes a RadialGradient's circle to the box's *shortest*
+          // side (here the few-px height), so without this a wide-but-short
+          // ground shadow paints as a small centred dot rather than the
+          // design's `radial-gradient(ellipse, ...)`. Stretching the circle
+          // horizontally to the box width makes it the intended soft ellipse.
+          transform: const _EllipseGradientTransform(),
         ),
       ),
     );
+  }
+}
+
+/// Stretches a [RadialGradient]'s circle horizontally so it fills a
+/// wide-short box as an ellipse (see [_GroundShadow]).
+class _EllipseGradientTransform extends GradientTransform {
+  const _EllipseGradientTransform();
+
+  @override
+  Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
+    if (bounds.height == 0) return null;
+    final scaleX = bounds.width / bounds.height;
+    final cx = bounds.center.dx;
+    // Horizontal scale by [scaleX] about the box's centre x: maps a point
+    // x -> scaleX*x + cx*(1 - scaleX). Written straight into the matrix
+    // (col-major: (0,0) is x-scale, (0,3) is x-translation) to avoid the
+    // deprecated Matrix4.translate/scale helpers.
+    return Matrix4.identity()
+      ..setEntry(0, 0, scaleX)
+      ..setEntry(0, 3, cx * (1 - scaleX));
   }
 }

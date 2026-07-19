@@ -256,6 +256,10 @@ class _CompletedCairnHero extends StatelessWidget {
             stoneCount: PointsService.cairnCapStones,
             highlightTop: true,
             scale: heroCairnScale,
+            // The 10-stone hero is a tall, narrow tower; widen its ground
+            // shadow a touch beyond the bottom stone so it reads as a
+            // grounded stone shadow.
+            groundShadowWidthFactor: 1.4,
           ),
         ],
       ),
