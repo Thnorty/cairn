@@ -637,4 +637,111 @@ abstract final class AppTextStyles {
     fontSize: 11.5,
     color: AppColors.labelGrey,
   );
+
+  // ---- Onboarding screens -----------------------------------------------
+
+  /// 32px Zilla Slab 700 - the onboarding welcome screen's two-line
+  /// headline ("Don't just check it off." / "Prove it."). The second line
+  /// uses this same style `.copyWith(color: AppColors.sageText)`.
+  static const TextStyle onboardingHeadline = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w700,
+    fontSize: 32,
+    height: 1.12,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 12.5px Work Sans 400 - the authored clarifier line under the
+  /// onboarding welcome screen's subhead ("A cairn is a small stack of
+  /// stones..."). Same family/weight/colour as [AppTextStyles.emptyStateBody]
+  /// (which the subhead itself reuses directly), just a size step down per
+  /// this run's spec ("same muted subhead style, slightly smaller").
+  static const TextStyle onboardingClarifier = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 12.5,
+    height: 1.5,
+    color: AppColors.emptyStateBodyText,
+  );
+
+  /// 14.5px Work Sans 600 - the bold lead-in of an onboarding welcome step
+  /// card's line (e.g. "Do the thing."), immediately followed by
+  /// [onboardingStepBody] in the same line.
+  static const TextStyle onboardingStepLead = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 14.5,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 14.5px Work Sans 400 - the muted remainder of an onboarding welcome
+  /// step card's line, following [onboardingStepLead]. Callers `.copyWith`
+  /// the step-3 (sage) card's own body colour ([AppColors.sageReasonBody])
+  /// in place of this default.
+  static const TextStyle onboardingStepBody = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 14.5,
+    color: AppColors.emptyStateBodyText,
+  );
+
+  /// 28px Zilla Slab 700 - the onboarding verification screen's title ("How
+  /// verification works"). Close to but distinct from [PremiumScreen]'s own
+  /// 28px headline style ([premiumHeadline] is weight 600, not 700).
+  static const TextStyle onboardingVerificationHeadline = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w700,
+    fontSize: 28,
+    height: 1.12,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 14.5px Work Sans 600 - an onboarding verification point card's title
+  /// (e.g. "Sent only to be checked").
+  static const TextStyle onboardingPointTitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 14.5,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 12.5px Work Sans 400 - an onboarding verification point card's body
+  /// copy, under [onboardingPointTitle].
+  static const TextStyle onboardingPointBody = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 12.5,
+    height: 1.45,
+    color: AppColors.emptyStateBodyText,
+  );
+
+  /// 13px Work Sans 600 - the bold lead-in of the onboarding verification
+  /// screen's footer permission-primer card ("Cairn needs your camera"),
+  /// immediately followed by [onboardingPermissionBody] in the same line.
+  static const TextStyle onboardingPermissionLead = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 13,
+    color: AppColors.clayHeading,
+  );
+
+  /// 13px Work Sans 400 - the plain remainder of the onboarding
+  /// verification screen's footer permission-primer card's line, following
+  /// [onboardingPermissionLead].
+  static const TextStyle onboardingPermissionBody = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 13,
+    height: 1.4,
+    color: AppColors.clayText,
+  );
+
+  /// 13px Work Sans 600 - the onboarding verification screen's "Learn more
+  /// about privacy" footer link.
+  static const TextStyle onboardingPrivacyLinkLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 13,
+    color: AppColors.textMuted,
+  );
 }

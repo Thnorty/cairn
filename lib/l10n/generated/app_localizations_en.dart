@@ -679,4 +679,91 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumComingSoonSnackbar => 'Coming soon';
+
+  @override
+  String get onboardingWelcomeHeadlineLine1 => 'Don\'t just check it off.';
+
+  @override
+  String get onboardingWelcomeHeadlineAccent => 'Prove it.';
+
+  @override
+  String get onboardingWelcomeSubhead =>
+      'Cairn turns real effort into something you can see grow: one verified stone at a time.';
+
+  @override
+  String get onboardingWelcomeClarifier =>
+      'A cairn is a small stack of stones that hikers build to mark a trail.';
+
+  @override
+  String get onboardingStep1Title => 'Do the thing.';
+
+  @override
+  String get onboardingStep1Body => 'Your habit, in the real world.';
+
+  @override
+  String get onboardingStep2Title => 'Snap a photo.';
+
+  @override
+  String get onboardingStep2Body => 'A quick proof of what you did.';
+
+  @override
+  String get onboardingStep3Title => 'AI verifies.';
+
+  @override
+  String get onboardingStep3Body => 'A stone settles on your cairn.';
+
+  @override
+  String get onboardingStartClimbingButton => 'Start climbing';
+
+  @override
+  String get onboardingAlreadyHaveAccountButton => 'I already have an account';
+
+  @override
+  String get onboardingSignInComingSoonSnackbar =>
+      'Signing in to an existing account is coming soon.';
+
+  @override
+  String get onboardingVerificationTitle => 'How verification works';
+
+  @override
+  String get onboardingVerificationSubhead =>
+      'A quick check keeps every stone honest. Here\'s exactly what happens to your photo.';
+
+  @override
+  String get onboardingPoint1Title => 'Sent only to be checked';
+
+  @override
+  String get onboardingPoint1Body =>
+      'Your photo is sent to an AI (Google Gemini) to confirm it matches your habit, nothing else.';
+
+  @override
+  String get onboardingPoint2Title => 'Never stored in the cloud';
+
+  @override
+  String get onboardingPoint2Body =>
+      'We don\'t keep your photos on our servers. They\'re checked, then discarded.';
+
+  @override
+  String get onboardingPoint3Title => 'Your archive lives on your phone';
+
+  @override
+  String get onboardingPoint3Body =>
+      'Proof photos are saved on your device. Cloud backup is optional with Premium.';
+
+  @override
+  String get onboardingCameraPermissionLead => 'Cairn needs your camera';
+
+  @override
+  String get onboardingCameraPermissionBody =>
+      'to capture proof of each habit.';
+
+  @override
+  String get onboardingAllowCameraButton => 'Allow camera';
+
+  @override
+  String get onboardingLearnMorePrivacyLink => 'Learn more about privacy';
+
+  @override
+  String get onboardingPrivacyComingSoonSnackbar =>
+      'A privacy details page is coming soon.';
 }

@@ -8,9 +8,11 @@ import 'clock.dart';
 import 'db/database.dart';
 import 'models/proof_verdict.dart';
 import 'repo/completion_repository.dart';
+import 'repo/settings_repository.dart';
 import 'repo/task_repository.dart';
 import 'services/app_settings_opener.dart';
 import 'services/auth_service.dart';
+import 'services/camera_permission_requester.dart';
 import 'services/camera_session.dart';
 import 'services/home_service.dart';
 import 'services/occurrence_generator.dart';
@@ -33,6 +35,19 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 });
 
 final clockProvider = Provider<Clock>((ref) => const SystemClock());
+
+final settingsRepositoryProvider = Provider<SettingsRepository>(
+  (ref) => SettingsRepository(ref.watch(databaseProvider)),
+);
+
+/// Drives the root onboarding gate in `main.dart`: whether the first-launch
+/// onboarding flow has already been completed. `ref.invalidate`d by
+/// [OnboardingFlow] once its "Allow camera" step finishes, so the gate
+/// rebuilds from [OnboardingFlow] into [AppShell] without any manual
+/// navigation - see that widget's doc comment.
+final onboardingCompleteProvider = FutureProvider<bool>(
+  (ref) => ref.watch(settingsRepositoryProvider).isOnboardingComplete(),
+);
 
 final occurrenceGeneratorProvider =
     Provider<OccurrenceGenerator>((ref) => const OccurrenceGenerator());
@@ -266,6 +281,13 @@ final recentPhotoLibraryProvider = Provider<RecentPhotoLibrary>(
 /// `permission_handler`'s platform channel.
 final appSettingsOpenerProvider = Provider<AppSettingsOpener>(
   (ref) => const PermissionHandlerAppSettingsOpener(),
+);
+
+/// Backs the onboarding verification screen's "Allow camera" button. A
+/// widget test overrides this with a fake, so no widget test ever touches
+/// `permission_handler`'s platform channel for this path either.
+final cameraPermissionRequesterProvider = Provider<CameraPermissionRequester>(
+  (ref) => const PermissionHandlerCameraPermissionRequester(),
 );
 
 final proofRetryServiceProvider = Provider<ProofRetryService>((ref) {

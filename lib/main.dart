@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'src/config.dart';
 import 'src/providers.dart';
-import 'src/ui/shell/app_shell.dart';
+import 'src/ui/onboarding/onboarding_gate.dart';
 import 'src/ui/theme/app_theme.dart';
 
 Future<void> main() async {
@@ -56,7 +56,7 @@ class CairnApp extends ConsumerWidget {
       // System locale only for now: no in-app language picker yet (that's a
       // Profile-screen decision for a later phase).
       theme: AppTheme.light,
-      home: const AppShell(),
+      home: const OnboardingGate(),
     );
   }
 }

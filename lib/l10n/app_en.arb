@@ -973,5 +973,119 @@
   "premiumComingSoonSnackbar": "Coming soon",
   "@premiumComingSoonSnackbar": {
     "description": "Snackbar shown when tapping the Premium screen's 'Start 7-day free trial' button, which is out of scope for this phase (no billing/IAP integration - Premium is presentational only) and is a deliberate no-op-for-now rather than a fake/invented purchase flow - same pattern as profileComingSoonSnackbar/statsComingSoonSnackbar for their own screens' Premium affordances."
+  },
+
+  "onboardingWelcomeHeadlineLine1": "Don't just check it off.",
+  "@onboardingWelcomeHeadlineLine1": {
+    "description": "First line of the two-line headline on the first-launch onboarding welcome screen (Cairn Onboarding.dc.html)."
+  },
+  "onboardingWelcomeHeadlineAccent": "Prove it.",
+  "@onboardingWelcomeHeadlineAccent": {
+    "description": "Second, sage-coloured accent line of the onboarding welcome screen's headline, immediately following onboardingWelcomeHeadlineLine1."
+  },
+
+  "onboardingWelcomeSubhead": "Cairn turns real effort into something you can see grow: one verified stone at a time.",
+  "@onboardingWelcomeSubhead": {
+    "description": "Subhead under the headline on the onboarding welcome screen. The design's em dash (U+2014) was replaced with ':' per this project's house style (CLAUDE.md bans that character)."
+  },
+
+  "onboardingWelcomeClarifier": "A cairn is a small stack of stones that hikers build to mark a trail.",
+  "@onboardingWelcomeClarifier": {
+    "description": "One-line authored addition directly under onboardingWelcomeSubhead on the onboarding welcome screen, explaining the 'cairn' metaphor in plain terms for a first-time user. Deliberately does not mention the 10-stone cap, streaks, or bonus points - those are taught later, in context, not on this first screen."
+  },
+
+  "onboardingStep1Title": "Do the thing.",
+  "@onboardingStep1Title": {
+    "description": "Bold lead-in of the first of three step cards on the onboarding welcome screen, immediately followed by onboardingStep1Body in the same line."
+  },
+  "onboardingStep1Body": "Your habit, in the real world.",
+  "@onboardingStep1Body": {
+    "description": "Muted remainder of the first onboarding welcome step card's line, following onboardingStep1Title."
+  },
+  "onboardingStep2Title": "Snap a photo.",
+  "@onboardingStep2Title": {
+    "description": "Bold lead-in of the second of three step cards on the onboarding welcome screen, immediately followed by onboardingStep2Body in the same line."
+  },
+  "onboardingStep2Body": "A quick proof of what you did.",
+  "@onboardingStep2Body": {
+    "description": "Muted remainder of the second onboarding welcome step card's line, following onboardingStep2Title."
+  },
+  "onboardingStep3Title": "AI verifies.",
+  "@onboardingStep3Title": {
+    "description": "Bold lead-in of the third of three step cards on the onboarding welcome screen (the sage-tinted card with the check-circle icon), immediately followed by onboardingStep3Body in the same line."
+  },
+  "onboardingStep3Body": "A stone settles on your cairn.",
+  "@onboardingStep3Body": {
+    "description": "Muted remainder of the third onboarding welcome step card's line, following onboardingStep3Title."
+  },
+
+  "onboardingStartClimbingButton": "Start climbing",
+  "@onboardingStartClimbingButton": {
+    "description": "Primary footer button on the onboarding welcome screen; advances to the onboarding verification screen."
+  },
+  "onboardingAlreadyHaveAccountButton": "I already have an account",
+  "@onboardingAlreadyHaveAccountButton": {
+    "description": "Ghost footer button on the onboarding welcome screen. Signing in to an existing account is a Phase 4 concern (accounts/sync) and is out of scope here, so this is a deliberate no-op-for-now that shows onboardingSignInComingSoonSnackbar."
+  },
+  "onboardingSignInComingSoonSnackbar": "Signing in to an existing account is coming soon.",
+  "@onboardingSignInComingSoonSnackbar": {
+    "description": "Snackbar shown when tapping onboardingAlreadyHaveAccountButton, same no-op-for-now pattern as profileComingSoonSnackbar/premiumComingSoonSnackbar for their own screens' out-of-scope affordances."
+  },
+
+  "onboardingVerificationTitle": "How verification works",
+  "@onboardingVerificationTitle": {
+    "description": "Title on the onboarding verification screen (Cairn Onboarding Verification.dc.html), the second and final screen of the first-launch onboarding flow."
+  },
+  "onboardingVerificationSubhead": "A quick check keeps every stone honest. Here's exactly what happens to your photo.",
+  "@onboardingVerificationSubhead": {
+    "description": "Subhead under the title on the onboarding verification screen. The design's em dash (U+2014) was replaced with '.' per this project's house style (CLAUDE.md bans that character)."
+  },
+
+  "onboardingPoint1Title": "Sent only to be checked",
+  "@onboardingPoint1Title": {
+    "description": "Title of the first of three point cards on the onboarding verification screen."
+  },
+  "onboardingPoint1Body": "Your photo is sent to an AI (Google Gemini) to confirm it matches your habit, nothing else.",
+  "@onboardingPoint1Body": {
+    "description": "Body copy of the first point card on the onboarding verification screen. The design's em dash (U+2014) was replaced with ',' per this project's house style (CLAUDE.md bans that character)."
+  },
+  "onboardingPoint2Title": "Never stored in the cloud",
+  "@onboardingPoint2Title": {
+    "description": "Title of the second of three point cards on the onboarding verification screen."
+  },
+  "onboardingPoint2Body": "We don't keep your photos on our servers. They're checked, then discarded.",
+  "@onboardingPoint2Body": {
+    "description": "Body copy of the second point card on the onboarding verification screen."
+  },
+  "onboardingPoint3Title": "Your archive lives on your phone",
+  "@onboardingPoint3Title": {
+    "description": "Title of the third of three point cards on the onboarding verification screen."
+  },
+  "onboardingPoint3Body": "Proof photos are saved on your device. Cloud backup is optional with Premium.",
+  "@onboardingPoint3Body": {
+    "description": "Body copy of the third point card on the onboarding verification screen."
+  },
+
+  "onboardingCameraPermissionLead": "Cairn needs your camera",
+  "@onboardingCameraPermissionLead": {
+    "description": "Bold lead-in clause of the onboarding verification screen's footer permission-primer card, immediately preceding onboardingCameraPermissionBody in the same line."
+  },
+  "onboardingCameraPermissionBody": "to capture proof of each habit.",
+  "@onboardingCameraPermissionBody": {
+    "description": "Plain remainder of the onboarding verification screen's footer permission-primer card's line, following onboardingCameraPermissionLead."
+  },
+
+  "onboardingAllowCameraButton": "Allow camera",
+  "@onboardingAllowCameraButton": {
+    "description": "Primary button on the onboarding verification screen's footer permission-primer card. Fires the real OS camera-permission prompt (via CameraPermissionRequester), then marks onboarding complete and enters the app regardless of the prompt's outcome - see the onboarding flow's own doc comment."
+  },
+
+  "onboardingLearnMorePrivacyLink": "Learn more about privacy",
+  "@onboardingLearnMorePrivacyLink": {
+    "description": "Text link below the footer permission-primer card on the onboarding verification screen. No privacy page exists yet in this app, so this is a deliberate no-op-for-now that shows onboardingPrivacyComingSoonSnackbar, same pattern as premiumTermsLink/premiumPrivacyLink."
+  },
+  "onboardingPrivacyComingSoonSnackbar": "A privacy details page is coming soon.",
+  "@onboardingPrivacyComingSoonSnackbar": {
+    "description": "Snackbar shown when tapping onboardingLearnMorePrivacyLink."
   }
 }

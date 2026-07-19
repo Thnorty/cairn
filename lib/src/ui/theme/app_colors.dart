@@ -439,4 +439,40 @@ abstract final class AppColors {
 
   /// `#c4bbaa` - the Premium screen's footer link-row dot separators.
   static const Color premiumFooterDotColor = Color(0xFFC4BBAA);
+
+  // ---- Onboarding screens ---------------------------------------------------
+
+  /// rgba(150,166,120,.26) - the onboarding welcome screen's own top sage
+  /// wash. Numerically close to but distinct from [premiumSageWash]'s .22
+  /// (a different screen's literal alpha), kept as its own token per this
+  /// file's precedent of preserving literal per-source distinctions (see
+  /// [trailWhereYouStartedText]).
+  static const Color onboardingWelcomeSageWash = Color(0x4296A678);
+
+  /// rgba(150,166,120,.24) - the onboarding verification screen's own top
+  /// sage wash, a third distinct alpha alongside [onboardingWelcomeSageWash]
+  /// and [premiumSageWash].
+  static const Color onboardingVerificationSageWash = Color(0x3D96A678);
+
+  /// rgba(122,141,96,.14) - the onboarding welcome screen's sage-tinted
+  /// "AI verifies" step-3 card background.
+  static const Color onboardingSageCardBg = Color(0x247A8D60);
+
+  /// rgba(122,141,96,.22) - the onboarding welcome screen's sage-tinted
+  /// step-3 card border.
+  static const Color onboardingSageCardBorder = Color(0x387A8D60);
+
+  /// rgba(122,141,96,.14) - the onboarding verification screen's shield
+  /// emblem fill. Numerically identical to [onboardingSageCardBg] but kept
+  /// as its own token since the two mark unrelated things, per this file's
+  /// own precedent (see [achievedTierIconBg]).
+  static const Color onboardingShieldFill = Color(0x247A8D60);
+
+  /// rgba(120,108,88,.3) - the onboarding verification screen's inactive
+  /// progress-dot fill.
+  static const Color onboardingDotInactive = Color(0x4D786C58);
+
+  /// rgba(178,124,92,.16) - the onboarding verification screen's footer
+  /// permission-primer icon-circle background.
+  static const Color onboardingPermissionIconBg = Color(0x29B27C5C);
 }

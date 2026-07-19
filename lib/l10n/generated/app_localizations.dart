@@ -1075,6 +1075,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Coming soon'**
   String get premiumComingSoonSnackbar;
+
+  /// First line of the two-line headline on the first-launch onboarding welcome screen (Cairn Onboarding.dc.html).
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t just check it off.'**
+  String get onboardingWelcomeHeadlineLine1;
+
+  /// Second, sage-coloured accent line of the onboarding welcome screen's headline, immediately following onboardingWelcomeHeadlineLine1.
+  ///
+  /// In en, this message translates to:
+  /// **'Prove it.'**
+  String get onboardingWelcomeHeadlineAccent;
+
+  /// Subhead under the headline on the onboarding welcome screen. The design's em dash (U+2014) was replaced with ':' per this project's house style (CLAUDE.md bans that character).
+  ///
+  /// In en, this message translates to:
+  /// **'Cairn turns real effort into something you can see grow: one verified stone at a time.'**
+  String get onboardingWelcomeSubhead;
+
+  /// One-line authored addition directly under onboardingWelcomeSubhead on the onboarding welcome screen, explaining the 'cairn' metaphor in plain terms for a first-time user. Deliberately does not mention the 10-stone cap, streaks, or bonus points - those are taught later, in context, not on this first screen.
+  ///
+  /// In en, this message translates to:
+  /// **'A cairn is a small stack of stones that hikers build to mark a trail.'**
+  String get onboardingWelcomeClarifier;
+
+  /// Bold lead-in of the first of three step cards on the onboarding welcome screen, immediately followed by onboardingStep1Body in the same line.
+  ///
+  /// In en, this message translates to:
+  /// **'Do the thing.'**
+  String get onboardingStep1Title;
+
+  /// Muted remainder of the first onboarding welcome step card's line, following onboardingStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your habit, in the real world.'**
+  String get onboardingStep1Body;
+
+  /// Bold lead-in of the second of three step cards on the onboarding welcome screen, immediately followed by onboardingStep2Body in the same line.
+  ///
+  /// In en, this message translates to:
+  /// **'Snap a photo.'**
+  String get onboardingStep2Title;
+
+  /// Muted remainder of the second onboarding welcome step card's line, following onboardingStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick proof of what you did.'**
+  String get onboardingStep2Body;
+
+  /// Bold lead-in of the third of three step cards on the onboarding welcome screen (the sage-tinted card with the check-circle icon), immediately followed by onboardingStep3Body in the same line.
+  ///
+  /// In en, this message translates to:
+  /// **'AI verifies.'**
+  String get onboardingStep3Title;
+
+  /// Muted remainder of the third onboarding welcome step card's line, following onboardingStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'A stone settles on your cairn.'**
+  String get onboardingStep3Body;
+
+  /// Primary footer button on the onboarding welcome screen; advances to the onboarding verification screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Start climbing'**
+  String get onboardingStartClimbingButton;
+
+  /// Ghost footer button on the onboarding welcome screen. Signing in to an existing account is a Phase 4 concern (accounts/sync) and is out of scope here, so this is a deliberate no-op-for-now that shows onboardingSignInComingSoonSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'I already have an account'**
+  String get onboardingAlreadyHaveAccountButton;
+
+  /// Snackbar shown when tapping onboardingAlreadyHaveAccountButton, same no-op-for-now pattern as profileComingSoonSnackbar/premiumComingSoonSnackbar for their own screens' out-of-scope affordances.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing in to an existing account is coming soon.'**
+  String get onboardingSignInComingSoonSnackbar;
+
+  /// Title on the onboarding verification screen (Cairn Onboarding Verification.dc.html), the second and final screen of the first-launch onboarding flow.
+  ///
+  /// In en, this message translates to:
+  /// **'How verification works'**
+  String get onboardingVerificationTitle;
+
+  /// Subhead under the title on the onboarding verification screen. The design's em dash (U+2014) was replaced with '.' per this project's house style (CLAUDE.md bans that character).
+  ///
+  /// In en, this message translates to:
+  /// **'A quick check keeps every stone honest. Here\'s exactly what happens to your photo.'**
+  String get onboardingVerificationSubhead;
+
+  /// Title of the first of three point cards on the onboarding verification screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent only to be checked'**
+  String get onboardingPoint1Title;
+
+  /// Body copy of the first point card on the onboarding verification screen. The design's em dash (U+2014) was replaced with ',' per this project's house style (CLAUDE.md bans that character).
+  ///
+  /// In en, this message translates to:
+  /// **'Your photo is sent to an AI (Google Gemini) to confirm it matches your habit, nothing else.'**
+  String get onboardingPoint1Body;
+
+  /// Title of the second of three point cards on the onboarding verification screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Never stored in the cloud'**
+  String get onboardingPoint2Title;
+
+  /// Body copy of the second point card on the onboarding verification screen.
+  ///
+  /// In en, this message translates to:
+  /// **'We don\'t keep your photos on our servers. They\'re checked, then discarded.'**
+  String get onboardingPoint2Body;
+
+  /// Title of the third of three point cards on the onboarding verification screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your archive lives on your phone'**
+  String get onboardingPoint3Title;
+
+  /// Body copy of the third point card on the onboarding verification screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Proof photos are saved on your device. Cloud backup is optional with Premium.'**
+  String get onboardingPoint3Body;
+
+  /// Bold lead-in clause of the onboarding verification screen's footer permission-primer card, immediately preceding onboardingCameraPermissionBody in the same line.
+  ///
+  /// In en, this message translates to:
+  /// **'Cairn needs your camera'**
+  String get onboardingCameraPermissionLead;
+
+  /// Plain remainder of the onboarding verification screen's footer permission-primer card's line, following onboardingCameraPermissionLead.
+  ///
+  /// In en, this message translates to:
+  /// **'to capture proof of each habit.'**
+  String get onboardingCameraPermissionBody;
+
+  /// Primary button on the onboarding verification screen's footer permission-primer card. Fires the real OS camera-permission prompt (via CameraPermissionRequester), then marks onboarding complete and enters the app regardless of the prompt's outcome - see the onboarding flow's own doc comment.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow camera'**
+  String get onboardingAllowCameraButton;
+
+  /// Text link below the footer permission-primer card on the onboarding verification screen. No privacy page exists yet in this app, so this is a deliberate no-op-for-now that shows onboardingPrivacyComingSoonSnackbar, same pattern as premiumTermsLink/premiumPrivacyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn more about privacy'**
+  String get onboardingLearnMorePrivacyLink;
+
+  /// Snackbar shown when tapping onboardingLearnMorePrivacyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'A privacy details page is coming soon.'**
+  String get onboardingPrivacyComingSoonSnackbar;
 }
 
 class _AppLocalizationsDelegate
