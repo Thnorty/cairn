@@ -744,4 +744,58 @@ abstract final class AppTextStyles {
     fontSize: 13,
     color: AppColors.textMuted,
   );
+
+  // ---- Cairn Complete / How Cairns Work -------------------------------
+
+  /// 28px Zilla Slab 600 - the Cairn Complete celebration screen's
+  /// headline ("Cairn 6 complete"), sage-tinted. Close to but distinct from
+  /// [onboardingVerificationHeadline] (also 28px Zilla Slab, but weight
+  /// 700 and [AppColors.inkPrimary]): kept as its own token per this
+  /// file's own precedent of preserving literal per-source distinctions.
+  static const TextStyle cairnCompleteHeadline = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w600,
+    fontSize: 28,
+    color: AppColors.sageHeading,
+  );
+
+  /// 26px Zilla Slab 700 - the How Cairns Work explainer sheet's title
+  /// ("Every stone builds a cairn").
+  static const TextStyle howCairnsWorkTitle = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w700,
+    fontSize: 26,
+    height: 1.14,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 13.5px Work Sans 400 - the How Cairns Work explainer sheet's subhead,
+  /// under [howCairnsWorkTitle]. Same family/weight/colour as
+  /// [emptyStateBody] (which its own subhead style is closest to), just a
+  /// size step down - same reasoning as [onboardingClarifier].
+  static const TextStyle howCairnsWorkSubhead = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 13.5,
+    height: 1.5,
+    color: AppColors.emptyStateBodyText,
+  );
+
+  /// 11.5px Work Sans 600 - a label under one of the three mini-cairns in
+  /// the How Cairns Work explainer sheet's legend card (Growing/Capped/
+  /// Broken); callers `.copyWith` the colour per state.
+  static const TextStyle howCairnsWorkLegendLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 11.5,
+  );
+
+  /// 14px Work Sans 600 - an explainer row's title on the How Cairns Work
+  /// sheet.
+  static const TextStyle howCairnsWorkRowTitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 14,
+    color: AppColors.inkPrimary,
+  );
 }

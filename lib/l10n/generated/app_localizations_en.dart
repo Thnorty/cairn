@@ -189,6 +189,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get doneButton => 'Done';
 
   @override
+  String get cairnCompleteHeaderLabel => 'CAIRN COMPLETE';
+
+  @override
+  String cairnCompleteHeadline(int cairnNumber) {
+    return 'Cairn $cairnNumber complete';
+  }
+
+  @override
+  String get cairnCompleteSubline => 'Ten stones stacked and sealed.';
+
+  @override
+  String cairnCompleteBonusAmount(String metres) {
+    return '+$metres m';
+  }
+
+  @override
+  String get cairnCompleteBonusLabel => 'cairn bonus';
+
+  @override
+  String get cairnCompleteTeachingLead =>
+      'Every 10 stones caps a cairn and earns a bonus.';
+
+  @override
+  String cairnCompleteTeachingNext(int nextCairnNumber) {
+    return 'Cairn $nextCairnNumber starts with your next stone.';
+  }
+
+  @override
   String get couldntVerifyTitle => 'Couldn\'t verify';
 
   @override
@@ -559,6 +587,68 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trailEmptyTrailBody => 'Your first stone starts the trail.';
+
+  @override
+  String get howCairnsWorkInfoButtonLabel => 'How cairns work';
+
+  @override
+  String get howCairnsWorkHeaderLabel => 'HOW CAIRNS WORK';
+
+  @override
+  String get howCairnsWorkTitle => 'Every stone builds a cairn';
+
+  @override
+  String get howCairnsWorkSubhead =>
+      'A cairn is a stack of stones that marks a trail. Yours grows one proof at a time.';
+
+  @override
+  String get howCairnsWorkLegendGrowing => 'Growing';
+
+  @override
+  String get howCairnsWorkLegendCapped => 'Capped';
+
+  @override
+  String get howCairnsWorkLegendBroken => 'Broken';
+
+  @override
+  String get howCairnsWorkRow1Title => 'One proof, one stone';
+
+  @override
+  String get howCairnsWorkRow1Body =>
+      'Every verified photo places a stone on the cairn you are building now.';
+
+  @override
+  String get howCairnsWorkRow2Title => 'Ten stones cap a cairn';
+
+  @override
+  String get howCairnsWorkRow2Lead =>
+      'Fill a cairn to ten and it is sealed for good, with a';
+
+  @override
+  String howCairnsWorkRow2Bonus(String bonus) {
+    return '+$bonus m';
+  }
+
+  @override
+  String get howCairnsWorkRow2Trail =>
+      'bonus. The next stone starts a new one.';
+
+  @override
+  String get howCairnsWorkRow3Title => 'A missed day breaks it';
+
+  @override
+  String get howCairnsWorkRow3Body =>
+      'Skip a scheduled day and the current cairn seals early as broken. A fresh one begins next time.';
+
+  @override
+  String get howCairnsWorkRow4Title => 'Stones lift your rank';
+
+  @override
+  String get howCairnsWorkRow4Body =>
+      'Each stone earns metres, more on a streak, a perfect day, or a cap. Metres raise your rank, and rank never falls.';
+
+  @override
+  String get howCairnsWorkGotItButton => 'Got it';
 
   @override
   String get statsHeaderEyebrow => 'YOUR GROUND';

@@ -8,6 +8,7 @@ import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/completion_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
+import 'package:cairn/src/ui/proof/cairn_complete_screen.dart';
 import 'package:cairn/src/ui/proof/camera_capture_screen.dart';
 import 'package:cairn/src/ui/proof/daily_limit_screen.dart';
 import 'package:cairn/src/ui/proof/proof_outcome_routing.dart';
@@ -145,6 +146,90 @@ void main() {
 
     expect(find.byType(VerifyResultScreen), findsOneWidget);
     expect(find.text('Cairn 1 · 10 stones · new stone placed'), findsOneWidget);
+  });
+
+  testWidgets(
+      'a completion that caps the cairn: tapping VerifyResultScreen\'s Done '
+      'pushes CairnCompleteScreen (not straight back to Home), and that '
+      "screen's own Done pops the whole outcome stack back to Home in one "
+      'go', (tester) async {
+    final task = await makeTask();
+    for (var day = 1; day <= 9; day++) {
+      final repo = CompletionRepository(db, FixedClock(d(2026, 7, day)),
+          verifier: FakeProofVerifier());
+      await repo.completeOccurrence(
+          taskId: task.id, occurrenceDate: d(2026, 7, day));
+    }
+    final tenthRepo =
+        CompletionRepository(db, clock, verifier: FakeProofVerifier());
+    final result = await tenthRepo.completeWithProof(
+      taskId: task.id,
+      occurrenceDate: d(2026, 7, 10),
+      proof: ProofData(imageBytes: Uint8List.fromList([1, 2, 3])),
+    );
+    expect(result, isA<CompletionRecorded>());
+
+    await pumpHarness(
+      tester,
+      () => result,
+      taskId: task.id,
+      imageBytes: kFakeImageBytes,
+    );
+    await tester.tap(find.text('trigger'));
+    await tester.pumpAndSettle();
+    expect(find.byType(VerifyResultScreen), findsOneWidget);
+    expect(find.byType(CairnCompleteScreen), findsNothing);
+
+    // VerifyResultScreen's own Done, tapped while it's the only screen with
+    // a "Done" button on screen.
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CairnCompleteScreen), findsOneWidget);
+    expect(find.text('Cairn 1 complete'), findsOneWidget);
+
+    // Scoped to CairnCompleteScreen: VerifyResultScreen may still be
+    // mounted (just covered) underneath it in the Navigator stack, so an
+    // unscoped find.text('Done') here would be ambiguous.
+    await tester.tap(find.descendant(
+      of: find.byType(CairnCompleteScreen),
+      matching: find.text('Done'),
+    ));
+    await tester.pumpAndSettle();
+
+    // Back to Home (the harness's own trigger screen) in one go: neither
+    // outcome screen remains in the stack.
+    expect(find.text('trigger'), findsOneWidget);
+    expect(find.byType(CairnCompleteScreen), findsNothing);
+    expect(find.byType(VerifyResultScreen), findsNothing);
+  });
+
+  testWidgets(
+      'a non-capping CompletionRecorded: tapping Done pops straight to Home '
+      'and CairnCompleteScreen is never shown', (tester) async {
+    final task = await makeTask();
+    final result = await completionRepo.completeWithProof(
+      taskId: task.id,
+      occurrenceDate: d(2026, 7, 10),
+      proof: ProofData(imageBytes: Uint8List.fromList([1, 2, 3])),
+    );
+    expect(result, isA<CompletionRecorded>());
+
+    await pumpHarness(
+      tester,
+      () => result,
+      taskId: task.id,
+      imageBytes: kFakeImageBytes,
+    );
+    await tester.tap(find.text('trigger'));
+    await tester.pumpAndSettle();
+    expect(find.byType(VerifyResultScreen), findsOneWidget);
+
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CairnCompleteScreen), findsNothing);
+    expect(find.text('trigger'), findsOneWidget);
   });
 
   testWidgets(

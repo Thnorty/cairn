@@ -9,8 +9,10 @@ import '../../models/local_date.dart';
 import '../../models/proof_verdict.dart';
 import '../../providers.dart';
 import '../../repo/completion_repository.dart';
+import '../../services/points_service.dart';
 import '../../services/stale_photo_age.dart';
 import '../premium/premium_screen.dart';
+import 'cairn_complete_screen.dart';
 import 'camera_capture_screen.dart';
 import 'daily_limit_screen.dart';
 import 'verify_failed_screen.dart';
@@ -91,6 +93,12 @@ Future<bool> routeToProofOutcome(
       // this stone caps the cairn: "Cairn N · 10 · new stone placed").
       final cairn = await completionRepo.currentCairnFor(taskId);
       if (!context.mounted) return true;
+      // Only a *verified* completion can ever show the Cairn Complete
+      // celebration: CLAUDE.md's pending-completion rule withholds every
+      // bonus (the cap bonus included) until the proof actually verifies,
+      // so [CompletionPendingVerification] below never takes this branch
+      // even when its own stone would otherwise cap the cairn.
+      final cappedNow = cairn.stoneCount == PointsService.cairnCapStones;
       go(VerifyResultScreen(
         taskTitle: taskTitle,
         completedAtMillis: completion.completedAt,
@@ -98,7 +106,22 @@ Future<bool> routeToProofOutcome(
         reason: _verdictReasonFrom(completion.verificationMeta) ?? '',
         cairnNumber: cairn.index,
         stoneCount: cairn.stoneCount,
-        onDone: popToHome,
+        onDone: cappedNow
+            ? () => navigator.push(MaterialPageRoute<void>(
+                  builder: (_) => CairnCompleteScreen(
+                    taskTitle: taskTitle,
+                    cairnNumber: cairn.index,
+                    nextCairnNumber: cairn.index + 1,
+                    capBonusMetres: PointsService.cairnCapBonus,
+                    completedAtMillis: completion.completedAt,
+                    // Pops the whole outcome stack (this screen and
+                    // VerifyResultScreen beneath it) back to Home in one
+                    // go, rather than a plain `navigator.pop()` that would
+                    // only reveal VerifyResultScreen again.
+                    onDone: () => navigator.popUntil((r) => r.isFirst),
+                  ),
+                ))
+            : popToHome,
       ));
       return true;
 

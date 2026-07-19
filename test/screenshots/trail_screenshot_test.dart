@@ -9,6 +9,7 @@ import 'package:cairn/src/repo/completion_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
 import 'package:cairn/src/ui/shell/app_shell.dart';
+import 'package:cairn/src/ui/trail/how_cairns_work_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -151,5 +152,19 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Trail'));
     await captureAt392x846(tester, 'trail_single_growing_trailhead.png');
+  });
+
+  testScreenshotWidgets('How Cairns Work explainer sheet', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: RepaintBoundary(
+          key: const ValueKey('screenshot-boundary'),
+          child: const HowCairnsWorkScreen(),
+        ),
+      ),
+    );
+    await captureAt392x846(tester, 'how_cairns_work.png');
   });
 }

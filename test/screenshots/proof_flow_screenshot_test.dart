@@ -9,6 +9,7 @@ import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
 import 'package:cairn/src/services/recent_photo_library.dart';
+import 'package:cairn/src/ui/proof/cairn_complete_screen.dart';
 import 'package:cairn/src/ui/proof/camera_capture_screen.dart';
 import 'package:cairn/src/ui/proof/camera_unavailable_screen.dart';
 import 'package:cairn/src/ui/proof/daily_limit_screen.dart';
@@ -180,6 +181,19 @@ void main() {
     )));
     await tester.pumpAndSettle();
     await captureAt392x846(tester, 'verify_result.png');
+  });
+
+  testWidgets('Cairn Complete', (tester) async {
+    await tester.pumpWidget(boundaryApp(CairnCompleteScreen(
+      taskTitle: 'Read 20 pages',
+      cairnNumber: 6,
+      nextCairnNumber: 7,
+      capBonusMetres: 25,
+      completedAtMillis: DateTime(2026, 7, 10, 7, 16).millisecondsSinceEpoch,
+      onDone: () {},
+    )));
+    await tester.pumpAndSettle();
+    await captureAt392x846(tester, 'cairn_complete.png');
   });
 
   testWidgets('Verify Failed (retries remaining)', (tester) async {

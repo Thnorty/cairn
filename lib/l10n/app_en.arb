@@ -279,6 +279,53 @@
     "description": "Footer button on the verification-result screen (accepted case)."
   },
 
+  "cairnCompleteHeaderLabel": "CAIRN COMPLETE",
+  "@cairnCompleteHeaderLabel": {
+    "description": "All-caps header label on the Cairn Complete celebration screen (Cairn Verify Result - Cairn Complete.dc.html), shown after a verified proof caps a per-task cairn (its 10th live stone). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel/verificationHeaderLabel; do not uppercase at runtime."
+  },
+
+  "cairnCompleteHeadline": "Cairn {cairnNumber} complete",
+  "@cairnCompleteHeadline": {
+    "description": "Headline on the Cairn Complete screen, e.g. 'Cairn 6 complete'. cairnNumber is the just-capped cairn's own index (CompletionRepository.currentCairnFor's index, re-read after the capping stone was recorded).",
+    "placeholders": {
+      "cairnNumber": { "type": "int", "example": "6" }
+    }
+  },
+
+  "cairnCompleteSubline": "Ten stones stacked and sealed.",
+  "@cairnCompleteSubline": {
+    "description": "Static subline under the Cairn Complete headline. 'Ten' is deliberately static copy, not derived from PointsService.cairnCapStones - there is no design for a non-10 cap count."
+  },
+
+  "cairnCompleteBonusAmount": "+{metres} m",
+  "@cairnCompleteBonusAmount": {
+    "description": "The bonus-metres pill's own bold figure on the Cairn Complete screen, e.g. '+25 m'. metres is pre-formatted by the caller via NumberFormat (the value itself comes from PointsService.cairnCapBonus, never hardcoded).",
+    "placeholders": {
+      "metres": {
+        "type": "String",
+        "example": "25"
+      }
+    }
+  },
+
+  "cairnCompleteBonusLabel": "cairn bonus",
+  "@cairnCompleteBonusLabel": {
+    "description": "Trailing label beside the bold figure in the Cairn Complete screen's bonus pill, e.g. '+25 m cairn bonus'."
+  },
+
+  "cairnCompleteTeachingLead": "Every 10 stones caps a cairn and earns a bonus.",
+  "@cairnCompleteTeachingLead": {
+    "description": "Plain lead clause of the Cairn Complete screen's teaching card, immediately preceding the bold cairnCompleteTeachingNext clause in the same paragraph."
+  },
+
+  "cairnCompleteTeachingNext": "Cairn {nextCairnNumber} starts with your next stone.",
+  "@cairnCompleteTeachingNext": {
+    "description": "Bold trailing clause of the Cairn Complete screen's teaching card, following cairnCompleteTeachingLead. nextCairnNumber is the just-capped cairn's index + 1.",
+    "placeholders": {
+      "nextCairnNumber": { "type": "int", "example": "7" }
+    }
+  },
+
   "couldntVerifyTitle": "Couldn't verify",
   "@couldntVerifyTitle": {
     "description": "Title on the verification-result screen when the proof was rejected (with or without retries remaining)."
@@ -801,6 +848,102 @@
   "trailEmptyTrailBody": "Your first stone starts the trail.",
   "@trailEmptyTrailBody": {
     "description": "Body copy shown in place of the winding trail when the selected task has active tasks overall but this particular task has zero completions yet (its cairn history is empty). Not part of the canonical Cairn Trail.dc.html design (which has no such example) - this exact wording was specified as the state's copy since no static mockup covers it."
+  },
+
+  "howCairnsWorkInfoButtonLabel": "How cairns work",
+  "@howCairnsWorkInfoButtonLabel": {
+    "description": "Accessible (semantics) label for the small circular '?' info button on the Trail screen's header that opens the How Cairns Work explainer sheet. No visible text of its own - an icon-only affordance, same reasoning as newHabitButton's reuse as the '+' chip's semantic label."
+  },
+
+  "howCairnsWorkHeaderLabel": "HOW CAIRNS WORK",
+  "@howCairnsWorkHeaderLabel": {
+    "description": "All-caps header label on the How Cairns Work explainer sheet (Cairn How Cairns Work.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel/verificationHeaderLabel; do not uppercase at runtime."
+  },
+
+  "howCairnsWorkTitle": "Every stone builds a cairn",
+  "@howCairnsWorkTitle": {
+    "description": "Title on the How Cairns Work explainer sheet."
+  },
+
+  "howCairnsWorkSubhead": "A cairn is a stack of stones that marks a trail. Yours grows one proof at a time.",
+  "@howCairnsWorkSubhead": {
+    "description": "Subhead under the How Cairns Work explainer sheet's title."
+  },
+
+  "howCairnsWorkLegendGrowing": "Growing",
+  "@howCairnsWorkLegendGrowing": {
+    "description": "Label under the 'growing' mini-cairn in the How Cairns Work explainer sheet's three-state legend card."
+  },
+
+  "howCairnsWorkLegendCapped": "Capped",
+  "@howCairnsWorkLegendCapped": {
+    "description": "Label under the 'capped' mini-cairn in the How Cairns Work explainer sheet's three-state legend card."
+  },
+
+  "howCairnsWorkLegendBroken": "Broken",
+  "@howCairnsWorkLegendBroken": {
+    "description": "Label (paired with a small lightning glyph) under the 'broken' mini-cairn in the How Cairns Work explainer sheet's three-state legend card."
+  },
+
+  "howCairnsWorkRow1Title": "One proof, one stone",
+  "@howCairnsWorkRow1Title": {
+    "description": "Title of the first explainer row on the How Cairns Work sheet."
+  },
+
+  "howCairnsWorkRow1Body": "Every verified photo places a stone on the cairn you are building now.",
+  "@howCairnsWorkRow1Body": {
+    "description": "Body copy of the first explainer row on the How Cairns Work sheet."
+  },
+
+  "howCairnsWorkRow2Title": "Ten stones cap a cairn",
+  "@howCairnsWorkRow2Title": {
+    "description": "Title of the second explainer row on the How Cairns Work sheet."
+  },
+
+  "howCairnsWorkRow2Lead": "Fill a cairn to ten and it is sealed for good, with a",
+  "@howCairnsWorkRow2Lead": {
+    "description": "Plain lead clause of the second explainer row's body, immediately preceding the bold howCairnsWorkRow2Bonus clause in the same sentence."
+  },
+
+  "howCairnsWorkRow2Bonus": "+{bonus} m",
+  "@howCairnsWorkRow2Bonus": {
+    "description": "Bold middle clause of the second explainer row's body, between howCairnsWorkRow2Lead and howCairnsWorkRow2Trail, e.g. '+25 m'. bonus is pre-formatted by the caller via NumberFormat (the value comes from PointsService.cairnCapBonus, never hardcoded).",
+    "placeholders": {
+      "bonus": {
+        "type": "String",
+        "example": "25"
+      }
+    }
+  },
+
+  "howCairnsWorkRow2Trail": "bonus. The next stone starts a new one.",
+  "@howCairnsWorkRow2Trail": {
+    "description": "Plain trailing clause of the second explainer row's body, immediately following howCairnsWorkRow2Bonus."
+  },
+
+  "howCairnsWorkRow3Title": "A missed day breaks it",
+  "@howCairnsWorkRow3Title": {
+    "description": "Title of the third explainer row on the How Cairns Work sheet."
+  },
+
+  "howCairnsWorkRow3Body": "Skip a scheduled day and the current cairn seals early as broken. A fresh one begins next time.",
+  "@howCairnsWorkRow3Body": {
+    "description": "Body copy of the third explainer row on the How Cairns Work sheet."
+  },
+
+  "howCairnsWorkRow4Title": "Stones lift your rank",
+  "@howCairnsWorkRow4Title": {
+    "description": "Title of the fourth explainer row on the How Cairns Work sheet."
+  },
+
+  "howCairnsWorkRow4Body": "Each stone earns metres, more on a streak, a perfect day, or a cap. Metres raise your rank, and rank never falls.",
+  "@howCairnsWorkRow4Body": {
+    "description": "Body copy of the fourth explainer row on the How Cairns Work sheet."
+  },
+
+  "howCairnsWorkGotItButton": "Got it",
+  "@howCairnsWorkGotItButton": {
+    "description": "Footer button on the How Cairns Work explainer sheet. Pops the sheet."
   },
 
   "statsHeaderEyebrow": "YOUR GROUND",

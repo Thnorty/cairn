@@ -31,7 +31,12 @@ import '../widgets/status_chip.dart';
 /// centered uppercase "VERIFICATION" label, and a matching spacer on the
 /// other side so the label stays visually centered.
 class VerificationHeader extends StatelessWidget {
-  const VerificationHeader({super.key, required this.onClose, this.label});
+  const VerificationHeader({
+    super.key,
+    required this.onClose,
+    this.label,
+    this.labelColor,
+  });
 
   final VoidCallback onClose;
 
@@ -43,16 +48,27 @@ class VerificationHeader extends StatelessWidget {
   /// rather than duplicating the close-button/spacer layout for one string.
   final String? label;
 
+  /// Overrides [AppTextStyles.sectionLabel]'s default [AppColors.labelGrey]
+  /// tint, defaulting to null (the plain grey). `Cairn Verify Result - Cairn
+  /// Complete.dc.html`'s own header label is sage-tinted
+  /// ([AppColors.sageText]) rather than the neutral grey every other header
+  /// (VERIFICATION, PROVE IT, HOW CAIRNS WORK) uses, so this stays an
+  /// opt-in override rather than changing the shared default.
+  final Color? labelColor;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final style = labelColor == null
+        ? AppTextStyles.sectionLabel
+        : AppTextStyles.sectionLabel.copyWith(color: labelColor);
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(24, 8, 24, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           CloseCircleButton(onTap: onClose),
-          Text(label ?? l10n.verificationHeaderLabel, style: AppTextStyles.sectionLabel),
+          Text(label ?? l10n.verificationHeaderLabel, style: style),
           const SizedBox(width: 38),
         ],
       ),

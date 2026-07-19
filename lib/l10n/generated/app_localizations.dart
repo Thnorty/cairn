@@ -314,6 +314,48 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get doneButton;
 
+  /// All-caps header label on the Cairn Complete celebration screen (Cairn Verify Result - Cairn Complete.dc.html), shown after a verified proof caps a per-task cairn (its 10th live stone). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel/verificationHeaderLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'CAIRN COMPLETE'**
+  String get cairnCompleteHeaderLabel;
+
+  /// Headline on the Cairn Complete screen, e.g. 'Cairn 6 complete'. cairnNumber is the just-capped cairn's own index (CompletionRepository.currentCairnFor's index, re-read after the capping stone was recorded).
+  ///
+  /// In en, this message translates to:
+  /// **'Cairn {cairnNumber} complete'**
+  String cairnCompleteHeadline(int cairnNumber);
+
+  /// Static subline under the Cairn Complete headline. 'Ten' is deliberately static copy, not derived from PointsService.cairnCapStones - there is no design for a non-10 cap count.
+  ///
+  /// In en, this message translates to:
+  /// **'Ten stones stacked and sealed.'**
+  String get cairnCompleteSubline;
+
+  /// The bonus-metres pill's own bold figure on the Cairn Complete screen, e.g. '+25 m'. metres is pre-formatted by the caller via NumberFormat (the value itself comes from PointsService.cairnCapBonus, never hardcoded).
+  ///
+  /// In en, this message translates to:
+  /// **'+{metres} m'**
+  String cairnCompleteBonusAmount(String metres);
+
+  /// Trailing label beside the bold figure in the Cairn Complete screen's bonus pill, e.g. '+25 m cairn bonus'.
+  ///
+  /// In en, this message translates to:
+  /// **'cairn bonus'**
+  String get cairnCompleteBonusLabel;
+
+  /// Plain lead clause of the Cairn Complete screen's teaching card, immediately preceding the bold cairnCompleteTeachingNext clause in the same paragraph.
+  ///
+  /// In en, this message translates to:
+  /// **'Every 10 stones caps a cairn and earns a bonus.'**
+  String get cairnCompleteTeachingLead;
+
+  /// Bold trailing clause of the Cairn Complete screen's teaching card, following cairnCompleteTeachingLead. nextCairnNumber is the just-capped cairn's index + 1.
+  ///
+  /// In en, this message translates to:
+  /// **'Cairn {nextCairnNumber} starts with your next stone.'**
+  String cairnCompleteTeachingNext(int nextCairnNumber);
+
   /// Title on the verification-result screen when the proof was rejected (with or without retries remaining).
   ///
   /// In en, this message translates to:
@@ -865,6 +907,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your first stone starts the trail.'**
   String get trailEmptyTrailBody;
+
+  /// Accessible (semantics) label for the small circular '?' info button on the Trail screen's header that opens the How Cairns Work explainer sheet. No visible text of its own - an icon-only affordance, same reasoning as newHabitButton's reuse as the '+' chip's semantic label.
+  ///
+  /// In en, this message translates to:
+  /// **'How cairns work'**
+  String get howCairnsWorkInfoButtonLabel;
+
+  /// All-caps header label on the How Cairns Work explainer sheet (Cairn How Cairns Work.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel/verificationHeaderLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'HOW CAIRNS WORK'**
+  String get howCairnsWorkHeaderLabel;
+
+  /// Title on the How Cairns Work explainer sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Every stone builds a cairn'**
+  String get howCairnsWorkTitle;
+
+  /// Subhead under the How Cairns Work explainer sheet's title.
+  ///
+  /// In en, this message translates to:
+  /// **'A cairn is a stack of stones that marks a trail. Yours grows one proof at a time.'**
+  String get howCairnsWorkSubhead;
+
+  /// Label under the 'growing' mini-cairn in the How Cairns Work explainer sheet's three-state legend card.
+  ///
+  /// In en, this message translates to:
+  /// **'Growing'**
+  String get howCairnsWorkLegendGrowing;
+
+  /// Label under the 'capped' mini-cairn in the How Cairns Work explainer sheet's three-state legend card.
+  ///
+  /// In en, this message translates to:
+  /// **'Capped'**
+  String get howCairnsWorkLegendCapped;
+
+  /// Label (paired with a small lightning glyph) under the 'broken' mini-cairn in the How Cairns Work explainer sheet's three-state legend card.
+  ///
+  /// In en, this message translates to:
+  /// **'Broken'**
+  String get howCairnsWorkLegendBroken;
+
+  /// Title of the first explainer row on the How Cairns Work sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'One proof, one stone'**
+  String get howCairnsWorkRow1Title;
+
+  /// Body copy of the first explainer row on the How Cairns Work sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Every verified photo places a stone on the cairn you are building now.'**
+  String get howCairnsWorkRow1Body;
+
+  /// Title of the second explainer row on the How Cairns Work sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Ten stones cap a cairn'**
+  String get howCairnsWorkRow2Title;
+
+  /// Plain lead clause of the second explainer row's body, immediately preceding the bold howCairnsWorkRow2Bonus clause in the same sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill a cairn to ten and it is sealed for good, with a'**
+  String get howCairnsWorkRow2Lead;
+
+  /// Bold middle clause of the second explainer row's body, between howCairnsWorkRow2Lead and howCairnsWorkRow2Trail, e.g. '+25 m'. bonus is pre-formatted by the caller via NumberFormat (the value comes from PointsService.cairnCapBonus, never hardcoded).
+  ///
+  /// In en, this message translates to:
+  /// **'+{bonus} m'**
+  String howCairnsWorkRow2Bonus(String bonus);
+
+  /// Plain trailing clause of the second explainer row's body, immediately following howCairnsWorkRow2Bonus.
+  ///
+  /// In en, this message translates to:
+  /// **'bonus. The next stone starts a new one.'**
+  String get howCairnsWorkRow2Trail;
+
+  /// Title of the third explainer row on the How Cairns Work sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'A missed day breaks it'**
+  String get howCairnsWorkRow3Title;
+
+  /// Body copy of the third explainer row on the How Cairns Work sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip a scheduled day and the current cairn seals early as broken. A fresh one begins next time.'**
+  String get howCairnsWorkRow3Body;
+
+  /// Title of the fourth explainer row on the How Cairns Work sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Stones lift your rank'**
+  String get howCairnsWorkRow4Title;
+
+  /// Body copy of the fourth explainer row on the How Cairns Work sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Each stone earns metres, more on a streak, a perfect day, or a cap. Metres raise your rank, and rank never falls.'**
+  String get howCairnsWorkRow4Body;
+
+  /// Footer button on the How Cairns Work explainer sheet. Pops the sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get howCairnsWorkGotItButton;
 
   /// Small all-caps eyebrow label above the 'Stats' title on the Stats screen (Cairn Stats.dc.html), e.g. 'YOUR GROUND' above 'Stats'. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime. The screen's own title reuses navStats ('Stats') rather than a duplicate key, the same pattern profileHeaderLabel's screen reuses navYou.
   ///
