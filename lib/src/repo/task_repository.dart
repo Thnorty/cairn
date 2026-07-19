@@ -291,6 +291,20 @@ class TaskRepository {
     };
   }
 
+  /// Tasks matching [ids], regardless of archived/deletedAt status - the
+  /// same "looked up ignoring deletedAt/archived" pattern
+  /// `CompletionRepository.retryPendingVerifications`/`_retrySinglePending`
+  /// use so a since-archived or since-deleted task still resolves. Used by
+  /// `StatsService.cairnsBuilt` so an archived task's already-placed stones
+  /// keep contributing capped cairns to that count, exactly as they already
+  /// do for `stonesPlaced`. Order is unspecified; callers that care about
+  /// order should re-sort.
+  Future<List<Task>> tasksByIds(Iterable<String> ids) {
+    final idList = ids.toList();
+    if (idList.isEmpty) return Future.value(const []);
+    return (_db.select(_db.tasks)..where((t) => t.id.isIn(idList))).get();
+  }
+
   /// One-time backfill for rows created before the first successful
   /// anonymous sign-in (WO-4): stamps `user_id` on every row where it is
   /// currently NULL, so Phase 4's account upgrade carries the whole

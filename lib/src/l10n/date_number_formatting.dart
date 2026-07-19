@@ -60,6 +60,15 @@ String narrowWeekdayLabel(int isoWeekday, Locale locale) {
   return symbols.NARROWWEEKDAYS[isoWeekday % 7];
 }
 
+/// Narrow single-letter weekday initial for [date] (e.g. "M" for Monday, "S"
+/// for Sunday in `en`), used by the Stats screen's "This week" bar chart
+/// labels (`Cairn Stats.dc.html`'s "M T W T F S S" row). Thin wrapper around
+/// [narrowWeekdayLabel] for callers that already have a [LocalDate] (a week's
+/// worth of chart bars) rather than a bare ISO weekday int.
+String formatWeekdayNarrow(LocalDate date, Locale locale) {
+  return narrowWeekdayLabel(date.weekday, locale);
+}
+
 /// Full weekday name for [isoWeekday] (1=Mon..7=Sun), e.g. "Friday" for
 /// `en`. Used by the New Habit screen's monthly nth-weekday mode toggle
 /// label ("On the 3rd Friday").

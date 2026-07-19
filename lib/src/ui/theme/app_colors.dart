@@ -376,4 +376,67 @@ abstract final class AppColors {
   /// its own token rather than collapsed, per this file's own precedent of
   /// preserving literal per-use distinctions.
   static const Color trailWhereYouStartedText = Color(0xFFA19795);
+
+  // ---- Stats screen ---------------------------------------------------------
+
+  /// rgba(120,108,88,.18) - a future weekday bar's faint fill on the Stats
+  /// screen's "This week" chart.
+  static const Color statsFutureBarBg = Color(0x2E786C58);
+
+  /// rgba(120,108,88,.2) - shared by the Stats screen's unfilled
+  /// proofs-used-today segments and the "Deeper insights" card's lock-icon
+  /// circle background (identical rgba value at both source sites).
+  static const Color statsMutedFillBg = Color(0x33786C58);
+
+  /// rgba(255,255,255,.3) - the Stats screen's locked "Deeper insights"
+  /// card border. Numerically identical to [buttonInsetHighlight] (same
+  /// source rgba) but kept as its own token since the two mark unrelated
+  /// things, per this file's own precedent (see [achievedTierIconBg]).
+  static const Color statsLockedCardBorder = Color(0x4DFFFFFF);
+
+  /// `#b7ad99` - the Stats screen's blurred faux-chart bars behind the
+  /// locked "Deeper insights" card.
+  static const Color statsFauxChartBar = Color(0xFFB7AD99);
+
+  /// `#ece7db` / `#ddd4c2` - the Stats screen's locked "Deeper insights"
+  /// card background gradient (165deg).
+  static const Color statsLockedCardBgLight = Color(0xFFECE7DB);
+  static const Color statsLockedCardBgDark = Color(0xFFDDD4C2);
+
+  // ---- Premium screen -------------------------------------------------------
+
+  /// rgba(150,166,120,.22) - the Premium screen's top sage wash tint (its
+  /// first radial wash), transparent counterpart for that gradient's second
+  /// stop.
+  static const Color premiumSageWash = Color(0x3896A678);
+
+  /// rgba(90,100,72,.05) - the Premium screen's own sage-tinted topographic
+  /// contour ring colour (`Cairn Premium.dc.html`'s own repeating-radial-
+  /// gradient tint), distinct from Home's neutral warm-ink tint.
+  static const Color premiumContourRing = Color(0x0D5A6448);
+
+  /// `#f4f0e6` - text drawn on a solid sage fill on the Premium screen (the
+  /// "Best value" ribbon label and the selected Yearly plan card's filled
+  /// radio checkmark). One byte off [richCream] (`#f2efe6`) in the source
+  /// file; kept as its own token per this file's precedent of preserving
+  /// literal per-use distinctions (see [trailWhereYouStartedText]).
+  static const Color premiumOnSageText = Color(0xFFF4F0E6);
+
+  /// `#7a8d5a` / `#5f7444` - the Premium screen's "Best value · save 42%"
+  /// ribbon background gradient (155deg).
+  static const Color premiumRibbonBgLight = Color(0xFF7A8D5A);
+  static const Color premiumRibbonBgDark = Color(0xFF5F7444);
+
+  /// `#7a8d5a` - the Premium screen's "Stone styles" row icon's middle bar.
+  /// Numerically identical to [premiumRibbonBgLight] (same source hex) but
+  /// kept as its own token since the two mark unrelated things, per this
+  /// file's own precedent (see [achievedTierIconBg]).
+  static const Color premiumStoneStylesMidBar = Color(0xFF7A8D5A);
+
+  /// rgba(120,108,88,.22) - the Premium screen's unselected (Monthly) plan
+  /// card border.
+  static const Color premiumUnselectedCardBorder = Color(0x38786C58);
+
+  /// `#c4bbaa` - the Premium screen's footer link-row dot separators.
+  static const Color premiumFooterDotColor = Color(0xFFC4BBAA);
 }

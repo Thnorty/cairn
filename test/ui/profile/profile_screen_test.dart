@@ -8,6 +8,7 @@ import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/completion_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
+import 'package:cairn/src/ui/premium/premium_screen.dart';
 import 'package:cairn/src/ui/profile/profile_screen.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
@@ -267,8 +268,8 @@ void main() {
     });
 
     testProfileWidgets(
-        'renders the Cairn Premium row and tapping it shows a coming-soon '
-        'snackbar rather than navigating anywhere', (tester) async {
+        'renders the Cairn Premium row and tapping it navigates to the '
+        'Premium screen', (tester) async {
       final db = await pumpProfile(
         tester,
         clock: FixedClock(d(2026, 7, 10)),
@@ -284,8 +285,7 @@ void main() {
       await tester.tap(find.text('Cairn Premium'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Coming soon'), findsOneWidget);
-      expect(find.byType(ProfileScreen), findsOneWidget);
+      expect(find.byType(PremiumScreen), findsOneWidget);
     });
 
     testProfileWidgets(

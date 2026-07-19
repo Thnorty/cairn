@@ -380,13 +380,13 @@ abstract class AppLocalizations {
   /// **'You\'ve used all {count, plural, one{1 free AI proof} other{{count} free AI proofs}} for today. This stone is ready - it\'ll settle onto your cairn as soon as your proofs reset.'**
   String dailyLimitBody(num count);
 
-  /// Caption pill on the daily-limit screen.
+  /// Caption pill on the daily-limit screen. Reused verbatim (identical literal English text and meaning) as the lead clause of the Stats screen's daily-proofs card caption, 'Resets at midnight · Go unlimited', rather than a duplicate key.
   ///
   /// In en, this message translates to:
   /// **'Resets at midnight'**
   String get resetsAtMidnight;
 
-  /// Primary footer button on the daily-limit screen (premium upsell).
+  /// Primary footer button on the daily-limit screen (premium upsell). Reused verbatim as the tappable Premium-upsell link on the Stats screen's daily-proofs card caption, 'Resets at midnight · Go unlimited', rather than a duplicate key.
   ///
   /// In en, this message translates to:
   /// **'Go unlimited'**
@@ -800,7 +800,7 @@ abstract class AppLocalizations {
   /// **'Privacy'**
   String get profilePrivacyRow;
 
-  /// Row label in the Profile screen's settings list. A navigational placeholder for now - later phases wire a real destination.
+  /// Row label in the Profile screen's settings list. A navigational placeholder for now - later phases wire a real destination. Reused verbatim as the Premium screen's own footer 'Restore purchase' link (identical text/meaning), rather than a duplicate key.
   ///
   /// In en, this message translates to:
   /// **'Restore purchase'**
@@ -865,6 +865,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your first stone starts the trail.'**
   String get trailEmptyTrailBody;
+
+  /// Small all-caps eyebrow label above the 'Stats' title on the Stats screen (Cairn Stats.dc.html), e.g. 'YOUR GROUND' above 'Stats'. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime. The screen's own title reuses navStats ('Stats') rather than a duplicate key, the same pattern profileHeaderLabel's screen reuses navYou.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR GROUND'**
+  String get statsHeaderEyebrow;
+
+  /// Caption under the Stats screen's 'stones placed' top stat tile, e.g. '248' above 'Stones placed'.
+  ///
+  /// In en, this message translates to:
+  /// **'Stones placed'**
+  String get statsStonesPlacedLabel;
+
+  /// Caption under the Stats screen's 'cairns built' top stat tile, e.g. '6' above 'Cairns built'. Counts only capped (fully finished, 10-stone) cairns across active tasks - a growing or broken cairn does not count as 'built'.
+  ///
+  /// In en, this message translates to:
+  /// **'Cairns built'**
+  String get statsCairnsBuiltLabel;
+
+  /// Heading on the Stats screen's daily-proofs card.
+  ///
+  /// In en, this message translates to:
+  /// **'Proofs used today'**
+  String get statsProofsUsedTodayLabel;
+
+  /// Trailing count on the Stats screen's daily-proofs card, e.g. '3 of 5'. The canonical design bolds just the 'used' number (matching Home's own 'N of M done' summary, tasksDoneCount), but is rendered here in one uniform style, the same simplification tasksDoneCount's own Home usage already makes.
+  ///
+  /// In en, this message translates to:
+  /// **'{used} of {cap}'**
+  String statsProofsUsedCount(int used, int cap);
+
+  /// Heading on the Stats screen's weekly bar-chart card. The trailing 'N of M done' summary next to it reuses tasksDoneCount rather than a duplicate key: identical ICU shape, e.g. '19 of 21 done'.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get statsThisWeekLabel;
+
+  /// All-caps section label above the Stats screen's list of active per-task streaks. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'CURRENT STREAKS'**
+  String get statsCurrentStreaksLabel;
+
+  /// Trailing count on a Stats screen current-streak row, e.g. '9 days'.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, one{1 day} other{{days} days}}'**
+  String statsStreakDaysCount(num days);
+
+  /// Calm empty-state line shown in place of the current-streaks list when no active task has a live streak of at least one day. Not part of the canonical Cairn Stats.dc.html design (which has no such example) - this exact wording was specified as the state's copy since no static mockup covers it, the same scope note trailEmptyTrailBody's doc comment makes for its own screen.
+  ///
+  /// In en, this message translates to:
+  /// **'No active streaks yet'**
+  String get statsNoActiveStreaksLabel;
+
+  /// Title of the Stats screen's locked 'Deeper insights' Premium upsell card. Reused verbatim (identical literal text and meaning) as the Premium screen's own 'Deeper insights' value-row title, rather than a duplicate key.
+  ///
+  /// In en, this message translates to:
+  /// **'Deeper insights'**
+  String get statsDeeperInsightsTitle;
+
+  /// Subtitle of the Stats screen's locked 'Deeper insights' Premium upsell card. Reused verbatim as the Premium screen's own 'Deeper insights' value-row subtitle, rather than a duplicate key.
+  ///
+  /// In en, this message translates to:
+  /// **'Consistency curves, best times of day, rank projections.'**
+  String get statsDeeperInsightsSubtitle;
+
+  /// All-caps badge on the Stats screen's locked 'Deeper insights' card. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'PREMIUM'**
+  String get statsPremiumBadge;
+
+  /// Snackbar shown when tapping the Stats screen's 'Go unlimited' link or its 'Deeper insights' card, both Premium affordances that are out of scope for this phase (post-MVP Premium) and are deliberate no-ops-for-now rather than a fake/invented flow - same pattern as profileComingSoonSnackbar for the Profile screen's own Premium affordances.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get statsComingSoonSnackbar;
+
+  /// All-caps eyebrow label above the headline on the Premium screen (Cairn Premium.dc.html), under its small 3-stone crest. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'CAIRN PREMIUM'**
+  String get premiumEyebrow;
+
+  /// Headline on the Premium screen's crest. The canonical design hard-wraps this across two lines with a <br> at a fixed mockup width ('Keep every stone,' / 'on every peak'); reproduced here as one sentence and left to wrap naturally at whatever width the real device renders, rather than baking in a manual line break - the same treatment every other headline in this catalogue gets (e.g. emptyTodayTitle, dailyLimitTitle).
+  ///
+  /// In en, this message translates to:
+  /// **'Keep every stone, on every peak'**
+  String get premiumHeadline;
+
+  /// Title of the first row in the Premium screen's value list.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited AI proofs'**
+  String get premiumValueUnlimitedProofsTitle;
+
+  /// Subtitle of the first row in the Premium screen's value list.
+  ///
+  /// In en, this message translates to:
+  /// **'No daily cap. Prove as many habits as you keep.'**
+  String get premiumValueUnlimitedProofsSubtitle;
+
+  /// Title of the second row in the Premium screen's value list.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud photo backup'**
+  String get premiumValueCloudBackupTitle;
+
+  /// Subtitle of the second row in the Premium screen's value list.
+  ///
+  /// In en, this message translates to:
+  /// **'Every proof photo saved and restorable on any phone.'**
+  String get premiumValueCloudBackupSubtitle;
+
+  /// Title of the fourth row in the Premium screen's value list.
+  ///
+  /// In en, this message translates to:
+  /// **'Home-screen widgets'**
+  String get premiumValueWidgetsTitle;
+
+  /// Subtitle of the fourth row in the Premium screen's value list.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cairn on your home screen. Tap to prove.'**
+  String get premiumValueWidgetsSubtitle;
+
+  /// Title of the fifth row in the Premium screen's value list.
+  ///
+  /// In en, this message translates to:
+  /// **'Stone styles'**
+  String get premiumValueStoneStylesTitle;
+
+  /// Subtitle of the fifth row in the Premium screen's value list. The design's own copy uses an em dash (U+2014 between 'basalt' and 'make your cairn yours'); CLAUDE.md bans that character, so it is replaced here with a period, splitting the line into two short sentences rather than restoring the dash.
+  ///
+  /// In en, this message translates to:
+  /// **'Slate, granite, basalt. Make your cairn yours.'**
+  String get premiumValueStoneStylesSubtitle;
+
+  /// Title of the Premium screen's Yearly plan card (selected by default).
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get premiumYearlyPlanTitle;
+
+  /// Subtitle of the Premium screen's Yearly plan card.
+  ///
+  /// In en, this message translates to:
+  /// **'\$27.99/yr · \$2.33/mo'**
+  String get premiumYearlyPlanSubtitle;
+
+  /// Trailing price figure on the Premium screen's Yearly plan card.
+  ///
+  /// In en, this message translates to:
+  /// **'\$27.99'**
+  String get premiumYearlyPlanPrice;
+
+  /// Title of the Premium screen's Monthly plan card.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get premiumMonthlyPlanTitle;
+
+  /// Subtitle of the Premium screen's Monthly plan card.
+  ///
+  /// In en, this message translates to:
+  /// **'Billed every month'**
+  String get premiumMonthlyPlanSubtitle;
+
+  /// Trailing price figure on the Premium screen's Monthly plan card.
+  ///
+  /// In en, this message translates to:
+  /// **'\$3.99'**
+  String get premiumMonthlyPlanPrice;
+
+  /// Ribbon badge on the Premium screen's Yearly plan card. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'BEST VALUE · SAVE 42%'**
+  String get premiumBestValueRibbon;
+
+  /// Primary footer button on the Premium screen. Premium is post-MVP with no billing/IAP integration yet, so this is a no-op-for-now that shows premiumComingSoonSnackbar rather than starting a real trial.
+  ///
+  /// In en, this message translates to:
+  /// **'Start 7-day free trial'**
+  String get premiumStartTrialButton;
+
+  /// Caption under the Premium screen's primary trial button. Kept static (matching the Yearly default selection) rather than reflecting whichever plan card is currently selected - the canonical design shows only this one static line, and switching it to the Monthly price/cadence when that card is selected would be inventing copy the design doesn't have.
+  ///
+  /// In en, this message translates to:
+  /// **'Then \$27.99/yr · cancel anytime'**
+  String get premiumTrialSubtitle;
+
+  /// Footer link on the Premium screen. A legal-destination placeholder for now (no Terms screen exists yet) - a later phase wires a real destination.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms'**
+  String get premiumTermsLink;
+
+  /// Footer link on the Premium screen. A legal-destination placeholder for now (no Privacy screen exists yet) - a later phase wires a real destination.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get premiumPrivacyLink;
+
+  /// Snackbar shown when tapping the Premium screen's 'Start 7-day free trial' button, which is out of scope for this phase (no billing/IAP integration - Premium is presentational only) and is a deliberate no-op-for-now rather than a fake/invented purchase flow - same pattern as profileComingSoonSnackbar/statsComingSoonSnackbar for their own screens' Premium affordances.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get premiumComingSoonSnackbar;
 }
 
 class _AppLocalizationsDelegate

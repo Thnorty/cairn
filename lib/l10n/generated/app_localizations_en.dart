@@ -559,4 +559,124 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trailEmptyTrailBody => 'Your first stone starts the trail.';
+
+  @override
+  String get statsHeaderEyebrow => 'YOUR GROUND';
+
+  @override
+  String get statsStonesPlacedLabel => 'Stones placed';
+
+  @override
+  String get statsCairnsBuiltLabel => 'Cairns built';
+
+  @override
+  String get statsProofsUsedTodayLabel => 'Proofs used today';
+
+  @override
+  String statsProofsUsedCount(int used, int cap) {
+    return '$used of $cap';
+  }
+
+  @override
+  String get statsThisWeekLabel => 'This week';
+
+  @override
+  String get statsCurrentStreaksLabel => 'CURRENT STREAKS';
+
+  @override
+  String statsStreakDaysCount(num days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsNoActiveStreaksLabel => 'No active streaks yet';
+
+  @override
+  String get statsDeeperInsightsTitle => 'Deeper insights';
+
+  @override
+  String get statsDeeperInsightsSubtitle =>
+      'Consistency curves, best times of day, rank projections.';
+
+  @override
+  String get statsPremiumBadge => 'PREMIUM';
+
+  @override
+  String get statsComingSoonSnackbar => 'Coming soon';
+
+  @override
+  String get premiumEyebrow => 'CAIRN PREMIUM';
+
+  @override
+  String get premiumHeadline => 'Keep every stone, on every peak';
+
+  @override
+  String get premiumValueUnlimitedProofsTitle => 'Unlimited AI proofs';
+
+  @override
+  String get premiumValueUnlimitedProofsSubtitle =>
+      'No daily cap. Prove as many habits as you keep.';
+
+  @override
+  String get premiumValueCloudBackupTitle => 'Cloud photo backup';
+
+  @override
+  String get premiumValueCloudBackupSubtitle =>
+      'Every proof photo saved and restorable on any phone.';
+
+  @override
+  String get premiumValueWidgetsTitle => 'Home-screen widgets';
+
+  @override
+  String get premiumValueWidgetsSubtitle =>
+      'Your cairn on your home screen. Tap to prove.';
+
+  @override
+  String get premiumValueStoneStylesTitle => 'Stone styles';
+
+  @override
+  String get premiumValueStoneStylesSubtitle =>
+      'Slate, granite, basalt. Make your cairn yours.';
+
+  @override
+  String get premiumYearlyPlanTitle => 'Yearly';
+
+  @override
+  String get premiumYearlyPlanSubtitle => '\$27.99/yr · \$2.33/mo';
+
+  @override
+  String get premiumYearlyPlanPrice => '\$27.99';
+
+  @override
+  String get premiumMonthlyPlanTitle => 'Monthly';
+
+  @override
+  String get premiumMonthlyPlanSubtitle => 'Billed every month';
+
+  @override
+  String get premiumMonthlyPlanPrice => '\$3.99';
+
+  @override
+  String get premiumBestValueRibbon => 'BEST VALUE · SAVE 42%';
+
+  @override
+  String get premiumStartTrialButton => 'Start 7-day free trial';
+
+  @override
+  String get premiumTrialSubtitle => 'Then \$27.99/yr · cancel anytime';
+
+  @override
+  String get premiumTermsLink => 'Terms';
+
+  @override
+  String get premiumPrivacyLink => 'Privacy';
+
+  @override
+  String get premiumComingSoonSnackbar => 'Coming soon';
 }

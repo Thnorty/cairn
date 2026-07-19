@@ -10,6 +10,7 @@ import '../../models/proof_verdict.dart';
 import '../../providers.dart';
 import '../../repo/completion_repository.dart';
 import '../../services/stale_photo_age.dart';
+import '../premium/premium_screen.dart';
 import 'camera_capture_screen.dart';
 import 'daily_limit_screen.dart';
 import 'verify_failed_screen.dart';
@@ -166,10 +167,12 @@ Future<bool> routeToProofOutcome(
     case CompletionRejectedDailyCapReached():
       go(DailyLimitScreen(
         dailyCap: policy.dailyCap,
-        // The Premium screen is a separate, not-yet-built run (same scope
-        // decision as Home's own "New habit" button); left inert rather
-        // than inventing a destination for it.
-        onGoUnlimited: () {},
+        // Pushed via the captured `navigator`, not `openPremiumScreen`'s own
+        // `BuildContext`-based helper: this callback can fire long after the
+        // calling screen's context is gone (see this function's own doc
+        // comment on why `navigator` is captured up front).
+        onGoUnlimited: () =>
+            navigator.push(MaterialPageRoute<void>(builder: (_) => const PremiumScreen())),
         onMaybeLater: popToHome,
       ));
       return true;

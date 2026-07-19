@@ -153,6 +153,36 @@ abstract final class AppGradients {
     );
   }
 
+  /// Stats screen's weekly bar-chart fill (past/today days), 180deg
+  /// `#9aa87c -> #6d8056`.
+  static const LinearGradient statsWeekBarFill = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [AppColors.heroProgressFillStart, AppColors.sage],
+  );
+
+  /// Stats screen's locked "Deeper insights" card background, 165deg
+  /// `#ece7db -> #ddd4c2`.
+  static LinearGradient get statsLockedCardBg {
+    final (begin, end) = cssGradientAlignment(165);
+    return LinearGradient(
+      begin: begin,
+      end: end,
+      colors: const [AppColors.statsLockedCardBgLight, AppColors.statsLockedCardBgDark],
+    );
+  }
+
+  /// Premium screen's "Best value · save 42%" ribbon background, 155deg
+  /// `#7a8d5a -> #5f7444`.
+  static LinearGradient get premiumRibbonBg {
+    final (begin, end) = cssGradientAlignment(155);
+    return LinearGradient(
+      begin: begin,
+      end: end,
+      colors: const [AppColors.premiumRibbonBgLight, AppColors.premiumRibbonBgDark],
+    );
+  }
+
   /// Trail screen's scrollable-body background wash, 180deg (top to
   /// bottom) `#e9e1d3 0% -> #e7e4d4 30% -> #e8e6d6 60% -> #e6ddcd 100%`.
   static const LinearGradient trailBackground = LinearGradient(

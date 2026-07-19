@@ -192,12 +192,26 @@ class VerificationAttempts extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [Tasks, Completions, VerificationAttempts])
+/// Device-local UI settings (a simple key/value store), e.g. whether the
+/// first-launch onboarding flow has been completed. Deliberately NOT part of
+/// the sync-ready schema every other table follows: this holds per-device UI
+/// state, not user data, so it intentionally has no `user_id`, `updated_at`,
+/// `deleted_at` tombstone, or UUID-v7 primary key - see [SettingsRepository]
+/// for the accessor.
+class AppSettings extends Table {
+  TextColumn get key => text()();
+  TextColumn get value => text()();
+
+  @override
+  Set<Column> get primaryKey => {key};
+}
+
+@DriftDatabase(tables: [Tasks, Completions, VerificationAttempts, AppSettings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -215,6 +229,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await m.createTable(verificationAttempts);
+          }
+          if (from < 4) {
+            await m.createTable(appSettings);
           }
         },
       );

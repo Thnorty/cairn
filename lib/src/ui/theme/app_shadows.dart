@@ -152,4 +152,26 @@ abstract final class AppShadows {
       spreadRadius: -6,
     ),
   ];
+
+  /// Premium screen's selected (Yearly) plan card lift:
+  /// `0 12px 22px -12px rgba(90,110,60,.4)`.
+  static const List<BoxShadow> premiumSelectedPlanCard = [
+    BoxShadow(
+      color: Color(0x665A6E3C),
+      offset: Offset(0, 12),
+      blurRadius: 22,
+      spreadRadius: -12,
+    ),
+  ];
+
+  /// Premium screen's "Best value · save 42%" ribbon:
+  /// `0 4px 8px -4px rgba(90,110,60,.6)`.
+  static const List<BoxShadow> premiumRibbon = [
+    BoxShadow(
+      color: Color(0x995A6E3C),
+      offset: Offset(0, 4),
+      blurRadius: 8,
+      spreadRadius: -4,
+    ),
+  ];
 }

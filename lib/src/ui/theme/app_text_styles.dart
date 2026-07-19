@@ -485,4 +485,156 @@ abstract final class AppTextStyles {
     letterSpacing: 2,
     color: AppColors.trailWhereYouStartedText,
   );
+
+  // ---- Stats screen -----------------------------------------------------
+
+  /// 34px Zilla Slab 700 - the Stats screen's top stat tile big numbers
+  /// ("248", "6").
+  static const TextStyle statsBigNumber = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w700,
+    fontSize: 34,
+    height: 0.9,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 13.5px Work Sans 600 - a Stats screen card heading ("Proofs used
+  /// today", "This week").
+  static const TextStyle statsCardHeading = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 13.5,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 13px Work Sans 400 - the Stats screen daily-proofs card's "N of M"
+  /// trailing count.
+  static const TextStyle statsUsedOfCapLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 13,
+    color: AppColors.textMuted,
+  );
+
+  /// 12px Work Sans 400 - the Stats screen's "This week" card's "N of M
+  /// done" trailing summary.
+  static const TextStyle statsWeekSummaryLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: AppColors.textMuted,
+  );
+
+  /// 11.5px Work Sans 400 - the Stats screen daily-proofs card's "Resets at
+  /// midnight · Go unlimited" caption line.
+  static const TextStyle statsResetCaption = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 11.5,
+    color: AppColors.labelGrey,
+  );
+
+  /// 11px Work Sans 600 - the Stats screen weekly bar chart's weekday
+  /// initial labels ("M", "T", "W", ...).
+  static const TextStyle statsWeekdayLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 11,
+    color: AppColors.textFaint,
+  );
+
+  /// 13px Work Sans 600 - a Stats screen current-streak row's trailing "N
+  /// days" count.
+  static const TextStyle statsStreakDaysLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 13,
+    color: AppColors.sageText,
+  );
+
+  /// 11px Work Sans 700, 0.5px letter-spacing, uppercase - the "PREMIUM"
+  /// badge on the Stats screen's locked "Deeper insights" card. Callers
+  /// must pass already-uppercased text, same Turkish dotted-i reason as
+  /// [sectionLabel].
+  static const TextStyle statsPremiumBadgeLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w700,
+    fontSize: 11,
+    letterSpacing: 0.5,
+    color: AppColors.terracotta,
+  );
+
+  // ---- Premium screen -----------------------------------------------------
+
+  /// 11px Work Sans 700, 2.5px letter-spacing, uppercase - the Premium
+  /// screen's "CAIRN PREMIUM" eyebrow above its headline. Distinct from
+  /// [heroLabel] (11px/700/2px letter-spacing/[AppColors.heroLabelSage]):
+  /// close but not identical in the source files, faithfully kept as its
+  /// own token rather than collapsed into one. Callers must pass
+  /// already-uppercased text, same Turkish dotted-i reason as [sectionLabel].
+  static const TextStyle premiumEyebrow = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w700,
+    fontSize: 11,
+    letterSpacing: 2.5,
+    color: AppColors.sageText,
+  );
+
+  /// 28px Zilla Slab 600 - the Premium screen's "Keep every stone, on every
+  /// peak" headline.
+  static const TextStyle premiumHeadline = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w600,
+    fontSize: 28,
+    height: 1.12,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 18px Zilla Slab 600 - a Premium plan card's title ("Yearly"/"Monthly"),
+  /// selected-card colour; callers `.copyWith` the unselected ([inkDimmed])
+  /// variant.
+  static const TextStyle premiumPlanTitle = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w600,
+    fontSize: 18,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 20px Zilla Slab 700 - a Premium plan card's price, selected-card
+  /// colour; callers `.copyWith` the unselected ([inkDimmed]) variant.
+  static const TextStyle premiumPlanPrice = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w700,
+    fontSize: 20,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 10.5px Work Sans 700, 0.6px letter-spacing, uppercase - the Premium
+  /// screen's "Best value · save 42%" ribbon label. Callers must pass
+  /// already-uppercased text, same reason as [sectionLabel].
+  static const TextStyle premiumRibbonLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w700,
+    fontSize: 10.5,
+    letterSpacing: 0.6,
+    color: AppColors.premiumOnSageText,
+  );
+
+  /// 12px Work Sans 400 - the Premium screen's "Then $27.99/yr · cancel
+  /// anytime" footer subtitle under its trial button.
+  static const TextStyle premiumTrialSubtitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: AppColors.textMuted,
+  );
+
+  /// 11.5px Work Sans 400 - the Premium screen's footer "Restore purchase" /
+  /// "Terms" / "Privacy" link-row labels.
+  static const TextStyle premiumFooterLinkLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 11.5,
+    color: AppColors.labelGrey,
+  );
 }

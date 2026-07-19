@@ -170,7 +170,9 @@ void main() {
 
       await tester.tap(find.text('Stats'));
       await tester.pumpAndSettle();
-      expect(find.text('Stats - coming soon'), findsOneWidget);
+      // Stats is now the real StatsScreen (this run), not a placeholder.
+      expect(find.text('Stats - coming soon'), findsNothing);
+      expect(find.text('YOUR GROUND'), findsOneWidget);
 
       // You is now the real ProfileScreen (Phase 3), not a placeholder - a
       // fresh in-memory database has zero altitude, so it renders Pebble's
@@ -219,25 +221,21 @@ void main() {
       },
     );
 
-    testAppShellWidgets('a still-placeholder body renders with the themed style', (
-      tester,
-    ) async {
-      // Stats, not Trail: Trail is now the real TrailScreen (this run) and
-      // no longer a placeholder body - Stats is the only tab this
-      // regression check still applies to (see AppShell's own doc comment).
-      await pumpShell(tester);
+    testAppShellWidgets(
+      'the Stats screen (now real, this run - no more placeholder body '
+      'exists anywhere in AppShell) renders with the themed style',
+      (tester) async {
+        await pumpShell(tester);
 
-      await tester.tap(find.text('Stats'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Stats'));
+        await tester.pumpAndSettle();
 
-      final style = resolvedStyle(
-        tester,
-        find.text('Stats - coming soon'),
-      );
-      expectThemedNotFallback(style);
-      expect(style.fontFamily, AppTextStyles.body.fontFamily);
-      expect(style.color, AppTextStyles.body.color);
-    });
+        final style = resolvedStyle(tester, find.text('YOUR GROUND'));
+        expectThemedNotFallback(style);
+        expect(style.fontFamily, AppTextStyles.sectionLabel.fontFamily);
+        expect(style.color, AppTextStyles.sectionLabel.color);
+      },
+    );
 
     testAppShellWidgets('an active tab label renders with the themed style', (
       tester,

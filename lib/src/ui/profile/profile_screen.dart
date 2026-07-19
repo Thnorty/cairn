@@ -8,6 +8,7 @@ import '../../l10n/date_number_formatting.dart';
 import '../../providers.dart';
 import '../../services/points_service.dart';
 import '../../services/profile_service.dart';
+import '../premium/premium_screen.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
 import '../theme/app_radii.dart';
@@ -73,7 +74,7 @@ class ProfileScreen extends ConsumerWidget {
                 data: (snapshot) => _ProfileBody(
                   snapshot: snapshot,
                   onCreateAccount: showComingSoon,
-                  onPremiumTap: showComingSoon,
+                  onPremiumTap: () => openPremiumScreen(context),
                 ),
                 // The stream's first emission is effectively synchronous
                 // (see HomeService.watchToday's doc comment; ProfileService
@@ -575,9 +576,9 @@ class _AccountStatusRow extends StatelessWidget {
 class _PremiumRow extends StatelessWidget {
   const _PremiumRow({required this.onTap});
 
-  /// Premium is post-MVP (see CLAUDE.md's phase plan); for now this is a
-  /// no-op-for-now that shows a "coming soon" snackbar rather than building
-  /// the real Premium screen here.
+  /// Opens [PremiumScreen] (see `openPremiumScreen`). Premium itself is
+  /// post-MVP and purely presentational (no billing/IAP integration yet -
+  /// see CLAUDE.md's phase plan), but the navigation here is real.
   final VoidCallback onTap;
 
   @override

@@ -21,6 +21,7 @@ import 'services/proof_flow.dart';
 import 'services/proof_retry_service.dart';
 import 'services/proof_verifier.dart';
 import 'services/recent_photo_library.dart';
+import 'services/stats_service.dart';
 import 'services/streak_service.dart';
 import 'services/supabase_proof_verifier.dart';
 import 'services/trail_service.dart';
@@ -183,6 +184,26 @@ final trailSnapshotProvider = StreamProvider<TrailSnapshot>((ref) {
   return ref.watch(trailServiceProvider).watchTrail(
         selectedTaskId: ref.watch(selectedTrailTaskIdProvider),
       );
+});
+
+final statsServiceProvider = Provider<StatsService>((ref) {
+  return StatsService(
+    ref.watch(databaseProvider),
+    ref.watch(taskRepositoryProvider),
+    ref.watch(completionRepositoryProvider),
+    ref.watch(occurrenceGeneratorProvider),
+    ref.watch(streakServiceProvider),
+    ref.watch(clockProvider),
+    policy: ref.watch(proofPolicyProvider),
+  );
+});
+
+/// Drives the Stats screen. Recomputes automatically on every relevant
+/// database change (see [StatsService.watchStats]'s doc comment, the same
+/// reactivity recipe as [homeSnapshotProvider]/[profileSnapshotProvider]/
+/// [trailSnapshotProvider]).
+final statsSnapshotProvider = StreamProvider<StatsSnapshot>((ref) {
+  return ref.watch(statsServiceProvider).watchStats();
 });
 
 // Photo-library metadata is tried first (its timestamp is harder to forge
