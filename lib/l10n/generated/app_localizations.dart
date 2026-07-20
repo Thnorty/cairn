@@ -848,6 +848,12 @@ abstract class AppLocalizations {
   /// **'Restore purchase'**
   String get profileRestorePurchaseRow;
 
+  /// Row label in the Profile screen's settings list that pushes HowCairnsWorkScreen. Moved here from the Trail screen header's '?' info button per this consistency pass (see trail_screen.dart's and profile_screen.dart's own doc comments) - same destination screen, new entry point.
+  ///
+  /// In en, this message translates to:
+  /// **'How cairns work'**
+  String get profileHowCairnsWorkRow;
+
   /// Small all-caps eyebrow label above the selected task's title on the Trail screen (Cairn Trail.dc.html), e.g. 'TRAIL OF' above 'Read 20 pages'. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
   ///
   /// In en, this message translates to:
@@ -907,12 +913,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your first stone starts the trail.'**
   String get trailEmptyTrailBody;
-
-  /// Accessible (semantics) label for the small circular '?' info button on the Trail screen's header that opens the How Cairns Work explainer sheet. No visible text of its own - an icon-only affordance, same reasoning as newHabitButton's reuse as the '+' chip's semantic label.
-  ///
-  /// In en, this message translates to:
-  /// **'How cairns work'**
-  String get howCairnsWorkInfoButtonLabel;
 
   /// All-caps header label on the How Cairns Work explainer sheet (Cairn How Cairns Work.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel/verificationHeaderLabel; do not uppercase at runtime.
   ///
@@ -1303,6 +1303,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Signing in to an existing account is coming soon.'**
   String get onboardingSignInComingSoonSnackbar;
+
+  /// Title on the onboarding How It Works screen (step 2 of 3 in the first-launch flow), which shows the three step cards (Do the thing / Snap a photo / AI verifies) moved here from the welcome screen (step 1) per this consistency pass. No dedicated .dc.html exists for this screen: it reuses Cairn Onboarding.dc.html's own step-card content and copy verbatim, just relocated onto its own indicated step.
+  ///
+  /// In en, this message translates to:
+  /// **'How it works'**
+  String get onboardingHowItWorksTitle;
+
+  /// Primary footer button on the onboarding How It Works screen (step 2 of 3); advances to the verification screen (step 3).
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get onboardingContinueButton;
 
   /// Title on the onboarding verification screen (Cairn Onboarding Verification.dc.html), the second and final screen of the first-launch onboarding flow.
   ///

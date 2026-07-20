@@ -2,6 +2,7 @@ import 'package:cairn/l10n/generated/app_localizations.dart';
 import 'package:cairn/src/clock.dart';
 import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/ui/onboarding/onboarding_flow.dart';
+import 'package:cairn/src/ui/onboarding/onboarding_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../helpers.dart';
 
 /// Widget tests for the onboarding welcome screen (`Cairn Onboarding.dc.html`,
-/// screen 1 of 2), exercised through the real [OnboardingFlow] - the same
+/// step 1 of 3), exercised through the real [OnboardingFlow] - the same
 /// nested-`Navigator` host the app actually uses - rather than
 /// `MaterialApp(home: OnboardingWelcomeScreen())` directly, so "Start
 /// climbing" is asserted against real internal navigation, not a bare
@@ -38,8 +39,9 @@ void main() {
 
   group('content', () {
     testWidgets(
-        'renders both headline lines, the subhead, the clarifier line, all '
-        'three step cards, and both buttons', (tester) async {
+        'renders both headline lines, the subhead, the clarifier line, '
+        'both buttons, and dot 1 active - the three step cards moved to the '
+        'How It Works screen are not shown here', (tester) async {
       await pumpWelcome(tester);
 
       expect(find.text("Don't just check it off."), findsOneWidget);
@@ -58,31 +60,32 @@ void main() {
         findsOneWidget,
       );
 
-      // Step cards: bold lead + muted remainder compose into one Text.rich
-      // whose flattened text is "<lead> <body>", so find.textContaining
-      // (not find.text) is the right matcher here - same convention
-      // verify_result_screen_test.dart uses for its own lead/body banners.
-      expect(find.textContaining('Do the thing.'), findsOneWidget);
-      expect(find.textContaining('Your habit, in the real world.'), findsOneWidget);
-      expect(find.textContaining('Snap a photo.'), findsOneWidget);
-      expect(find.textContaining('A quick proof of what you did.'), findsOneWidget);
-      expect(find.textContaining('AI verifies.'), findsOneWidget);
-      expect(find.textContaining('A stone settles on your cairn.'), findsOneWidget);
+      // The step cards (Do the thing / Snap a photo / AI verifies) live on
+      // the How It Works screen now, not here.
+      expect(find.textContaining('Do the thing.'), findsNothing);
+      expect(find.textContaining('Snap a photo.'), findsNothing);
+      expect(find.textContaining('AI verifies.'), findsNothing);
 
       expect(find.text('Start climbing'), findsOneWidget);
       expect(find.text('I already have an account'), findsOneWidget);
+
+      // Progress indicator with dot 0 (of 3) active; no back control on
+      // this first step.
+      final dots = tester.widget<OnboardingProgressDots>(find.byType(OnboardingProgressDots));
+      expect(dots.activeIndex, 0);
+      expect(find.byKey(const ValueKey('onboarding-back-button')), findsNothing);
     });
   });
 
   group('navigation', () {
-    testWidgets('"Start climbing" pushes the verification screen on the internal Navigator',
+    testWidgets('"Start climbing" pushes the How It Works screen (step 2) on the internal Navigator',
         (tester) async {
       await pumpWelcome(tester);
 
       await tester.tap(find.text('Start climbing'));
       await tester.pumpAndSettle();
 
-      expect(find.text('How verification works'), findsOneWidget);
+      expect(find.text('How it works'), findsOneWidget);
       expect(find.text('Start climbing'), findsNothing);
     });
   });

@@ -55,7 +55,10 @@ class StatsScreen extends ConsumerWidget {
         children: [
           const Positioned.fill(child: _StatsScreenBackground()),
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(22, 8, 22, 0),
+            // 24/8 horizontal/top inset, matching the standardized top-left
+            // header position shared by every tab screen (Home/Trail/Stats/
+            // Profile) and the VerificationHeader family - this run's spec.
+            padding: const EdgeInsetsDirectional.fromSTEB(24, 8, 24, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

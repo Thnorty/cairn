@@ -1,5 +1,6 @@
 import 'package:cairn/l10n/generated/app_localizations.dart';
 import 'package:cairn/src/ui/proof/daily_limit_screen.dart';
+import 'package:cairn/src/ui/proof/verification_chrome.dart' show CloseCircleButton;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -67,5 +68,21 @@ void main() {
     ).closeButtonLabel;
     await tester.tap(find.bySemanticsLabel(closeLabel));
     expect(maybeLaterCalls, 1);
+  });
+
+  testWidgets('the close-X sits top-left, mirroring VerificationHeader', (tester) async {
+    await tester.pumpWidget(wrap(DailyLimitScreen(
+      dailyCap: 5,
+      onGoUnlimited: () {},
+      onMaybeLater: () {},
+    )));
+    await tester.pumpAndSettle();
+
+    final align = tester.widget<Align>(
+      find
+          .ancestor(of: find.byType(CloseCircleButton), matching: find.byType(Align))
+          .first,
+    );
+    expect(align.alignment, AlignmentDirectional.centerStart);
   });
 }

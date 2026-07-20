@@ -10,6 +10,7 @@ import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
 import 'package:cairn/src/ui/premium/premium_screen.dart';
 import 'package:cairn/src/ui/profile/profile_screen.dart';
+import 'package:cairn/src/ui/trail/how_cairns_work_screen.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -110,7 +111,11 @@ void main() {
       expect(find.text('Pebble'), findsWidgets); // hero title + ladder row
       expect(find.text('0 m gained'), findsOneWidget);
       expect(find.textContaining('awaiting verification'), findsNothing);
-      expect(find.text('150 m to Cairn'), findsOneWidget);
+      // Renders twice: the rank hero's own progress row, and the ladder's
+      // current-tier (Pebble) row, which reuses the same
+      // rank.metresToNext/nextTier data (Part 5's mini-trail redesign - see
+      // profile_screen.dart's own doc comment).
+      expect(find.text('150 m to Cairn'), findsNWidgets(2));
     });
 
     testProfileWidgets(
@@ -181,8 +186,10 @@ void main() {
 
   group('rank ladder', () {
     testProfileWidgets(
-        'marks the correct tier "You\'re here" and shows "N m to next" for '
-        'the immediate-next tier only', (tester) async {
+        'the current tier\'s row shows "N m to next tier" progress text '
+        '(not "You\'re here" - that now lives in the emphasized node, see '
+        'profile_screen.dart\'s Part 5 doc comment) and other rows show "N '
+        'm to next" for the immediate-next tier only', (tester) async {
       final db = await pumpProfile(
         tester,
         clock: FixedClock(d(2026, 7, 10)),
@@ -197,7 +204,10 @@ void main() {
       );
       addTearDown(db.close);
 
-      expect(find.text("You're here"), findsOneWidget);
+      // The current tier (Cairn) is not Summit, so its row shows progress
+      // text instead of "You're here" - the mini-trail's emphasized node
+      // already conveys "you are here" visually.
+      expect(find.text("You're here"), findsNothing);
       // Ridge (the immediate-next tier) shows its own absolute threshold
       // plus " · next", matching the design's own "1,100 m · next" example -
       // not a delta from the current total.
@@ -208,13 +218,14 @@ void main() {
       expect(find.text('2,400 m'), findsOneWidget); // Bluff
       expect(find.text('5,000 m'), findsOneWidget); // Peak
       expect(find.text('8,849 m'), findsOneWidget); // Summit
-      // The rank hero's own progress row uses a *delta* to the next tier
-      // (450 - 171 = 279), distinct from the ladder row's absolute
-      // threshold above - both are exercised here.
-      expect(find.text('279 m to Ridge'), findsOneWidget);
+      // "279 m to Ridge" (450 - 171) now renders twice: the rank hero's own
+      // progress row, and the ladder's current-tier row, which reuses the
+      // same rank.metresToNext/nextTier data per this run's spec.
+      expect(find.text('279 m to Ridge'), findsNWidgets(2));
     });
 
-    testProfileWidgets('at Summit there is no "m to next"', (tester) async {
+    testProfileWidgets('at Summit there is no "m to next", and the current '
+        'row falls back to "You\'re here"', (tester) async {
       final db = await pumpProfile(
         tester,
         clock: FixedClock(d(2026, 7, 10)),
@@ -319,6 +330,28 @@ void main() {
       await tester.tap(find.text('Restore purchase'));
       await tester.pumpAndSettle();
       expect(find.text('Coming soon'), findsNothing);
+    });
+
+    testProfileWidgets(
+        'renders the How cairns work row and tapping it navigates to '
+        'HowCairnsWorkScreen (moved here from the Trail header\'s "?" '
+        'button)', (tester) async {
+      final db = await pumpProfile(
+        tester,
+        clock: FixedClock(d(2026, 7, 10)),
+        seed: (db, taskRepo) async {},
+      );
+      addTearDown(db.close);
+
+      expect(find.text('How cairns work'), findsOneWidget);
+      expect(find.byType(HowCairnsWorkScreen), findsNothing);
+
+      await tester.ensureVisible(find.text('How cairns work'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('How cairns work'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HowCairnsWorkScreen), findsOneWidget);
     });
   });
 

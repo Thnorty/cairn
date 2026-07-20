@@ -2,21 +2,28 @@ import 'package:flutter/material.dart' show Colors, Scaffold;
 import 'package:flutter/widgets.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
-import '../proof/verification_chrome.dart'
-    show SealCheckmarkIcon, percentPositionToAlignment;
+import '../proof/verification_chrome.dart' show percentPositionToAlignment;
 import '../theme/app_colors.dart';
-import '../theme/app_gradients.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/screen_background.dart';
 import '../widgets/buttons.dart';
 import '../widgets/cairn_stack.dart';
-import '../widgets/card_surface.dart';
+import 'onboarding_header.dart';
 
-/// `Cairn Onboarding.dc.html`: the first of the two first-launch onboarding
-/// screens, hosted (along with [OnboardingVerificationScreen]) inside
+/// `Cairn Onboarding.dc.html`: step 1 of 3 in the first-launch onboarding
+/// flow (Welcome -\> How It Works -\> Verify - see `onboarding_flow.dart`'s
+/// doc comment), hosted (along with the other two steps) inside
 /// [OnboardingFlow]'s own nested `Navigator` - never pushed on the app's
 /// root navigator, so completing onboarding can cleanly swap the whole
 /// subtree for [AppShell] (see that widget's doc comment).
+///
+/// The canonical design's single screen originally combined this hero/
+/// headline content with the three "Do the thing / Snap a photo / AI
+/// verifies" step cards below it. This run's spec splits those cards out
+/// into their own step 2 screen ([OnboardingHowItWorksScreen]) so the flow
+/// reads as three short, individually-indicated steps rather than one
+/// longer one plus a bare second screen - an authorized deviation from the
+/// single-screen source file, not invented UI (see this run's report).
 class OnboardingWelcomeScreen extends StatelessWidget {
   const OnboardingWelcomeScreen({
     super.key,
@@ -24,7 +31,8 @@ class OnboardingWelcomeScreen extends StatelessWidget {
     required this.onAlreadyHaveAccount,
   });
 
-  /// Pushes the verification screen on [OnboardingFlow]'s nested Navigator.
+  /// Pushes the How It Works screen (step 2) on [OnboardingFlow]'s nested
+  /// Navigator.
   final VoidCallback onStartClimbing;
 
   /// Shows the "coming soon" snackbar (Phase 4 accounts are out of scope).
@@ -54,6 +62,13 @@ class OnboardingWelcomeScreen extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
+              // No back control on this first step - see this run's spec
+              // ("no back control (it's first)"). OnboardingHeader itself
+              // is what keeps the indicator's y position identical across
+              // all three steps: it renders a same-size spacer here in
+              // place of a back button rather than this screen omitting
+              // the header row outright.
+              const OnboardingHeader(activeIndex: 0),
               Expanded(
                 // LayoutBuilder + a minHeight-constrained inner Column
                 // vertically centers this screen's content when it's
@@ -97,26 +112,6 @@ class OnboardingWelcomeScreen extends StatelessWidget {
                             l10n.onboardingWelcomeClarifier,
                             textAlign: TextAlign.center,
                             style: AppTextStyles.onboardingClarifier,
-                          ),
-                          const SizedBox(height: 28),
-                          _StepCard(
-                            leading: const _NumberCircle(number: '1'),
-                            title: l10n.onboardingStep1Title,
-                            body: l10n.onboardingStep1Body,
-                          ),
-                          const SizedBox(height: 12),
-                          _StepCard(
-                            leading: const _NumberCircle(number: '2'),
-                            title: l10n.onboardingStep2Title,
-                            body: l10n.onboardingStep2Body,
-                          ),
-                          const SizedBox(height: 12),
-                          _StepCard(
-                            sage: true,
-                            leading: const _CheckCircle(),
-                            title: l10n.onboardingStep3Title,
-                            body: l10n.onboardingStep3Body,
-                            bodyColor: AppColors.sageReasonBody,
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -169,126 +164,6 @@ class _Headline extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// One of the three step rows: a leading circle (a numbered stone or, for
-/// step 3, the sage check circle) plus a bold-lead/muted-remainder line,
-/// matching `ReasonBanner`'s own lead/body composition elsewhere in this
-/// app. [sage] switches the whole card to the design's flat sage-tinted
-/// treatment for step 3 ("AI verifies.").
-class _StepCard extends StatelessWidget {
-  const _StepCard({
-    required this.leading,
-    required this.title,
-    required this.body,
-    this.sage = false,
-    this.bodyColor = AppColors.emptyStateBodyText,
-  });
-
-  final Widget leading;
-  final String title;
-  final String body;
-  final bool sage;
-  final Color bodyColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final content = Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        leading,
-        const SizedBox(width: 14),
-        Expanded(
-          child: Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: '$title ',
-                  style: AppTextStyles.onboardingStepLead,
-                ),
-                TextSpan(
-                  text: body,
-                  style: AppTextStyles.onboardingStepBody.copyWith(
-                    color: bodyColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-
-    if (!sage) {
-      // ParchmentPill's default 16/14 horizontal/vertical padding matches
-      // the design's own `padding:14px 16px` for these cards exactly.
-      return ParchmentPill(radius: 22, child: content);
-    }
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsetsDirectional.symmetric(
-        horizontal: 16,
-        vertical: 14,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.onboardingSageCardBg,
-        border: Border.all(color: AppColors.onboardingSageCardBorder),
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: content,
-    );
-  }
-}
-
-/// The dark "1"/"2" numbered stone circle leading the first two step cards.
-class _NumberCircle extends StatelessWidget {
-  const _NumberCircle({required this.number});
-
-  final String number;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 34,
-      height: 34,
-      decoration: const BoxDecoration(
-        color: AppColors.inkStrong,
-        shape: BoxShape.circle,
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        number,
-        style: const TextStyle(
-          fontFamily: AppFontFamilies.zillaSlab,
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-          color: AppColors.heroInk,
-        ),
-      ),
-    );
-  }
-}
-
-/// The sage gradient check circle leading the third ("AI verifies.") step
-/// card - the same checkmark glyph/path the verification-result screen's
-/// own sage seal uses.
-class _CheckCircle extends StatelessWidget {
-  const _CheckCircle();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 34,
-      height: 34,
-      decoration: BoxDecoration(
-        gradient: AppGradients.sageCircleSelected,
-        shape: BoxShape.circle,
-      ),
-      alignment: Alignment.center,
-      child: const SealCheckmarkIcon(size: 17, color: AppColors.sageChipText),
     );
   }
 }

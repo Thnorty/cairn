@@ -360,6 +360,15 @@ abstract final class AppColors {
   /// rgba(122,141,96,.3) - the Cairn Premium row's border.
   static const Color premiumBorder = Color(0x4D7A8D60);
 
+  /// rgba(120,108,88,.22) - the Profile rank ladder's mini-vertical-trail
+  /// connecting line where it runs through not-yet-reached tiers (Part 5
+  /// consistency-pass redesign: a winding-trail metaphor in place of the
+  /// original flat radio-button list - see profile_screen.dart's own doc
+  /// comment on this deliberate `Cairn Profile.dc.html` deviation). The
+  /// reached segment (up to and including the current tier) reuses [sage]
+  /// rather than a new token.
+  static const Color rankTrailLineFaint = Color(0x38786C58);
+
   /// `#f4efe4` / `#e6decb` - the Cairn Premium row's background gradient
   /// (160deg).
   static const Color premiumBgLight = Color(0xFFF4EFE4);

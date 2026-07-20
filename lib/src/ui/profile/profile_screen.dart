@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart'
-    show Colors, Scaffold, ScaffoldMessenger, SnackBar, Text;
+    show Colors, MaterialPageRoute, Scaffold, ScaffoldMessenger, SnackBar, Text;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,6 +14,7 @@ import '../theme/app_gradients.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
+import '../trail/how_cairns_work_screen.dart';
 import '../widgets/tab_icons.dart';
 
 /// The Profile ("You") screen (`Cairn Profile.dc.html`): the user's rank
@@ -58,7 +59,10 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(22, 8, 22, 0),
+        // 24/8 horizontal/top inset, matching the standardized top-left
+        // header position shared by every tab screen (Home/Trail/Stats/
+        // Profile) and the VerificationHeader family - this run's spec.
+        padding: const EdgeInsetsDirectional.fromSTEB(24, 8, 24, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -296,6 +300,18 @@ class _ProgressToNext extends StatelessWidget {
 
 enum _TierRowStatus { achieved, current, future }
 
+/// The Profile rank ladder, redesigned (Part 5 of this consistency pass) as
+/// a mini vertical trail rather than the original flat radio-button-style
+/// list of circles: a single connecting line runs down through every
+/// tier's node, solid sage for the reached segment (up to and including the
+/// current tier) and faint for the segment through the not-yet-reached
+/// tiers, so the panel reads as a journey already underway rather than a
+/// selection list. A deliberate, spec-authorized deviation from
+/// `Cairn Profile.dc.html`'s own flat ladder (see this run's report) - the
+/// underlying data is unchanged: the same [RankTier.values] order (Pebble
+/// at top, Summit at bottom) and the same rank/threshold/metres-to-next
+/// computation [_RankHeroCard]'s progress row already uses, never
+/// recomputed ad hoc here.
 class _RankLadderPanel extends StatelessWidget {
   const _RankLadderPanel({required this.rank});
 
@@ -311,7 +327,7 @@ class _RankLadderPanel extends StatelessWidget {
     return _PanelSurface(
       child: Column(
         children: [
-          for (var i = 0; i < tiers.length; i++) ...[
+          for (var i = 0; i < tiers.length; i++)
             _LadderRow(
               tier: tiers[i],
               status: i < currentIndex
@@ -320,11 +336,21 @@ class _RankLadderPanel extends StatelessWidget {
                       ? _TierRowStatus.current
                       : _TierRowStatus.future,
               isImmediateNext: i == currentIndex + 1,
+              isFirst: i == 0,
+              isLast: i == tiers.length - 1,
+              // The connecting line's own solid/faint split: a segment
+              // reaching down INTO row i (its top half) is solid whenever
+              // row i itself is achieved-or-current; a segment leading OUT
+              // of row i (its bottom half) is solid only when row i is
+              // strictly achieved (below the current tier's row, the line
+              // has already crossed into "future" territory - see this
+              // widget's own doc comment).
+              topConnectorSolid: i <= currentIndex,
+              bottomConnectorSolid: i < currentIndex,
+              rank: rank,
               l10n: l10n,
               locale: locale,
             ),
-            if (i != tiers.length - 1) const _HairlineDivider(),
-          ],
         ],
       ),
     );
@@ -336,6 +362,11 @@ class _LadderRow extends StatelessWidget {
     required this.tier,
     required this.status,
     required this.isImmediateNext,
+    required this.isFirst,
+    required this.isLast,
+    required this.topConnectorSolid,
+    required this.bottomConnectorSolid,
+    required this.rank,
     required this.l10n,
     required this.locale,
   });
@@ -343,8 +374,25 @@ class _LadderRow extends StatelessWidget {
   final RankTier tier;
   final _TierRowStatus status;
   final bool isImmediateNext;
+  final bool isFirst;
+  final bool isLast;
+  final bool topConnectorSolid;
+  final bool bottomConnectorSolid;
+  final Rank rank;
   final AppLocalizations l10n;
   final Locale locale;
+
+  /// Fixed per-row height so every connector half-segment (and therefore
+  /// the whole trail line) lines up node-to-node regardless of each row's
+  /// own text/trailing-label height.
+  static const double _rowHeight = 52;
+
+  /// Fixed width of the leading node column: every node (achieved/future's
+  /// small circle, the current tier's larger emphasized one) centers
+  /// within this same column, so the vertical line - drawn through that
+  /// column's horizontal center - passes through every node's own center
+  /// no matter its size.
+  static const double _railWidth = 26;
 
   @override
   Widget build(BuildContext context) {
@@ -360,8 +408,20 @@ class _LadderRow extends StatelessWidget {
 
     final Widget trailing;
     if (status == _TierRowStatus.current) {
+      // The emphasized node already reads "you are here" (this run's
+      // spec), so this row's trailing label carries the same "N m to
+      // <next tier>" progress text the rank hero's own progress row shows
+      // - reusing rank.metresToNext/rank.nextTier rather than the plain
+      // "You're here" caption the old flat ladder used, per this run's
+      // spec ("keep the existing progress text"). At Summit there is no
+      // next tier to progress toward, so this falls back to
+      // profileYoureHereLabel exactly as the old ladder always showed.
+      final next = rank.nextTier;
+      final metresToNext = rank.metresToNext;
       trailing = Text(
-        l10n.profileYoureHereLabel,
+        next != null && metresToNext != null
+            ? l10n.profileMetresToNextTier(formatMetresNumber(metresToNext, locale), next.label)
+            : l10n.profileYoureHereLabel,
         style: AppTextStyles.ladderMetresLabel.copyWith(
           fontWeight: FontWeight.w600,
           color: AppColors.sageText,
@@ -377,28 +437,63 @@ class _LadderRow extends StatelessWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsetsDirectional.symmetric(vertical: 13),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return SizedBox(
+      height: _rowHeight,
+      child: Stack(
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _TierIcon(status: status),
-              const SizedBox(width: 12),
-              Text(tier.label, style: labelStyle),
-            ],
+          if (!isFirst)
+            Positioned(
+              top: 0,
+              height: _rowHeight / 2,
+              left: _railWidth / 2 - 1,
+              width: 2,
+              child: _TrailConnector(solid: topConnectorSolid),
+            ),
+          if (!isLast)
+            Positioned(
+              top: _rowHeight / 2,
+              height: _rowHeight / 2,
+              left: _railWidth / 2 - 1,
+              width: 2,
+              child: _TrailConnector(solid: bottomConnectorSolid),
+            ),
+          Positioned.fill(
+            child: Row(
+              children: [
+                SizedBox(width: _railWidth, child: Center(child: _TierNode(status: status))),
+                const SizedBox(width: 12),
+                Expanded(child: Text(tier.label, style: labelStyle)),
+                trailing,
+              ],
+            ),
           ),
-          trailing,
         ],
       ),
     );
   }
 }
 
-class _TierIcon extends StatelessWidget {
-  const _TierIcon({required this.status});
+/// One half-segment of the mini-trail's connecting line, between one
+/// node's center and the next. [solid] sage marks the reached path (up to
+/// and including the current tier); the faint variant marks the path
+/// through tiers not yet reached - see [_RankLadderPanel]'s doc comment.
+class _TrailConnector extends StatelessWidget {
+  const _TrailConnector({required this.solid});
+
+  final bool solid;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(color: solid ? AppColors.sage : AppColors.rankTrailLineFaint);
+  }
+}
+
+/// A tier's own node on the mini-trail: a small solid sage dot once
+/// achieved, a larger emphasized sage node with a soft glow ring and a tiny
+/// mountain glyph for the current tier ("you are here"), or a small faint
+/// hollow outline for a tier not yet reached.
+class _TierNode extends StatelessWidget {
+  const _TierNode({required this.status});
 
   final _TierRowStatus status;
 
@@ -407,35 +502,34 @@ class _TierIcon extends StatelessWidget {
     switch (status) {
       case _TierRowStatus.achieved:
         return Container(
-          width: 26,
-          height: 26,
-          decoration: const BoxDecoration(
-            color: AppColors.achievedTierIconBg,
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: const _Glyph(
-            shape: _GlyphShape.check,
-            color: AppColors.sageText,
-            size: 14,
-          ),
+          width: 10,
+          height: 10,
+          decoration: const BoxDecoration(color: AppColors.sage, shape: BoxShape.circle),
         );
       case _TierRowStatus.current:
         return Container(
-          width: 26,
-          height: 26,
-          decoration: const BoxDecoration(color: AppColors.sage, shape: BoxShape.circle),
+          width: 22,
+          height: 22,
+          decoration: const BoxDecoration(
+            color: AppColors.sage,
+            shape: BoxShape.circle,
+            // The same soft glow-ring recipe a freshly-placed sage stone
+            // uses elsewhere in this app (AppColors.sageRing), reused here
+            // rather than a new token, per this run's spec ("a subtle
+            // ring/glow").
+            boxShadow: [BoxShadow(color: AppColors.sageRing, spreadRadius: 5)],
+          ),
           alignment: Alignment.center,
-          child: Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(color: AppColors.heroInk, shape: BoxShape.circle),
+          child: const _Glyph(
+            shape: _GlyphShape.mountain,
+            color: AppColors.heroMountainStroke,
+            size: 11,
           ),
         );
       case _TierRowStatus.future:
         return Container(
-          width: 26,
-          height: 26,
+          width: 10,
+          height: 10,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.futureTierBorder, width: 1.5),
@@ -715,6 +809,18 @@ class _SettingsSection extends StatelessWidget {
                 label: l10n.profileRestorePurchaseRow,
                 onTap: _noOp,
               ),
+              const _HairlineDivider(),
+              // Moved here from the Trail screen header's "?" info button
+              // per this consistency pass (see trail_screen.dart's own doc
+              // comment on the removal) - same HowCairnsWorkScreen
+              // destination, real navigation rather than a no-op.
+              _SettingsRow(
+                glyph: _GlyphShape.info,
+                label: l10n.profileHowCairnsWorkRow,
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                  builder: (_) => const HowCairnsWorkScreen(),
+                )),
+              ),
             ],
           ),
         ),
@@ -765,7 +871,7 @@ class _SettingsRow extends StatelessWidget {
 /// Which one-off stroke-icon glyph to paint on this screen. Grouped into one
 /// enum + [CustomPainter] (mirroring `TabBarIcon`'s own pattern) rather than
 /// a separate tiny painter class per icon.
-enum _GlyphShape { mountain, clockPending, check, chevronRight, bell, shield, restore }
+enum _GlyphShape { mountain, clockPending, check, chevronRight, bell, shield, restore, info }
 
 class _Glyph extends StatelessWidget {
   const _Glyph({required this.shape, required this.color, this.size = 18});
@@ -798,6 +904,7 @@ class _GlyphPainter extends CustomPainter {
         _GlyphShape.bell => 2,
         _GlyphShape.shield => 2,
         _GlyphShape.restore => 2,
+        _GlyphShape.info => 2,
       };
 
   @override
@@ -937,6 +1044,16 @@ class _GlyphPainter extends CustomPainter {
           ..lineTo(p(4, 16.5).dx, p(4, 16.5).dy)
           ..lineTo(p(7.5, 16.5).dx, p(7.5, 16.5).dy);
         canvas.drawPath(lowerArrow, paint);
+        break;
+      case _GlyphShape.info:
+        // Faithful silhouette of verification_chrome.dart's own info glyph
+        // (`<circle r="9"/><path d="M12 11v5"/><circle r="0.4" fill.../>`),
+        // duplicated privately here per this codebase's existing precedent
+        // for small one-off glyphs on this screen (e.g. `.bell`/`.shield`
+        // above) rather than importing that file's own private painter.
+        canvas.drawCircle(p(12, 12), 9 * s, paint);
+        canvas.drawLine(p(12, 10.8), p(12, 16), paint);
+        canvas.drawCircle(p(12, 8.2), 0.9 * s, Paint()..color = color);
         break;
     }
   }

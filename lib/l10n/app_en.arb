@@ -781,6 +781,11 @@
     "description": "Row label in the Profile screen's settings list. A navigational placeholder for now - later phases wire a real destination. Reused verbatim as the Premium screen's own footer 'Restore purchase' link (identical text/meaning), rather than a duplicate key."
   },
 
+  "profileHowCairnsWorkRow": "How cairns work",
+  "@profileHowCairnsWorkRow": {
+    "description": "Row label in the Profile screen's settings list that pushes HowCairnsWorkScreen. Moved here from the Trail screen header's '?' info button per this consistency pass (see trail_screen.dart's and profile_screen.dart's own doc comments) - same destination screen, new entry point."
+  },
+
   "trailHeaderEyebrow": "TRAIL OF",
   "@trailHeaderEyebrow": {
     "description": "Small all-caps eyebrow label above the selected task's title on the Trail screen (Cairn Trail.dc.html), e.g. 'TRAIL OF' above 'Read 20 pages'. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
@@ -848,11 +853,6 @@
   "trailEmptyTrailBody": "Your first stone starts the trail.",
   "@trailEmptyTrailBody": {
     "description": "Body copy shown in place of the winding trail when the selected task has active tasks overall but this particular task has zero completions yet (its cairn history is empty). Not part of the canonical Cairn Trail.dc.html design (which has no such example) - this exact wording was specified as the state's copy since no static mockup covers it."
-  },
-
-  "howCairnsWorkInfoButtonLabel": "How cairns work",
-  "@howCairnsWorkInfoButtonLabel": {
-    "description": "Accessible (semantics) label for the small circular '?' info button on the Trail screen's header that opens the How Cairns Work explainer sheet. No visible text of its own - an icon-only affordance, same reasoning as newHabitButton's reuse as the '+' chip's semantic label."
   },
 
   "howCairnsWorkHeaderLabel": "HOW CAIRNS WORK",
@@ -1173,6 +1173,16 @@
   "onboardingSignInComingSoonSnackbar": "Signing in to an existing account is coming soon.",
   "@onboardingSignInComingSoonSnackbar": {
     "description": "Snackbar shown when tapping onboardingAlreadyHaveAccountButton, same no-op-for-now pattern as profileComingSoonSnackbar/premiumComingSoonSnackbar for their own screens' out-of-scope affordances."
+  },
+
+  "onboardingHowItWorksTitle": "How it works",
+  "@onboardingHowItWorksTitle": {
+    "description": "Title on the onboarding How It Works screen (step 2 of 3 in the first-launch flow), which shows the three step cards (Do the thing / Snap a photo / AI verifies) moved here from the welcome screen (step 1) per this consistency pass. No dedicated .dc.html exists for this screen: it reuses Cairn Onboarding.dc.html's own step-card content and copy verbatim, just relocated onto its own indicated step."
+  },
+
+  "onboardingContinueButton": "Continue",
+  "@onboardingContinueButton": {
+    "description": "Primary footer button on the onboarding How It Works screen (step 2 of 3); advances to the verification screen (step 3)."
   },
 
   "onboardingVerificationTitle": "How verification works",

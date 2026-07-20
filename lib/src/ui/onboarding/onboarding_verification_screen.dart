@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart'
-    show Colors, MaterialLocalizations, Scaffold, ScaffoldMessenger, SnackBar, Text;
+    show Colors, Scaffold, ScaffoldMessenger, SnackBar, Text;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,11 +15,12 @@ import '../theme/app_text_styles.dart';
 import '../theme/screen_background.dart';
 import '../widgets/buttons.dart';
 import '../widgets/card_surface.dart';
+import 'onboarding_header.dart';
 
-/// `Cairn Onboarding Verification.dc.html`: the second and final screen of
-/// the first-launch onboarding flow, reached from
-/// [OnboardingWelcomeScreen]'s "Start climbing" button - see
-/// [OnboardingFlow]'s doc comment for how the two screens are hosted on one
+/// `Cairn Onboarding Verification.dc.html`: step 3 of 3 (the last) in the
+/// first-launch onboarding flow, reached from
+/// [OnboardingHowItWorksScreen]'s "Continue" button - see
+/// [OnboardingFlow]'s doc comment for how all three steps are hosted on one
 /// nested `Navigator`.
 class OnboardingVerificationScreen extends ConsumerStatefulWidget {
   const OnboardingVerificationScreen({
@@ -80,7 +81,7 @@ class _OnboardingVerificationScreenState
         child: SafeArea(
           child: Column(
             children: [
-              _ProgressHeader(onBack: widget.onBack),
+              OnboardingHeader(activeIndex: 2, onBack: widget.onBack),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsetsDirectional.fromSTEB(30, 8, 30, 0),
@@ -134,119 +135,6 @@ class _OnboardingVerificationScreenState
           ),
         ),
       ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Header: back-chevron + 3-dot progress indicator
-// ---------------------------------------------------------------------------
-
-class _ProgressHeader extends StatelessWidget {
-  const _ProgressHeader({required this.onBack});
-
-  final VoidCallback onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(24, 10, 24, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _BackButton(onTap: onBack),
-          const _ProgressDots(),
-          const SizedBox(width: 36),
-        ],
-      ),
-    );
-  }
-}
-
-class _BackButton extends StatelessWidget {
-  const _BackButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: MaterialLocalizations.of(context).backButtonTooltip,
-      child: GestureDetector(
-        key: const ValueKey('onboarding-back-button'),
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          width: 36,
-          height: 36,
-          decoration: const BoxDecoration(color: AppColors.awaitingChipBg, shape: BoxShape.circle),
-          alignment: Alignment.center,
-          child: const SizedBox(width: 16, height: 16, child: CustomPaint(painter: _BackChevronPainter())),
-        ),
-      ),
-    );
-  }
-}
-
-/// Back-chevron glyph (`M15 5l-7 7 7 7`), duplicated privately here per this
-/// codebase's existing precedent (see e.g. `premium_screen.dart`'s
-/// `_StoneStylesGlyph` doc comment) rather than sharing New Habit's private
-/// `_BackChevronPainter`.
-class _BackChevronPainter extends CustomPainter {
-  const _BackChevronPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final stroke = Paint()
-      ..color = AppColors.iconMuted
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final w = size.width / 24;
-    final h = size.height / 24;
-    canvas.drawPath(
-      Path()
-        ..moveTo(15 * w, 5 * h)
-        ..lineTo(8 * w, 12 * h)
-        ..lineTo(15 * w, 19 * h),
-      stroke,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_BackChevronPainter oldDelegate) => false;
-}
-
-/// The literal 3-dot progress indicator: dot 1 small/faded, dot 2 wide/
-/// active-sage, dot 3 small/faded. There is no designed third onboarding
-/// step - this reproduces the visual exactly as given, without inventing a
-/// meaning for a step that doesn't exist (see this run's spec).
-class _ProgressDots extends StatelessWidget {
-  const _ProgressDots();
-
-  @override
-  Widget build(BuildContext context) {
-    Widget smallDot() => Container(
-          width: 7,
-          height: 7,
-          decoration: const BoxDecoration(color: AppColors.onboardingDotInactive, shape: BoxShape.circle),
-        );
-    return Row(
-      key: const ValueKey('onboarding-progress-dots'),
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        smallDot(),
-        const SizedBox(width: 6),
-        Container(
-          width: 18,
-          height: 7,
-          decoration: BoxDecoration(color: AppColors.sage, borderRadius: BorderRadius.circular(4)),
-        ),
-        const SizedBox(width: 6),
-        smallDot(),
-      ],
     );
   }
 }

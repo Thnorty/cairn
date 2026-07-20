@@ -529,6 +529,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileRestorePurchaseRow => 'Restore purchase';
 
   @override
+  String get profileHowCairnsWorkRow => 'How cairns work';
+
+  @override
   String get trailHeaderEyebrow => 'TRAIL OF';
 
   @override
@@ -587,9 +590,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trailEmptyTrailBody => 'Your first stone starts the trail.';
-
-  @override
-  String get howCairnsWorkInfoButtonLabel => 'How cairns work';
 
   @override
   String get howCairnsWorkHeaderLabel => 'HOW CAIRNS WORK';
@@ -811,6 +811,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onboardingSignInComingSoonSnackbar =>
       'Signing in to an existing account is coming soon.';
+
+  @override
+  String get onboardingHowItWorksTitle => 'How it works';
+
+  @override
+  String get onboardingContinueButton => 'Continue';
 
   @override
   String get onboardingVerificationTitle => 'How verification works';

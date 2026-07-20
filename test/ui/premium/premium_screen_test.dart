@@ -128,5 +128,17 @@ void main() {
       expect(find.byType(PremiumScreen), findsNothing);
       expect(find.text('Open Premium'), findsOneWidget);
     });
+
+    testWidgets('the close-X sits top-left, mirroring VerificationHeader',
+        (tester) async {
+      await pumpPremium(tester);
+
+      final align = tester.widget<Align>(
+        find
+            .ancestor(of: find.byType(CloseCircleButton), matching: find.byType(Align))
+            .first,
+      );
+      expect(align.alignment, AlignmentDirectional.centerStart);
+    });
   });
 }

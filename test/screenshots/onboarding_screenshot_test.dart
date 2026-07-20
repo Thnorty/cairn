@@ -86,16 +86,28 @@ void main() {
     );
   }
 
-  testScreenshotWidgets('Onboarding, welcome screen', (tester) async {
+  testScreenshotWidgets('Onboarding, welcome screen (step 1 of 3)', (tester) async {
     await tester.pumpWidget(appAt());
     await captureAt392x846(tester, 'onboarding.png');
   });
 
-  testScreenshotWidgets('Onboarding, verification screen', (tester) async {
+  testScreenshotWidgets('Onboarding, how it works screen (step 2 of 3)', (tester) async {
     await tester.pumpWidget(appAt());
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Start climbing'));
+    await tester.pumpAndSettle();
+
+    await captureAt392x846(tester, 'onboarding_how_it_works.png');
+  });
+
+  testScreenshotWidgets('Onboarding, verification screen (step 3 of 3)', (tester) async {
+    await tester.pumpWidget(appAt());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Start climbing'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
     await captureAt392x846(tester, 'onboarding_verification.png');

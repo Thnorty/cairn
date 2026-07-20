@@ -20,7 +20,6 @@ import '../theme/screen_background.dart';
 import '../widgets/cairn_stack.dart';
 import '../widgets/ghost_cairn.dart';
 import '../widgets/plus_glyph.dart';
-import 'how_cairns_work_screen.dart';
 
 /// Opens `NewHabitScreen` on top of the current route - the same navigation
 /// Home's own "New habit" pill/Empty Today CTA use (see
@@ -232,70 +231,11 @@ class _TrailHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          // Adjacent to the rank chip rather than beside the eyebrow/title
-          // column to its left (this run's spec's preferred spot): that
-          // column is already an `Expanded` sized around an arbitrary task
-          // title, and a habit named long enough to wrap would crowd a
-          // circle placed right against it.
-          _InfoCircleButton(
-            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
-              builder: (_) => const HowCairnsWorkScreen(),
-            )),
-            semanticLabel: l10n.howCairnsWorkInfoButtonLabel,
-          ),
-          const SizedBox(width: 8),
           _RankPill(
             rank: rank,
             metresText: l10n.trailRankMetresLabel(formatMetresNumber(altitude, locale)),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// The small circular "?" info button that opens [HowCairnsWorkScreen],
-/// styled like the header close circles reused throughout the app
-/// (`verification_chrome.dart`'s `CloseCircleButton`: the same
-/// `rgba(120,108,88,.14)` fill and muted stroke colour), just with a "?"
-/// glyph instead of an X - kept private/local rather than added to that
-/// shared file, since every other circular header button in this app is a
-/// *close* action and this one deliberately isn't.
-class _InfoCircleButton extends StatelessWidget {
-  const _InfoCircleButton({required this.onTap, required this.semanticLabel});
-
-  final VoidCallback onTap;
-  final String semanticLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: Semantics(
-        button: true,
-        label: semanticLabel,
-        child: GestureDetector(
-          onTap: onTap,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            width: 34,
-            height: 34,
-            decoration: const BoxDecoration(
-              color: AppColors.awaitingChipBg, // rgba(120,108,88,.14)
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: const Text(
-              '?',
-              style: TextStyle(
-                fontFamily: AppFontFamilies.workSans,
-                fontWeight: FontWeight.w700,
-                fontSize: 15,
-                color: AppColors.iconMuted,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

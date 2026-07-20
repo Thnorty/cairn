@@ -7,7 +7,6 @@ import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
 import 'package:cairn/src/ui/new_habit/new_habit_screen.dart';
 import 'package:cairn/src/ui/theme/app_text_styles.dart';
-import 'package:cairn/src/ui/trail/how_cairns_work_screen.dart';
 import 'package:cairn/src/ui/trail/trail_screen.dart';
 import 'package:cairn/src/ui/widgets/cairn_stack.dart';
 import 'package:cairn/src/ui/widgets/ghost_cairn.dart';
@@ -235,35 +234,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(NewHabitScreen), findsOneWidget);
-    });
-  });
-
-  group('how cairns work entry point', () {
-    testTrailWidgets(
-        'tapping the header\'s "?" info button pushes HowCairnsWorkScreen',
-        (tester) async {
-      final clock = FixedClock(d(2026, 7, 20));
-      final db = await pumpTrail(tester, clock, (db) async {
-        final taskRepo = TaskRepository(db, clock);
-        await taskRepo.createTask(
-          title: 'Read 20 pages',
-          recurrenceType: RecurrenceType.daily,
-          startDate: d(2026, 7, 1),
-        );
-      });
-      addTearDown(db.close);
-
-      expect(find.byType(HowCairnsWorkScreen), findsNothing);
-
-      // The "?" info button's own on-screen glyph is a literal "?" (its
-      // accessible label is 'How cairns work', but semantics matching
-      // needs a live SemanticsHandle this test doesn't otherwise need -
-      // same reasoning as the "+" chip test above); "?" is unique on
-      // screen.
-      await tester.tap(find.text('?'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(HowCairnsWorkScreen), findsOneWidget);
     });
   });
 

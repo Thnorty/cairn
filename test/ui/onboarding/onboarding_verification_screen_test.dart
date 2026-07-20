@@ -5,6 +5,7 @@ import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/settings_repository.dart';
 import 'package:cairn/src/services/camera_permission_requester.dart';
 import 'package:cairn/src/ui/onboarding/onboarding_flow.dart';
+import 'package:cairn/src/ui/onboarding/onboarding_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,10 +26,11 @@ class _FakeCameraPermissionRequester implements CameraPermissionRequester {
 }
 
 /// Widget tests for the onboarding verification screen
-/// (`Cairn Onboarding Verification.dc.html`, screen 2 of 2), exercised
+/// (`Cairn Onboarding Verification.dc.html`, step 3 of 3), exercised
 /// through the real [OnboardingFlow] (see
 /// `onboarding_welcome_screen_test.dart`'s doc comment for why), reached by
-/// first tapping "Start climbing" on screen 1.
+/// tapping "Start climbing" on step 1 then "Continue" on step 2 (How It
+/// Works).
 void main() {
   Future<(AppDatabase db, _FakeCameraPermissionRequester fakeRequester)> pumpVerification(
     WidgetTester tester,
@@ -55,6 +57,8 @@ void main() {
 
     await tester.tap(find.text('Start climbing'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
 
     return (db, fakeRequester);
   }
@@ -63,7 +67,7 @@ void main() {
     testWidgets(
         'renders the title, subhead, all three point cards, the permission '
         'primer, the Allow camera button, the privacy link, the 3-dot '
-        'indicator, and the back-chevron', (tester) async {
+        'indicator with dot 2 active, and the back-chevron', (tester) async {
       await pumpVerification(tester);
 
       expect(find.text('How verification works'), findsOneWidget);
@@ -97,18 +101,20 @@ void main() {
       expect(find.text('Learn more about privacy'), findsOneWidget);
 
       expect(find.byKey(const ValueKey('onboarding-progress-dots')), findsOneWidget);
+      final dots = tester.widget<OnboardingProgressDots>(find.byType(OnboardingProgressDots));
+      expect(dots.activeIndex, 2);
       expect(find.byKey(const ValueKey('onboarding-back-button')), findsOneWidget);
     });
   });
 
   group('back navigation', () {
-    testWidgets('the back-chevron pops to the welcome screen', (tester) async {
+    testWidgets('the back-chevron pops to the How It Works screen (step 2)', (tester) async {
       await pumpVerification(tester);
 
       await tester.tap(find.byKey(const ValueKey('onboarding-back-button')));
       await tester.pumpAndSettle();
 
-      expect(find.text('Start climbing'), findsOneWidget);
+      expect(find.text('How it works'), findsOneWidget);
       expect(find.text('How verification works'), findsNothing);
     });
   });
