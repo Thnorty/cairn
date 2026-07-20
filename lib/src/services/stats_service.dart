@@ -188,6 +188,19 @@ class StatsService {
 
     final proofsUsedToday = await _completionRepo.successfulProofsToday();
 
+    // Per-day live-completion counts for the week, bucketed in memory from
+    // the `completionsByTask` already fetched above. Its rows are the same
+    // live (non-tombstoned), all-task, any-verification-status set that
+    // `liveCompletionsForDate` returns for a single day, so counting them by
+    // occurrence_date here yields identical per-day totals with no extra
+    // queries (previously one `liveCompletionsForDate` round-trip per weekday).
+    final doneByDate = <LocalDate, int>{};
+    for (final completions in completionsByTask.values) {
+      for (final c in completions) {
+        doneByDate[c.occurrenceDate] = (doneByDate[c.occurrenceDate] ?? 0) + 1;
+      }
+    }
+
     final weekStart = today.addDays(-(today.weekday - 1));
     final week = <StatsWeekdayBar>[];
     var weekDone = 0;
@@ -198,14 +211,14 @@ class StatsService {
       for (final task in sortedTasks) {
         scheduled += _generator.occurrencesFor(task, DateRange(date, date)).length;
       }
-      final doneToday = await _completionRepo.liveCompletionsForDate(date);
+      final doneCount = doneByDate[date] ?? 0;
       week.add(StatsWeekdayBar(
         date: date,
         scheduled: scheduled,
-        done: doneToday.length,
+        done: doneCount,
         isFuture: date.isAfter(today),
       ));
-      weekDone += doneToday.length;
+      weekDone += doneCount;
       weekTotal += scheduled;
     }
 
