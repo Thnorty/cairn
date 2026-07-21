@@ -11,6 +11,7 @@ import '../theme/screen_background.dart';
 import '../widgets/buttons.dart';
 import '../widgets/card_surface.dart';
 import '../widgets/cairn_stack.dart';
+import '../widgets/glyphs.dart';
 
 /// `Cairn How Cairns Work.dc.html`: a just-in-time explainer sheet for the
 /// per-task cairn/stone vocabulary (see CLAUDE.md's "Per-task cairns"
@@ -133,7 +134,7 @@ class HowCairnsWorkScreen extends StatelessWidget {
                       _ExplainerRow(
                         icon: const _IconCircle(
                           background: AppColors.awaitingChipBg,
-                          child: _LightningGlyph(color: AppColors.clockGlyph, size: 14),
+                          child: LightningGlyph(color: AppColors.clockGlyph, size: 14),
                         ),
                         title: l10n.howCairnsWorkRow3Title,
                         body: Text(
@@ -223,7 +224,7 @@ class _StateLegendCard extends StatelessWidget {
             labelStyle: AppTextStyles.howCairnsWorkLegendLabel.copyWith(
               color: AppColors.textFaint,
             ),
-            labelIcon: const _LightningGlyph(color: AppColors.textFaint, size: 10),
+            labelIcon: const LightningGlyph(color: AppColors.textFaint, size: 10),
           ),
         ],
       ),
@@ -342,96 +343,7 @@ class _RankIconCircle extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       alignment: Alignment.center,
-      child: const _RowMountainGlyph(),
+      child: const MountainGlyph(color: AppColors.heroMountainStroke, size: 15),
     );
   }
-}
-
-class _RowMountainGlyph extends StatelessWidget {
-  const _RowMountainGlyph();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 15,
-      height: 15,
-      child: CustomPaint(painter: _RowMountainGlyphPainter()),
-    );
-  }
-}
-
-class _RowMountainGlyphPainter extends CustomPainter {
-  const _RowMountainGlyphPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final s = size.width / 24;
-    Offset p(double x, double y) => Offset(x * s, y * s);
-    final paint = Paint()
-      ..color = AppColors.heroMountainStroke
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2 * s
-      ..strokeJoin = StrokeJoin.round;
-    final path = Path()
-      ..moveTo(p(3, 19).dx, p(3, 19).dy)
-      ..lineTo(p(8.5, 10).dx, p(8.5, 10).dy)
-      ..lineTo(p(12, 15).dx, p(12, 15).dy)
-      ..lineTo(p(14, 12).dx, p(14, 12).dy)
-      ..lineTo(p(20.5, 19).dx, p(20.5, 19).dy)
-      ..close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(_RowMountainGlyphPainter oldDelegate) => false;
-}
-
-/// The small lightning-bolt glyph (`M13 3l-2 8h6l-8 10 2-8H5z`) marking a
-/// broken cairn, matching `trail_screen.dart`'s own `_LightningGlyph` -
-/// duplicated privately here rather than shared/exported, same precedent
-/// as that file's `_MountainGlyphPainter` doc comment.
-class _LightningGlyph extends StatelessWidget {
-  const _LightningGlyph({required this.color, this.size = 10});
-
-  final Color color;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(painter: _LightningGlyphPainter(color: color)),
-    );
-  }
-}
-
-class _LightningGlyphPainter extends CustomPainter {
-  const _LightningGlyphPainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final s = size.width / 24;
-    Offset p(double x, double y) => Offset(x * s, y * s);
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.4 * s
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final path = Path()
-      ..moveTo(p(13, 3).dx, p(13, 3).dy)
-      ..lineTo(p(11, 11).dx, p(11, 11).dy)
-      ..lineTo(p(17, 11).dx, p(17, 11).dy)
-      ..lineTo(p(9, 21).dx, p(9, 21).dy)
-      ..lineTo(p(11, 13).dx, p(11, 13).dy)
-      ..lineTo(p(5, 13).dx, p(5, 13).dy)
-      ..close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(_LightningGlyphPainter oldDelegate) => color != oldDelegate.color;
 }

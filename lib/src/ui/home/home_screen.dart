@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart'
-    show Colors, MaterialPageRoute, Scaffold, ScaffoldMessenger, SnackBar, Text;
+import 'package:flutter/material.dart' show MaterialPageRoute, Text;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,8 +12,11 @@ import '../theme/app_text_styles.dart';
 import '../new_habit/new_habit_screen.dart';
 import '../proof/camera_capture_screen.dart';
 import '../proof/proof_outcome_routing.dart';
+import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
+import '../widgets/coming_soon_snack_bar.dart';
 import '../widgets/plus_glyph.dart';
+import '../widgets/screen_header.dart';
 import '../widgets/wordmark_glyph.dart';
 import 'empty_today_view.dart';
 import 'home_occurrence_card.dart';
@@ -128,9 +130,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       CompletionRejectedAlreadyCompleted() => 'Already completed',
       _ => 'Something went wrong',
     };
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    context.showComingSoonSnackBar(message);
   }
 
   @override
@@ -146,37 +146,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // sits under its own `Material(type: MaterialType.transparency)`
     // ancestor), but must also render correctly standalone - a widget test
     // or the screenshot harness pumping just `HomeScreen` under a bare
-    // `MaterialApp` - so it supplies its own. A bare `Material.transparency`
-    // wrapper (the pattern `CardSurface`/`StatusChip`/the button family use)
-    // would be enough for text/ink inheritance alone, but `_showProofOutcome`
-    // needs a real `Scaffold` ancestor to show its placeholder snackbar
+    // `MaterialApp` - so [AppScaffold] supplies its own transparent
+    // `Scaffold`. A bare `Material.transparency` wrapper (the pattern
+    // `CardSurface`/`StatusChip`/the button family use) would be enough for
+    // text/ink inheritance alone, but `_showProofOutcome` needs a real
+    // `Scaffold` ancestor to show its placeholder snackbar
     // (`ScaffoldMessenger.showSnackBar` asserts one exists to present into,
     // even though `ScaffoldMessenger.of` itself is satisfied by MaterialApp's
-    // implicit root messenger), so this uses a transparent `Scaffold`
-    // instead: `backgroundColor: Colors.transparent` so it doesn't paint
-    // over `ScreenBackground`'s parchment gradient/washes/contour beneath it,
-    // and its own body already sits under a proper `Material` ancestor, so
-    // no separate wrapper is needed on top.
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Padding(
-        // 24/8 horizontal/top inset, matching the standardized top-left
-        // header position shared by every tab screen (Home/Trail/Stats/
-        // Profile) and the VerificationHeader family - this run's spec.
-        padding: const EdgeInsetsDirectional.fromSTEB(24, 8, 24, 0),
+    // implicit root messenger) - see [AppScaffold]'s own doc comment.
+    return AppScaffold(
+      child: Padding(
+        // Shared top-left inset for every tab screen (Home/Trail/Stats/
+        // Profile) and the VerificationHeader family - see
+        // `kScreenEdgePadding`'s own doc comment. Home's top-left is still
+        // the wordmark brand row by design; the date/greeting ScreenHeader
+        // below it shares the same inset so its own left edge lines up with
+        // the brand row above it.
+        padding: kScreenEdgePadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _BrandRow(onOpenDebug: widget.onOpenDebug, displayName: displayName),
             const SizedBox(height: 22),
-            Text(
-              formatWeekdayMonthDayHeader(today, locale),
-              style: AppTextStyles.sectionLabel,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              l10n.goodMorningGreeting(displayName),
-              style: AppTextStyles.greeting,
+            ScreenHeader(
+              eyebrow: formatWeekdayMonthDayHeader(today, locale),
+              title: l10n.goodMorningGreeting(displayName),
+              titleStyle: AppTextStyles.greeting,
             ),
             const SizedBox(height: 6),
             Expanded(

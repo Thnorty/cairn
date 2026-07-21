@@ -16,7 +16,8 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart' show Material, MaterialLocalizations, MaterialType;
+import 'package:flutter/material.dart'
+    show Material, MaterialLocalizations, MaterialType;
 import 'package:flutter/widgets.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
@@ -25,6 +26,7 @@ import '../theme/app_gradients.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/app_scaffold.dart';
 import '../widgets/status_chip.dart';
 
 /// Top bar shared by Result/Failed/Pending: a close (X) button, the
@@ -670,6 +672,92 @@ class VerificationFooter extends StatelessWidget {
             if (i > 0) const SizedBox(height: 10),
             children[i],
           ],
+        ],
+      ),
+    );
+  }
+}
+
+/// The shared outer skeleton every proof-outcome screen builds on top of
+/// (Verify Result, Verify Failed / Failed - No Retries, Verify Pending,
+/// Verify Too Old, Cairn Complete): a transparent [Scaffold] over a
+/// [ScreenBackground] over a [SafeArea] containing [VerificationHeader], a
+/// centered scrolling [body], and an optional [VerificationFooter]. Each
+/// screen still supplies its own wash/contour tint, header label/colour,
+/// body content, and footer buttons - factored out here because this shell
+/// (the scaffold/background/safe-area nesting, the shared scroll padding,
+/// and the header/footer widgets themselves) was previously hand-rolled
+/// identically five times over, not because these screens should look any
+/// more alike than they already do.
+class ProofOutcomeScaffold extends StatelessWidget {
+  const ProofOutcomeScaffold({
+    super.key,
+    required this.washes,
+    required this.contourOrigin,
+    required this.contourRingColor,
+    required this.onClose,
+    this.headerLabel,
+    this.headerLabelColor,
+    required this.body,
+    this.footer,
+  });
+
+  /// [ScreenBackground.washes] - each screen tints these differently (e.g.
+  /// sage-forward for Result, terracotta-forward for Failed), so this stays
+  /// a required per-screen value rather than a hardcoded default.
+  final List<RadialGradient> washes;
+
+  /// [ScreenBackground.contourOrigin].
+  final Alignment contourOrigin;
+
+  /// [ScreenBackground.contourRingColor].
+  final Color contourRingColor;
+
+  /// [VerificationHeader.onClose].
+  final VoidCallback onClose;
+
+  /// [VerificationHeader.label]; null keeps that widget's own default.
+  final String? headerLabel;
+
+  /// [VerificationHeader.labelColor].
+  final Color? headerLabelColor;
+
+  /// The screen's own body content, placed inside the shared
+  /// [SingleChildScrollView]'s padding (`EdgeInsetsDirectional.fromSTEB(24,
+  /// 14, 24, 0)`, identical across every screen this wraps) - typically a
+  /// `Column(crossAxisAlignment: CrossAxisAlignment.center, children: [...])`
+  /// supplied by the caller, exactly as each screen built it before this was
+  /// factored out.
+  final Widget body;
+
+  /// [VerificationFooter.children], or null when a screen has no footer at
+  /// all (none of today's five do, but kept optional per this run's spec).
+  final List<Widget>? footer;
+
+  @override
+  Widget build(BuildContext context) {
+    // Builds on [ModalScaffold] - the same three-layer `Scaffold` +
+    // `ScreenBackground` + `SafeArea` wrapper every pushed/modal screen in
+    // this app shares - adding only this family's own further chrome
+    // (`VerificationHeader`/`VerificationFooter`) around [body].
+    return ModalScaffold(
+      washes: washes,
+      contourOrigin: contourOrigin,
+      contourRingColor: contourRingColor,
+      child: Column(
+        children: [
+          VerificationHeader(
+            onClose: onClose,
+            label: headerLabel,
+            labelColor: headerLabelColor,
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsetsDirectional.fromSTEB(24, 14, 24, 0),
+              child: body,
+            ),
+          ),
+          if (footer != null) VerificationFooter(children: footer!),
         ],
       ),
     );

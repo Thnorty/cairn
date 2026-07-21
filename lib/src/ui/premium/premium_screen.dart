@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart'
-    show
-        Colors,
-        Material,
-        MaterialPageRoute,
-        MaterialType,
-        Scaffold,
-        ScaffoldMessenger,
-        SnackBar,
-        Text;
+    show Material, MaterialPageRoute, MaterialType, Text;
 import 'package:flutter/widgets.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
@@ -17,9 +9,10 @@ import '../theme/app_gradients.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
-import '../theme/screen_background.dart';
+import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/cairn_stack.dart';
+import '../widgets/coming_soon_snack_bar.dart';
 
 /// Pushes [PremiumScreen] on top of the current route. Shared by every
 /// Premium affordance in the app that navigates via a live [BuildContext]
@@ -57,74 +50,67 @@ class _PremiumScreenState extends State<PremiumScreen> {
   _PremiumPlan _selectedPlan = _PremiumPlan.yearly;
 
   void _showComingSoon(AppLocalizations l10n) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.premiumComingSoonSnackbar)),
-    );
+    context.showComingSoonSnackBar(l10n.premiumComingSoonSnackbar);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: ScreenBackground(
-        // This screen's own sage + terracotta washes (Cairn Premium.dc.html
-        // is one of the few screens with two differently-tinted washes,
-        // like Verify Result's own sage-forward pair) - distinct from the
-        // washless treatment Trail/Stats use, per this run's spec.
-        washes: const [
-          RadialGradient(
-            center: Alignment(0, -1.12),
-            radius: 1.3,
-            colors: [AppColors.premiumSageWash, Color(0x0096A678)],
-          ),
-          RadialGradient(
-            center: Alignment(1, -0.92),
-            radius: 0.9,
-            colors: [AppColors.clayTintBg, Color(0x00B27C5C)],
-          ),
-        ],
-        contourOrigin: percentPositionToAlignment(50, -6),
-        contourRingColor: AppColors.premiumContourRing,
-        child: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(22, 8, 22, 0),
-                // Top-left, mirroring VerificationHeader's own close-button
-                // placement (this run's spec): an authorized deviation from
-                // Cairn Premium.dc.html's own top-right close-X, for
-                // cross-screen consistency (every close/dismiss control in
-                // this app now sits top-left).
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: CloseCircleButton(onTap: () => Navigator.of(context).pop()),
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsetsDirectional.fromSTEB(26, 2, 26, 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _Crest(l10n: l10n),
-                      const SizedBox(height: 22),
-                      _ValueList(l10n: l10n),
-                      const SizedBox(height: 20),
-                      _PlanCards(
-                        l10n: l10n,
-                        selected: _selectedPlan,
-                        onSelect: (plan) => setState(() => _selectedPlan = plan),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              _Footer(l10n: l10n, onStartTrial: () => _showComingSoon(l10n)),
-            ],
-          ),
+    return ModalScaffold(
+      // This screen's own sage + terracotta washes (Cairn Premium.dc.html
+      // is one of the few screens with two differently-tinted washes,
+      // like Verify Result's own sage-forward pair) - distinct from the
+      // washless treatment Trail/Stats use, per this run's spec.
+      washes: const [
+        RadialGradient(
+          center: Alignment(0, -1.12),
+          radius: 1.3,
+          colors: [AppColors.premiumSageWash, Color(0x0096A678)],
         ),
+        RadialGradient(
+          center: Alignment(1, -0.92),
+          radius: 0.9,
+          colors: [AppColors.clayTintBg, Color(0x00B27C5C)],
+        ),
+      ],
+      contourOrigin: percentPositionToAlignment(50, -6),
+      contourRingColor: AppColors.premiumContourRing,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(22, 8, 22, 0),
+            // Top-left, mirroring VerificationHeader's own close-button
+            // placement (this run's spec): an authorized deviation from
+            // Cairn Premium.dc.html's own top-right close-X, for
+            // cross-screen consistency (every close/dismiss control in
+            // this app now sits top-left).
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: CloseCircleButton(onTap: () => Navigator.of(context).pop()),
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsetsDirectional.fromSTEB(26, 2, 26, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _Crest(l10n: l10n),
+                  const SizedBox(height: 22),
+                  _ValueList(l10n: l10n),
+                  const SizedBox(height: 20),
+                  _PlanCards(
+                    l10n: l10n,
+                    selected: _selectedPlan,
+                    onSelect: (plan) => setState(() => _selectedPlan = plan),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          _Footer(l10n: l10n, onStartTrial: () => _showComingSoon(l10n)),
+        ],
       ),
     );
   }

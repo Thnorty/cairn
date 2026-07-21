@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart'
-    show Colors, MaterialPageRoute, Scaffold, ScaffoldMessenger, SnackBar, Text;
+    show MaterialPageRoute, Text;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,6 +15,10 @@ import '../theme/app_radii.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
 import '../trail/how_cairns_work_screen.dart';
+import '../widgets/app_scaffold.dart';
+import '../widgets/coming_soon_snack_bar.dart';
+import '../widgets/glyphs.dart';
+import '../widgets/screen_header.dart';
 import '../widgets/tab_icons.dart';
 
 /// The Profile ("You") screen (`Cairn Profile.dc.html`): the user's rank
@@ -43,35 +47,30 @@ class ProfileScreen extends ConsumerWidget {
     final snapshotAsync = ref.watch(profileSnapshotProvider);
 
     void showComingSoon() {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.profileComingSoonSnackbar)),
-      );
+      context.showComingSoonSnackBar(l10n.profileComingSoonSnackbar);
     }
 
     // This screen gets dropped into AppShell's `IndexedStack` (which already
     // sits under its own `Material(type: MaterialType.transparency)`
     // ancestor) but must also render correctly standalone (a widget test or
     // the screenshot harness pumping just `ProfileScreen`), so - same
-    // reasoning as `HomeScreen`'s own `Scaffold` - it supplies its own
+    // reasoning as `HomeScreen`'s own [AppScaffold] - it supplies its own
     // transparent one: that also gives every `Text` below a real `Material`
     // ancestor (see AppShell's build() comment) and gives `showComingSoon`'s
     // `ScaffoldMessenger.showSnackBar` a real `Scaffold` to present into.
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Padding(
-        // 24/8 horizontal/top inset, matching the standardized top-left
-        // header position shared by every tab screen (Home/Trail/Stats/
-        // Profile) and the VerificationHeader family - this run's spec.
-        padding: const EdgeInsetsDirectional.fromSTEB(24, 8, 24, 0),
+    return AppScaffold(
+      child: Padding(
+        // Shared top-left inset for every tab screen (Home/Trail/Stats/
+        // Profile) and the VerificationHeader family - see
+        // `kScreenEdgePadding`'s own doc comment.
+        padding: kScreenEdgePadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.profileHeaderLabel, style: AppTextStyles.sectionLabel),
-            const SizedBox(height: 4),
             // Reuses navYou ("You") rather than a second identical ARB key:
             // the tab label and this screen's own title are the same literal
             // English word referring to the same screen (see doc comment).
-            Text(l10n.navYou, style: AppTextStyles.screenTitle),
+            ScreenHeader(eyebrow: l10n.profileHeaderLabel, title: l10n.navYou),
             const SizedBox(height: 12),
             Expanded(
               child: snapshotAsync.when(
@@ -227,11 +226,7 @@ class _RankBadge extends StatelessWidget {
         boxShadow: AppShadows.heroBadge,
       ),
       alignment: Alignment.center,
-      child: const _Glyph(
-        shape: _GlyphShape.mountain,
-        color: AppColors.heroMountainStroke,
-        size: 26,
-      ),
+      child: const MountainGlyph(color: AppColors.heroMountainStroke, size: 26),
     );
   }
 }
@@ -520,11 +515,7 @@ class _TierNode extends StatelessWidget {
             boxShadow: [BoxShadow(color: AppColors.sageRing, spreadRadius: 5)],
           ),
           alignment: Alignment.center,
-          child: const _Glyph(
-            shape: _GlyphShape.mountain,
-            color: AppColors.heroMountainStroke,
-            size: 11,
-          ),
+          child: const MountainGlyph(color: AppColors.heroMountainStroke, size: 11),
         );
       case _TierRowStatus.future:
         return Container(
@@ -871,7 +862,7 @@ class _SettingsRow extends StatelessWidget {
 /// Which one-off stroke-icon glyph to paint on this screen. Grouped into one
 /// enum + [CustomPainter] (mirroring `TabBarIcon`'s own pattern) rather than
 /// a separate tiny painter class per icon.
-enum _GlyphShape { mountain, clockPending, check, chevronRight, bell, shield, restore, info }
+enum _GlyphShape { clockPending, check, chevronRight, bell, shield, restore, info }
 
 class _Glyph extends StatelessWidget {
   const _Glyph({required this.shape, required this.color, this.size = 18});
@@ -897,7 +888,6 @@ class _GlyphPainter extends CustomPainter {
   final Color color;
 
   static double _strokeWidthFor(_GlyphShape shape) => switch (shape) {
-        _GlyphShape.mountain => 2,
         _GlyphShape.clockPending => 2.2,
         _GlyphShape.check => 2.6,
         _GlyphShape.chevronRight => 2.2,
@@ -919,17 +909,6 @@ class _GlyphPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round;
 
     switch (shape) {
-      case _GlyphShape.mountain:
-        // `M3 19l5.5-9 3.5 5 2-3 6.5 7z` - the rank hero's mountain badge.
-        final path = Path()
-          ..moveTo(p(3, 19).dx, p(3, 19).dy)
-          ..lineTo(p(8.5, 10).dx, p(8.5, 10).dy)
-          ..lineTo(p(12, 15).dx, p(12, 15).dy)
-          ..lineTo(p(14, 12).dx, p(14, 12).dy)
-          ..lineTo(p(20.5, 19).dx, p(20.5, 19).dy)
-          ..close();
-        canvas.drawPath(path, paint);
-        break;
       case _GlyphShape.clockPending:
         // `<circle cx=12 cy=12 r=8.5/><path d="M12 7.5v5l3.2 2"/>` - the
         // withheld-metres line's clock icon.

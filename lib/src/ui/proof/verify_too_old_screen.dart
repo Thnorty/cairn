@@ -1,13 +1,11 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart' show Colors, Scaffold;
 import 'package:flutter/widgets.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
 import '../../l10n/date_number_formatting.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../theme/screen_background.dart';
 import '../widgets/buttons.dart';
 import '../widgets/status_chip.dart';
 import 'verification_chrome.dart';
@@ -76,92 +74,76 @@ class VerifyTooOldScreen extends StatelessWidget {
       locale,
     );
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: ScreenBackground(
-        washes: const [
-          RadialGradient(
-            center: Alignment(0, -1.16),
-            radius: 1.15,
-            colors: [Color(0x24968368), Color(0x00968368)],
+    return ProofOutcomeScaffold(
+      washes: const [
+        RadialGradient(
+          center: Alignment(0, -1.16),
+          radius: 1.15,
+          colors: [Color(0x24968368), Color(0x00968368)],
+        ),
+      ],
+      contourOrigin: percentPositionToAlignment(50, -6),
+      contourRingColor: const Color(0x0D463C2C),
+      onClose: onCancel,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SealCircle(
+            gradientColors: [AppColors.pendingSealLight, AppColors.pendingSealDark],
+            ringColor: Color(0x29A0947E),
+            shadowColor: Color(0x735A503C),
+            icon: SealHistoryIcon(),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            l10n.verifyTooOldTitle,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.resultTitle.copyWith(color: AppColors.pendingHeading),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            l10n.taskNameTakenAt(taskTitle, takenAt),
+            textAlign: TextAlign.center,
+            style: AppTextStyles.body,
+          ),
+          const SizedBox(height: 20),
+          ProofPhotoPebble(
+            imageBytes: imageBytes,
+            height: 176,
+            overlay: StatusChip(
+              variant: StatusChipVariant.awaiting,
+              onPhoto: true,
+              label: l10n.stalePhotoAgeBadge(ageMinutes),
+            ),
+          ),
+          const SizedBox(height: 14),
+          ReasonBanner(
+            backgroundColor: const Color(0x1F786C58),
+            iconColor: const Color(0xFF8A7F6C),
+            leadText: l10n.stalePhotoReassuranceLead,
+            leadColor: const Color(0xFF463F31),
+            bodyText: l10n.stalePhotoReassuranceBody(recencyWindowMinutes),
+            textColor: const Color(0xFF544D40),
+          ),
+          const SizedBox(height: 12),
+          AttemptsInfoCard(
+            icon: const SealCheckmarkIcon(color: Color(0xFF6D7A52), size: 14),
+            iconBackground: const Color(0x2E786C58),
+            leadText: l10n.stalePhotoAttemptsIntro,
+            emphasisText: '${l10n.stalePhotoAttemptsCount(attemptsRemaining)}.',
           ),
         ],
-        contourOrigin: percentPositionToAlignment(50, -6),
-        contourRingColor: const Color(0x0D463C2C),
-        child: SafeArea(
-          child: Column(
-            children: [
-              VerificationHeader(onClose: onCancel),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsetsDirectional.fromSTEB(24, 14, 24, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SealCircle(
-                        gradientColors: [AppColors.pendingSealLight, AppColors.pendingSealDark],
-                        ringColor: Color(0x29A0947E),
-                        shadowColor: Color(0x735A503C),
-                        icon: SealHistoryIcon(),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        l10n.verifyTooOldTitle,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.resultTitle.copyWith(color: AppColors.pendingHeading),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        l10n.taskNameTakenAt(taskTitle, takenAt),
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.body,
-                      ),
-                      const SizedBox(height: 20),
-                      ProofPhotoPebble(
-                        imageBytes: imageBytes,
-                        height: 176,
-                        overlay: StatusChip(
-                          variant: StatusChipVariant.awaiting,
-                          onPhoto: true,
-                          label: l10n.stalePhotoAgeBadge(ageMinutes),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      ReasonBanner(
-                        backgroundColor: const Color(0x1F786C58),
-                        iconColor: const Color(0xFF8A7F6C),
-                        leadText: l10n.stalePhotoReassuranceLead,
-                        leadColor: const Color(0xFF463F31),
-                        bodyText: l10n.stalePhotoReassuranceBody(recencyWindowMinutes),
-                        textColor: const Color(0xFF544D40),
-                      ),
-                      const SizedBox(height: 12),
-                      AttemptsInfoCard(
-                        icon: const SealCheckmarkIcon(color: Color(0xFF6D7A52), size: 14),
-                        iconBackground: const Color(0x2E786C58),
-                        leadText: l10n.stalePhotoAttemptsIntro,
-                        emphasisText: '${l10n.stalePhotoAttemptsCount(attemptsRemaining)}.',
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              VerificationFooter(
-                children: [
-                  PrimaryButton(
-                    label: l10n.takeNewPhotoButton,
-                    onPressed: onRetake,
-                    icon: const _TakePhotoCameraIcon(),
-                  ),
-                  Center(
-                    child: TextGhostButton(label: l10n.cancelButton, onPressed: onCancel),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ),
+      footer: [
+        PrimaryButton(
+          label: l10n.takeNewPhotoButton,
+          onPressed: onRetake,
+          icon: const _TakePhotoCameraIcon(),
+        ),
+        Center(
+          child: TextGhostButton(label: l10n.cancelButton, onPressed: onCancel),
+        ),
+      ],
     );
   }
 }

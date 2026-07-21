@@ -1,6 +1,5 @@
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart' show Colors, Scaffold, Text;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,6 +13,8 @@ import '../theme/app_gradients.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/app_scaffold.dart';
+import '../widgets/screen_header.dart';
 
 /// The Stats screen (`Cairn Stats.dc.html`): lifetime stones/cairns totals,
 /// today's proof budget, a Monday..Sunday weekly bar chart, every active
@@ -44,49 +45,43 @@ class StatsScreen extends ConsumerWidget {
 
     void openPremium() => openPremiumScreen(context);
 
-    // Same reasoning as HomeScreen/ProfileScreen/TrailScreen's own root
-    // Scaffold: this screen drops into AppShell's `IndexedStack` (already
-    // under its own transparent `Material`) but must also render correctly
-    // standalone (a widget test or the screenshot harness), so it supplies
-    // its own transparent one.
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          const Positioned.fill(child: _StatsScreenBackground()),
-          Padding(
-            // 24/8 horizontal/top inset, matching the standardized top-left
-            // header position shared by every tab screen (Home/Trail/Stats/
-            // Profile) and the VerificationHeader family - this run's spec.
-            padding: const EdgeInsetsDirectional.fromSTEB(24, 8, 24, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.statsHeaderEyebrow, style: AppTextStyles.sectionLabel),
-                const SizedBox(height: 4),
-                // Reuses navStats ("Stats") rather than a second identical
-                // ARB key: the tab label and this screen's own title are the
-                // same literal English word referring to the same screen -
-                // same pattern ProfileScreen's own header uses for navYou.
-                Text(l10n.navStats, style: AppTextStyles.screenTitle),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: snapshotAsync.when(
-                    data: (snapshot) => _StatsBody(
-                      snapshot: snapshot,
-                      onPremiumTap: openPremium,
-                    ),
-                    // The stream's first emission is effectively synchronous
-                    // (see HomeService.watchToday's doc comment), so there's
-                    // no meaningful loading UI to design here.
-                    loading: () => const SizedBox.shrink(),
-                    error: (error, stackTrace) => Center(child: Text('$error')),
-                  ),
+    // Same reasoning as HomeScreen/ProfileScreen/TrailScreen's own
+    // [AppScaffold]: this screen drops into AppShell's `IndexedStack`
+    // (already under its own transparent `Material`) but must also render
+    // correctly standalone (a widget test or the screenshot harness), so it
+    // supplies its own transparent one, stacked on top of its own full-bleed
+    // background - see [AppScaffold]'s own doc comment.
+    return AppScaffold(
+      background: const _StatsScreenBackground(),
+      child: Padding(
+        // Shared top-left inset for every tab screen (Home/Trail/Stats/
+        // Profile) and the VerificationHeader family - see
+        // `kScreenEdgePadding`'s own doc comment.
+        padding: kScreenEdgePadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Reuses navStats ("Stats") rather than a second identical
+            // ARB key: the tab label and this screen's own title are the
+            // same literal English word referring to the same screen -
+            // same pattern ProfileScreen's own header uses for navYou.
+            ScreenHeader(eyebrow: l10n.statsHeaderEyebrow, title: l10n.navStats),
+            const SizedBox(height: 12),
+            Expanded(
+              child: snapshotAsync.when(
+                data: (snapshot) => _StatsBody(
+                  snapshot: snapshot,
+                  onPremiumTap: openPremium,
                 ),
-              ],
+                // The stream's first emission is effectively synchronous
+                // (see HomeService.watchToday's doc comment), so there's
+                // no meaningful loading UI to design here.
+                loading: () => const SizedBox.shrink(),
+                error: (error, stackTrace) => Center(child: Text('$error')),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

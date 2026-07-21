@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart'
-    show Colors, Scaffold, ScaffoldMessenger, SnackBar, Text;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,9 +10,10 @@ import '../proof/verification_chrome.dart'
     show SealCheckmarkIcon, percentPositionToAlignment;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../theme/screen_background.dart';
+import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/card_surface.dart';
+import '../widgets/coming_soon_snack_bar.dart';
 import 'onboarding_header.dart';
 
 /// `Cairn Onboarding Verification.dc.html`: step 3 of 3 (the last) in the
@@ -59,81 +58,76 @@ class _OnboardingVerificationScreenState
   }
 
   void _showComingSoon(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    context.showComingSoonSnackBar(message);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: ScreenBackground(
-        washes: const [
-          RadialGradient(
-            center: Alignment(0, -1.12),
-            radius: 1.3,
-            colors: [AppColors.onboardingVerificationSageWash, Color(0x0096A678)],
+    return ModalScaffold(
+      washes: const [
+        RadialGradient(
+          center: Alignment(0, -1.12),
+          radius: 1.3,
+          colors: [AppColors.onboardingVerificationSageWash, Color(0x0096A678)],
+        ),
+      ],
+      contourOrigin: percentPositionToAlignment(50, -4),
+      contourRingColor: AppColors.premiumContourRing,
+      child: Column(
+        children: [
+          OnboardingHeader(activeIndex: 2, onBack: widget.onBack),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsetsDirectional.fromSTEB(30, 8, 30, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 8),
+                  const _VerifyEmblem(),
+                  const SizedBox(height: 18),
+                  Text(
+                    l10n.onboardingVerificationTitle,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.onboardingVerificationHeadline,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    l10n.onboardingVerificationSubhead,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.emptyStateBody,
+                  ),
+                  const SizedBox(height: 24),
+                  _PointCard(
+                    icon: const SealCheckmarkIcon(size: 17, color: AppColors.sageText),
+                    title: l10n.onboardingPoint1Title,
+                    body: l10n.onboardingPoint1Body,
+                  ),
+                  const SizedBox(height: 11),
+                  _PointCard(
+                    icon: const _PointGlyph(shape: _PointGlyphShape.lock),
+                    title: l10n.onboardingPoint2Title,
+                    body: l10n.onboardingPoint2Body,
+                  ),
+                  const SizedBox(height: 11),
+                  _PointCard(
+                    icon: const _PointGlyph(shape: _PointGlyphShape.cloud),
+                    title: l10n.onboardingPoint3Title,
+                    body: l10n.onboardingPoint3Body,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+          _PermissionFooter(
+            l10n: l10n,
+            busy: _busy,
+            onAllowCamera: _handleAllowCamera,
+            onLearnMore: () => _showComingSoon(l10n.onboardingPrivacyComingSoonSnackbar),
           ),
         ],
-        contourOrigin: percentPositionToAlignment(50, -4),
-        contourRingColor: AppColors.premiumContourRing,
-        child: SafeArea(
-          child: Column(
-            children: [
-              OnboardingHeader(activeIndex: 2, onBack: widget.onBack),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsetsDirectional.fromSTEB(30, 8, 30, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 8),
-                      const _VerifyEmblem(),
-                      const SizedBox(height: 18),
-                      Text(
-                        l10n.onboardingVerificationTitle,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.onboardingVerificationHeadline,
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        l10n.onboardingVerificationSubhead,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.emptyStateBody,
-                      ),
-                      const SizedBox(height: 24),
-                      _PointCard(
-                        icon: const SealCheckmarkIcon(size: 17, color: AppColors.sageText),
-                        title: l10n.onboardingPoint1Title,
-                        body: l10n.onboardingPoint1Body,
-                      ),
-                      const SizedBox(height: 11),
-                      _PointCard(
-                        icon: const _PointGlyph(shape: _PointGlyphShape.lock),
-                        title: l10n.onboardingPoint2Title,
-                        body: l10n.onboardingPoint2Body,
-                      ),
-                      const SizedBox(height: 11),
-                      _PointCard(
-                        icon: const _PointGlyph(shape: _PointGlyphShape.cloud),
-                        title: l10n.onboardingPoint3Title,
-                        body: l10n.onboardingPoint3Body,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
-                ),
-              ),
-              _PermissionFooter(
-                l10n: l10n,
-                busy: _busy,
-                onAllowCamera: _handleAllowCamera,
-                onLearnMore: () => _showComingSoon(l10n.onboardingPrivacyComingSoonSnackbar),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -387,7 +381,8 @@ enum _PointGlyphShape { lock, cloud }
 /// `premium_screen.dart`'s own `_ValueGlyphShape.cloud` uses (minus that
 /// one's inner download-arrow strokes, which this point card's source file
 /// doesn't have), duplicated privately per this codebase's existing
-/// precedent rather than shared (see `_BackChevronPainter`'s doc comment).
+/// precedent for genuinely-distinct one-off glyphs rather than shared (see
+/// `premium_screen.dart`'s `_RadioCheckPainter` doc comment for another).
 class _PointGlyph extends StatelessWidget {
   const _PointGlyph({required this.shape});
 

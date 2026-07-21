@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart'
     show
-        Colors,
         InputBorder,
         InputDecoration,
         MaterialLocalizations,
-        Scaffold,
-        ScaffoldMessenger,
-        SnackBar,
         TextField,
         TimeOfDay,
         showDatePicker,
@@ -21,9 +17,11 @@ import '../../models/local_date.dart';
 import '../../providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../theme/screen_background.dart';
+import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/card_surface.dart';
+import '../widgets/coming_soon_snack_bar.dart';
+import '../widgets/glyphs.dart';
 import 'monthly_ordinal.dart';
 import 'new_habit_recurrence_panel.dart';
 import 'new_habit_times_editor.dart';
@@ -163,9 +161,7 @@ class _NewHabitScreenState extends ConsumerState<NewHabitScreen> {
       if (mounted) Navigator.of(context).pop();
     } on ArgumentError catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message?.toString() ?? error.toString())),
-      );
+      context.showComingSoonSnackBar(error.message?.toString() ?? error.toString());
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -176,70 +172,65 @@ class _NewHabitScreenState extends ConsumerState<NewHabitScreen> {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: ScreenBackground(
-        washes: const [
-          RadialGradient(
-            center: Alignment(-0.64, -1.16),
-            radius: 1.3,
-            colors: [Color(0x33968368), Color(0x00968368)],
+    return ModalScaffold(
+      washes: const [
+        RadialGradient(
+          center: Alignment(-0.64, -1.16),
+          radius: 1.3,
+          colors: [Color(0x33968368), Color(0x00968368)],
+        ),
+      ],
+      child: Column(
+        children: [
+          _Header(title: l10n.newHabitScreenTitle),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsetsDirectional.fromSTEB(22, 12, 22, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l10n.whatAreYouProvingLabel, style: AppTextStyles.formSectionLabel),
+                  const SizedBox(height: 9),
+                  _TitleField(controller: _titleController),
+                  const SizedBox(height: 22),
+                  Text(l10n.howOftenLabel, style: AppTextStyles.formSectionLabel),
+                  const SizedBox(height: 9),
+                  RecurrenceTypeGrid(
+                    onceLabel: l10n.recurrenceOnceLabel,
+                    dailyLabel: l10n.recurrenceDailyLabel,
+                    weeklyLabel: l10n.recurrenceWeeklyLabel,
+                    monthlyLabel: l10n.recurrenceMonthlyLabel,
+                    selected: RecurrenceType.values.indexOf(_recurrenceType),
+                    onSelect: (index) => setState(() {
+                      _recurrenceType = RecurrenceType.values[index];
+                    }),
+                  ),
+                  ..._buildRecurrencePanel(l10n, locale),
+                  const SizedBox(height: 22),
+                  NewHabitTimesEditor(
+                    sectionLabel: _recurrenceType == RecurrenceType.once
+                        ? l10n.timeOfDayLabel
+                        : l10n.timesOfDayLabel,
+                    helperText: _recurrenceType == RecurrenceType.once
+                        ? l10n.onceTimeHelpText
+                        : l10n.timesOfDayHelpText,
+                    times: _dueTimes,
+                    canAddMore: _canAddMoreTimes,
+                    addTimeLabel: l10n.addTimeButton,
+                    onAddTime: _handleAddTime,
+                    onRemoveTime: _handleRemoveTime,
+                    locale: locale,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          _Footer(
+            label: l10n.createHabitButton,
+            enabled: _isValid && !_submitting,
+            onPressed: _handleCreate,
           ),
         ],
-        child: SafeArea(
-          child: Column(
-            children: [
-              _Header(title: l10n.newHabitScreenTitle),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsetsDirectional.fromSTEB(22, 12, 22, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(l10n.whatAreYouProvingLabel, style: AppTextStyles.formSectionLabel),
-                      const SizedBox(height: 9),
-                      _TitleField(controller: _titleController),
-                      const SizedBox(height: 22),
-                      Text(l10n.howOftenLabel, style: AppTextStyles.formSectionLabel),
-                      const SizedBox(height: 9),
-                      RecurrenceTypeGrid(
-                        onceLabel: l10n.recurrenceOnceLabel,
-                        dailyLabel: l10n.recurrenceDailyLabel,
-                        weeklyLabel: l10n.recurrenceWeeklyLabel,
-                        monthlyLabel: l10n.recurrenceMonthlyLabel,
-                        selected: RecurrenceType.values.indexOf(_recurrenceType),
-                        onSelect: (index) => setState(() {
-                          _recurrenceType = RecurrenceType.values[index];
-                        }),
-                      ),
-                      ..._buildRecurrencePanel(l10n, locale),
-                      const SizedBox(height: 22),
-                      NewHabitTimesEditor(
-                        sectionLabel: _recurrenceType == RecurrenceType.once
-                            ? l10n.timeOfDayLabel
-                            : l10n.timesOfDayLabel,
-                        helperText: _recurrenceType == RecurrenceType.once
-                            ? l10n.onceTimeHelpText
-                            : l10n.timesOfDayHelpText,
-                        times: _dueTimes,
-                        canAddMore: _canAddMoreTimes,
-                        addTimeLabel: l10n.addTimeButton,
-                        onAddTime: _handleAddTime,
-                        onRemoveTime: _handleRemoveTime,
-                        locale: locale,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              _Footer(
-                label: l10n.createHabitButton,
-                enabled: _isValid && !_submitting,
-                onPressed: _handleCreate,
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -410,43 +401,11 @@ class _BackButton extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
-          child: const SizedBox(
-            width: 17,
-            height: 17,
-            child: CustomPaint(painter: _BackChevronPainter()),
-          ),
+          child: const BackChevronGlyph(color: AppColors.iconMuted, size: 17),
         ),
       ),
     );
   }
-}
-
-/// Back-chevron glyph (`M15 5l-7 7 7 7`), matching the New Habit header's
-/// leading control across all four variants.
-class _BackChevronPainter extends CustomPainter {
-  const _BackChevronPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final stroke = Paint()
-      ..color = AppColors.iconMuted
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final w = size.width / 24;
-    final h = size.height / 24;
-    canvas.drawPath(
-      Path()
-        ..moveTo(15 * w, 5 * h)
-        ..lineTo(8 * w, 12 * h)
-        ..lineTo(15 * w, 19 * h),
-      stroke,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_BackChevronPainter oldDelegate) => false;
 }
 
 class _Footer extends StatelessWidget {

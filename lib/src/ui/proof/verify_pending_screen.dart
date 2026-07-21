@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart' show Colors, Scaffold;
 import 'package:flutter/widgets.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
@@ -8,7 +7,6 @@ import '../../l10n/date_number_formatting.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
 import '../theme/app_text_styles.dart';
-import '../theme/screen_background.dart';
 import '../widgets/buttons.dart';
 import '../widgets/status_chip.dart';
 import 'verification_chrome.dart';
@@ -45,111 +43,95 @@ class VerifyPendingScreen extends StatelessWidget {
     );
     final metres = formatMetresNumber(heldMetres, locale);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: ScreenBackground(
-        washes: const [
-          RadialGradient(
-            center: Alignment(0, -1.16),
-            radius: 1.15,
-            colors: [Color(0x3D968368), Color(0x00968368)],
+    return ProofOutcomeScaffold(
+      washes: const [
+        RadialGradient(
+          center: Alignment(0, -1.16),
+          radius: 1.15,
+          colors: [Color(0x3D968368), Color(0x00968368)],
+        ),
+        RadialGradient(
+          center: Alignment(1, -1),
+          radius: 0.9,
+          colors: [Color(0x29968368), Color(0x00968368)],
+        ),
+      ],
+      contourOrigin: percentPositionToAlignment(50, -6),
+      contourRingColor: const Color(0x0D5A4E3A),
+      onClose: onBackToToday,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SealCircle(
+            gradientColors: [
+              AppColors.pendingSealLight,
+              AppColors.pendingSealDark,
+            ],
+            ringColor: Color(0x29A0947E),
+            shadowColor: Color(0x735A503C),
+            icon: SealClockIcon(),
           ),
-          RadialGradient(
-            center: Alignment(1, -1),
-            radius: 0.9,
-            colors: [Color(0x29968368), Color(0x00968368)],
+          const SizedBox(height: 14),
+          Text(
+            l10n.verifyPendingTitle,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.resultTitle.copyWith(
+              color: AppColors.pendingHeading,
+            ),
           ),
-        ],
-        contourOrigin: percentPositionToAlignment(50, -6),
-        contourRingColor: const Color(0x0D5A4E3A),
-        child: SafeArea(
-          child: Column(
+          const SizedBox(height: 6),
+          Text(
+            l10n.taskNameAtTime(taskTitle, time),
+            textAlign: TextAlign.center,
+            style: AppTextStyles.body,
+          ),
+          const SizedBox(height: 18),
+          ProofPhotoPebble(
+            imageBytes: imageBytes,
+            height: 166,
+            overlay: StatusChip(
+              variant: StatusChipVariant.awaiting,
+              onPhoto: true,
+              label: l10n.awaitingVerificationChip,
+            ),
+          ),
+          const SizedBox(height: 14),
+          ReasonBanner(
+            backgroundColor: const Color(0x1F786C58),
+            iconColor: const Color(0xFF8A7F6C),
+            leadText: l10n.offlineReassuranceLead,
+            leadColor: const Color(0xFF463F31),
+            bodyText: l10n.offlineReassuranceBody,
+            textColor: const Color(0xFF544D40),
+          ),
+          const SizedBox(height: 12),
+          Row(
             children: [
-              VerificationHeader(onClose: onBackToToday),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsetsDirectional.fromSTEB(24, 14, 24, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SealCircle(
-                        gradientColors: [
-                          AppColors.pendingSealLight,
-                          AppColors.pendingSealDark,
-                        ],
-                        ringColor: Color(0x29A0947E),
-                        shadowColor: Color(0x735A503C),
-                        icon: SealClockIcon(),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        l10n.verifyPendingTitle,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.resultTitle.copyWith(
-                          color: AppColors.pendingHeading,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        l10n.taskNameAtTime(taskTitle, time),
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.body,
-                      ),
-                      const SizedBox(height: 18),
-                      ProofPhotoPebble(
-                        imageBytes: imageBytes,
-                        height: 166,
-                        overlay: StatusChip(
-                          variant: StatusChipVariant.awaiting,
-                          onPhoto: true,
-                          label: l10n.awaitingVerificationChip,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      ReasonBanner(
-                        backgroundColor: const Color(0x1F786C58),
-                        iconColor: const Color(0xFF8A7F6C),
-                        leadText: l10n.offlineReassuranceLead,
-                        leadColor: const Color(0xFF463F31),
-                        bodyText: l10n.offlineReassuranceBody,
-                        textColor: const Color(0xFF544D40),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _InfoChipCard(
-                              icon: const _StreakSafeIcon(),
-                              title: l10n.streakSafeLabel,
-                              subtitle: l10n.streakSafeSubtext,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _InfoChipCard(
-                              icon: const _HeldMetresIcon(),
-                              title: l10n.heldMetresLabel(metres),
-                              subtitle: l10n.landsOnVerifyLabel,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                child: _InfoChipCard(
+                  icon: const _StreakSafeIcon(),
+                  title: l10n.streakSafeLabel,
+                  subtitle: l10n.streakSafeSubtext,
                 ),
               ),
-              VerificationFooter(
-                children: [
-                  PrimaryButton(
-                    label: l10n.backToTodayButton,
-                    onPressed: onBackToToday,
-                  ),
-                ],
+              const SizedBox(width: 10),
+              Expanded(
+                child: _InfoChipCard(
+                  icon: const _HeldMetresIcon(),
+                  title: l10n.heldMetresLabel(metres),
+                  subtitle: l10n.landsOnVerifyLabel,
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
+      footer: [
+        PrimaryButton(
+          label: l10n.backToTodayButton,
+          onPressed: onBackToToday,
+        ),
+      ],
     );
   }
 }

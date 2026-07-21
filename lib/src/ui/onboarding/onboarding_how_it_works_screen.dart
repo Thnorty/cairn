@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart' show Colors, Scaffold;
 import 'package:flutter/widgets.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
@@ -7,7 +6,7 @@ import '../proof/verification_chrome.dart'
 import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
 import '../theme/app_text_styles.dart';
-import '../theme/screen_background.dart';
+import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/card_surface.dart';
 import 'onboarding_header.dart';
@@ -44,71 +43,66 @@ class OnboardingHowItWorksScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: ScreenBackground(
-        // The same double sage/clay wash the welcome screen uses: this
-        // content is a straight relocation of that screen's own step
-        // cards, not a new visual design, so it keeps the background it
-        // was authored against.
-        washes: const [
-          RadialGradient(
-            center: Alignment(0, -1.12),
-            radius: 1.3,
-            colors: [AppColors.onboardingWelcomeSageWash, Color(0x0096A678)],
-          ),
-          RadialGradient(
-            center: Alignment(1, -0.92),
-            radius: 0.9,
-            colors: [AppColors.clayTintBg, Color(0x00B27C5C)],
-          ),
-        ],
-        contourOrigin: percentPositionToAlignment(50, -4),
-        contourRingColor: AppColors.premiumContourRing,
-        child: SafeArea(
-          child: Column(
-            children: [
-              OnboardingHeader(activeIndex: 1, onBack: onBack),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsetsDirectional.fromSTEB(30, 24, 30, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        l10n.onboardingHowItWorksTitle,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.onboardingVerificationHeadline,
-                      ),
-                      const SizedBox(height: 22),
-                      _StepCard(
-                        leading: const _NumberCircle(number: '1'),
-                        title: l10n.onboardingStep1Title,
-                        body: l10n.onboardingStep1Body,
-                      ),
-                      const SizedBox(height: 12),
-                      _StepCard(
-                        leading: const _NumberCircle(number: '2'),
-                        title: l10n.onboardingStep2Title,
-                        body: l10n.onboardingStep2Body,
-                      ),
-                      const SizedBox(height: 12),
-                      _StepCard(
-                        sage: true,
-                        leading: const _CheckCircle(),
-                        title: l10n.onboardingStep3Title,
-                        body: l10n.onboardingStep3Body,
-                        bodyColor: AppColors.sageReasonBody,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
-                ),
-              ),
-              _Footer(l10n: l10n, onContinue: onContinue),
-            ],
-          ),
+    return ModalScaffold(
+      // The same double sage/clay wash the welcome screen uses: this
+      // content is a straight relocation of that screen's own step
+      // cards, not a new visual design, so it keeps the background it
+      // was authored against.
+      washes: const [
+        RadialGradient(
+          center: Alignment(0, -1.12),
+          radius: 1.3,
+          colors: [AppColors.onboardingWelcomeSageWash, Color(0x0096A678)],
         ),
+        RadialGradient(
+          center: Alignment(1, -0.92),
+          radius: 0.9,
+          colors: [AppColors.clayTintBg, Color(0x00B27C5C)],
+        ),
+      ],
+      contourOrigin: percentPositionToAlignment(50, -4),
+      contourRingColor: AppColors.premiumContourRing,
+      child: Column(
+        children: [
+          OnboardingHeader(activeIndex: 1, onBack: onBack),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsetsDirectional.fromSTEB(30, 24, 30, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    l10n.onboardingHowItWorksTitle,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.onboardingVerificationHeadline,
+                  ),
+                  const SizedBox(height: 22),
+                  _StepCard(
+                    leading: const _NumberCircle(number: '1'),
+                    title: l10n.onboardingStep1Title,
+                    body: l10n.onboardingStep1Body,
+                  ),
+                  const SizedBox(height: 12),
+                  _StepCard(
+                    leading: const _NumberCircle(number: '2'),
+                    title: l10n.onboardingStep2Title,
+                    body: l10n.onboardingStep2Body,
+                  ),
+                  const SizedBox(height: 12),
+                  _StepCard(
+                    sage: true,
+                    leading: const _CheckCircle(),
+                    title: l10n.onboardingStep3Title,
+                    body: l10n.onboardingStep3Body,
+                    bodyColor: AppColors.sageReasonBody,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+          _Footer(l10n: l10n, onContinue: onContinue),
+        ],
       ),
     );
   }

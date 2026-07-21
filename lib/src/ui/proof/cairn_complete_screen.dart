@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' show Colors, Material, MaterialType, Scaffold;
+import 'package:flutter/material.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
@@ -8,9 +8,9 @@ import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
-import '../theme/screen_background.dart';
 import '../widgets/buttons.dart';
 import '../widgets/cairn_stack.dart';
+import '../widgets/glyphs.dart';
 import 'verification_chrome.dart';
 
 /// `Cairn Verify Result - Cairn Complete.dc.html`: the celebration screen
@@ -72,94 +72,76 @@ class CairnCompleteScreen extends StatelessWidget {
       locale,
     );
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: ScreenBackground(
-        // Same sage-forward wash position/contour tint as
-        // `Cairn Verify Result.dc.html` (this screen's own source CSS uses
-        // an identical `50% -8%` top-wash position and `50% -6%` /
-        // rgba(90,110,72,.05) contour ring tint), just a stronger top-wash
-        // alpha (.34 vs VerifyResultScreen's .28) matching this screen's
-        // own more saturated celebration wash.
-        washes: const [
-          RadialGradient(
-            center: Alignment(0, -1.16),
-            radius: 1.2,
-            colors: [Color(0x5796A678), Color(0x0096A678)],
+    return ProofOutcomeScaffold(
+      // Same sage-forward wash position/contour tint as
+      // `Cairn Verify Result.dc.html` (this screen's own source CSS uses
+      // an identical `50% -8%` top-wash position and `50% -6%` /
+      // rgba(90,110,72,.05) contour ring tint), just a stronger top-wash
+      // alpha (.34 vs VerifyResultScreen's .28) matching this screen's
+      // own more saturated celebration wash.
+      washes: const [
+        RadialGradient(
+          center: Alignment(0, -1.16),
+          radius: 1.2,
+          colors: [Color(0x5796A678), Color(0x0096A678)],
+        ),
+        RadialGradient(
+          center: Alignment(1, -1),
+          radius: 0.9,
+          colors: [Color(0x29968368), Color(0x00968368)],
+        ),
+      ],
+      contourOrigin: percentPositionToAlignment(50, -6),
+      contourRingColor: const Color(0x0D5A6E48),
+      onClose: onDone,
+      headerLabel: l10n.cairnCompleteHeaderLabel,
+      headerLabelColor: AppColors.sageText,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _CompactVerifiedRow(taskTitle: taskTitle, time: time),
+          const SizedBox(height: 26),
+          const _CompletedCairnHero(),
+          const SizedBox(height: 20),
+          Text(
+            l10n.cairnCompleteHeadline(cairnNumber),
+            textAlign: TextAlign.center,
+            style: AppTextStyles.cairnCompleteHeadline,
           ),
-          RadialGradient(
-            center: Alignment(1, -1),
-            radius: 0.9,
-            colors: [Color(0x29968368), Color(0x00968368)],
+          const SizedBox(height: 4),
+          Text(
+            l10n.cairnCompleteSubline,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.body,
           ),
-        ],
-        contourOrigin: percentPositionToAlignment(50, -6),
-        contourRingColor: const Color(0x0D5A6E48),
-        child: SafeArea(
-          child: Column(
-            children: [
-              VerificationHeader(
-                onClose: onDone,
-                label: l10n.cairnCompleteHeaderLabel,
-                labelColor: AppColors.sageText,
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsetsDirectional.fromSTEB(24, 14, 24, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _CompactVerifiedRow(taskTitle: taskTitle, time: time),
-                      const SizedBox(height: 26),
-                      const _CompletedCairnHero(),
-                      const SizedBox(height: 20),
-                      Text(
-                        l10n.cairnCompleteHeadline(cairnNumber),
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.cairnCompleteHeadline,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        l10n.cairnCompleteSubline,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.body,
-                      ),
-                      const SizedBox(height: 20),
-                      _CairnBonusPill(
-                        label: l10n.cairnCompleteBonusAmount(
-                          formatMetresNumber(capBonusMetres, locale),
-                        ),
-                        trailing: l10n.cairnCompleteBonusLabel,
-                      ),
-                      const SizedBox(height: 22),
-                      ReasonBanner(
-                        backgroundColor: AppColors.sageBannerBg,
-                        iconColor: AppColors.sageText,
-                        textColor: AppColors.sageReasonBody,
-                        spans: [
-                          TextSpan(text: '${l10n.cairnCompleteTeachingLead} '),
-                          TextSpan(
-                            text: l10n.cairnCompleteTeachingNext(nextCairnNumber),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.sageReasonBold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+          const SizedBox(height: 20),
+          _CairnBonusPill(
+            label: l10n.cairnCompleteBonusAmount(
+              formatMetresNumber(capBonusMetres, locale),
+            ),
+            trailing: l10n.cairnCompleteBonusLabel,
+          ),
+          const SizedBox(height: 22),
+          ReasonBanner(
+            backgroundColor: AppColors.sageBannerBg,
+            iconColor: AppColors.sageText,
+            textColor: AppColors.sageReasonBody,
+            spans: [
+              TextSpan(text: '${l10n.cairnCompleteTeachingLead} '),
+              TextSpan(
+                text: l10n.cairnCompleteTeachingNext(nextCairnNumber),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.sageReasonBold,
                 ),
-              ),
-              VerificationFooter(
-                children: [
-                  PrimaryButton(label: l10n.doneButton, onPressed: onDone),
-                ],
               ),
             ],
           ),
-        ),
+        ],
       ),
+      footer: [
+        PrimaryButton(label: l10n.doneButton, onPressed: onDone),
+      ],
     );
   }
 }
@@ -292,7 +274,7 @@ class _CairnBonusPill extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const _BonusMountainGlyph(),
+            const MountainGlyph(color: AppColors.buttonText, size: 18),
             const SizedBox(width: 9),
             Text(label, style: AppTextStyles.buttonLabelLarge),
             const SizedBox(width: 6),
@@ -310,48 +292,4 @@ class _CairnBonusPill extends StatelessWidget {
       ),
     );
   }
-}
-
-/// The bonus pill's small mountain glyph (`M3 19l5.5-9 3.5 5 2-3 6.5 7z`) -
-/// the same path Profile's rank-hero badge and the Trail rank pill draw,
-/// duplicated privately here rather than shared, matching this codebase's
-/// existing precedent for small one-off glyph painters (see
-/// `trail_screen.dart`'s `_MountainGlyphPainter` doc comment).
-class _BonusMountainGlyph extends StatelessWidget {
-  const _BonusMountainGlyph();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 18,
-      height: 18,
-      child: CustomPaint(painter: _BonusMountainGlyphPainter()),
-    );
-  }
-}
-
-class _BonusMountainGlyphPainter extends CustomPainter {
-  const _BonusMountainGlyphPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final s = size.width / 24;
-    Offset p(double x, double y) => Offset(x * s, y * s);
-    final paint = Paint()
-      ..color = AppColors.buttonText
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2 * s
-      ..strokeJoin = StrokeJoin.round;
-    final path = Path()
-      ..moveTo(p(3, 19).dx, p(3, 19).dy)
-      ..lineTo(p(8.5, 10).dx, p(8.5, 10).dy)
-      ..lineTo(p(12, 15).dx, p(12, 15).dy)
-      ..lineTo(p(14, 12).dx, p(14, 12).dy)
-      ..lineTo(p(20.5, 19).dx, p(20.5, 19).dy)
-      ..close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(_BonusMountainGlyphPainter oldDelegate) => false;
 }

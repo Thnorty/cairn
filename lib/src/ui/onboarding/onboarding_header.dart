@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' show MaterialLocalizations;
 import 'package:flutter/widgets.dart';
 
 import '../theme/app_colors.dart';
+import '../widgets/glyphs.dart';
 
 /// Shared header for the three first-launch onboarding screens (Welcome /
 /// How It Works / Verify - see `onboarding_flow.dart`'s doc comment): a
@@ -109,39 +110,9 @@ class _BackButton extends StatelessWidget {
           height: 36,
           decoration: const BoxDecoration(color: AppColors.awaitingChipBg, shape: BoxShape.circle),
           alignment: Alignment.center,
-          child: const SizedBox(width: 16, height: 16, child: CustomPaint(painter: _BackChevronPainter())),
+          child: const BackChevronGlyph(color: AppColors.iconMuted, size: 16),
         ),
       ),
     );
   }
-}
-
-/// Back-chevron glyph (`M15 5l-7 7 7 7`), duplicated privately here per this
-/// codebase's existing precedent (see e.g. `premium_screen.dart`'s
-/// `_StoneStylesGlyph` doc comment) rather than exporting a shared painter
-/// for one glyph used only by this one header.
-class _BackChevronPainter extends CustomPainter {
-  const _BackChevronPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final stroke = Paint()
-      ..color = AppColors.iconMuted
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final w = size.width / 24;
-    final h = size.height / 24;
-    canvas.drawPath(
-      Path()
-        ..moveTo(15 * w, 5 * h)
-        ..lineTo(8 * w, 12 * h)
-        ..lineTo(15 * w, 19 * h),
-      stroke,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_BackChevronPainter oldDelegate) => false;
 }

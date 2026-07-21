@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart' show Colors, GridView, NeverScrollableScrollPhysics, Scaffold, SliverGridDelegateWithFixedCrossAxisCount;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,7 +14,7 @@ import '../../services/proof_flow.dart';
 import '../../services/recent_photo_library.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../theme/screen_background.dart';
+import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/status_chip.dart' show GalleryGlyph;
 import 'photo_review_screen.dart';
@@ -194,105 +193,100 @@ class _CameraUnavailableScreenState extends ConsumerState<CameraUnavailableScree
       );
     }
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: ScreenBackground(
-        washes: const [
-          RadialGradient(
-            center: Alignment(0, -1.16),
-            radius: 1.15,
-            colors: [Color(0x24968368), Color(0x00968368)],
+    return ModalScaffold(
+      washes: const [
+        RadialGradient(
+          center: Alignment(0, -1.16),
+          radius: 1.15,
+          colors: [Color(0x24968368), Color(0x00968368)],
+        ),
+      ],
+      contourOrigin: percentPositionToAlignment(50, -6),
+      contourRingColor: const Color(0x0D463C2C),
+      child: Column(
+        children: [
+          VerificationHeader(
+            onClose: () => Navigator.of(context).pop(),
+            label: l10n.proveItHeaderLabel,
           ),
-        ],
-        contourOrigin: percentPositionToAlignment(50, -6),
-        contourRingColor: const Color(0x0D463C2C),
-        child: SafeArea(
-          child: Column(
-            children: [
-              VerificationHeader(
-                onClose: () => Navigator.of(context).pop(),
-                label: l10n.proveItHeaderLabel,
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsetsDirectional.fromSTEB(24, 20, 24, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SealCircle(
-                        size: 64,
-                        gradientColors: [AppColors.pendingSealLight, AppColors.pendingSealDark],
-                        ringColor: Color(0x29A0947E),
-                        shadowColor: Color(0x735A503C),
-                        icon: SealCameraOffIcon(),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n.cameraUnavailableTitle,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.resultTitle.copyWith(color: AppColors.pendingHeading),
-                      ),
-                      const SizedBox(height: 8),
-                      Text.rich(
-                        TextSpan(
-                          style: AppTextStyles.body,
-                          children: [
-                            TextSpan(text: '${l10n.cameraUnavailableBodyLead} '),
-                            TextSpan(
-                              text: '${widget.taskTitle} ',
-                              style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF544D40)),
-                            ),
-                            TextSpan(text: l10n.cameraUnavailableBodyTrail),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 26),
-                      _RecentPhotosSection(
-                        result: _photos,
-                        busy: _busy,
-                        onSelect: _selectAsset,
-                        onFallbackGallery: _openGalleryPicker,
-                        label: l10n.recentPhotosLabel,
-                        fallbackLabel: l10n.chooseFromGalleryButton,
-                        thumbnailSemanticLabel: l10n.recentPhotoThumbnailLabel,
-                      ),
-                      const SizedBox(height: 18),
-                      ReasonBanner(
-                        backgroundColor: const Color(0x1F786C58),
-                        iconColor: const Color(0xFF8A7F6C),
-                        textColor: const Color(0xFF544D40),
-                        spans: [
-                          TextSpan(text: '${l10n.settingsHintLead} '),
-                          TextSpan(
-                            text: l10n.settingsHintEmphasis,
-                            style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF463F31)),
-                          ),
-                          TextSpan(text: l10n.settingsHintTrail),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              VerificationFooter(
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsetsDirectional.fromSTEB(24, 20, 24, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  PrimaryButton(
-                    label: l10n.chooseFromGalleryButton,
-                    onPressed: _busy ? null : _openGalleryPicker,
-                    icon: const GalleryGlyph(color: AppColors.buttonText, size: 20),
+                  const SealCircle(
+                    size: 64,
+                    gradientColors: [AppColors.pendingSealLight, AppColors.pendingSealDark],
+                    ringColor: Color(0x29A0947E),
+                    shadowColor: Color(0x735A503C),
+                    icon: SealCameraOffIcon(),
                   ),
-                  Center(
-                    child: TextGhostButton(
-                      label: l10n.openCameraSettingsButton,
-                      onPressed: () => ref.read(appSettingsOpenerProvider).openCameraSettings(),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.cameraUnavailableTitle,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.resultTitle.copyWith(color: AppColors.pendingHeading),
+                  ),
+                  const SizedBox(height: 8),
+                  Text.rich(
+                    TextSpan(
+                      style: AppTextStyles.body,
+                      children: [
+                        TextSpan(text: '${l10n.cameraUnavailableBodyLead} '),
+                        TextSpan(
+                          text: '${widget.taskTitle} ',
+                          style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF544D40)),
+                        ),
+                        TextSpan(text: l10n.cameraUnavailableBodyTrail),
+                      ],
                     ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 26),
+                  _RecentPhotosSection(
+                    result: _photos,
+                    busy: _busy,
+                    onSelect: _selectAsset,
+                    onFallbackGallery: _openGalleryPicker,
+                    label: l10n.recentPhotosLabel,
+                    fallbackLabel: l10n.chooseFromGalleryButton,
+                    thumbnailSemanticLabel: l10n.recentPhotoThumbnailLabel,
+                  ),
+                  const SizedBox(height: 18),
+                  ReasonBanner(
+                    backgroundColor: const Color(0x1F786C58),
+                    iconColor: const Color(0xFF8A7F6C),
+                    textColor: const Color(0xFF544D40),
+                    spans: [
+                      TextSpan(text: '${l10n.settingsHintLead} '),
+                      TextSpan(
+                        text: l10n.settingsHintEmphasis,
+                        style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF463F31)),
+                      ),
+                      TextSpan(text: l10n.settingsHintTrail),
+                    ],
                   ),
                 ],
               ),
+            ),
+          ),
+          VerificationFooter(
+            children: [
+              PrimaryButton(
+                label: l10n.chooseFromGalleryButton,
+                onPressed: _busy ? null : _openGalleryPicker,
+                icon: const GalleryGlyph(color: AppColors.buttonText, size: 20),
+              ),
+              Center(
+                child: TextGhostButton(
+                  label: l10n.openCameraSettingsButton,
+                  onPressed: () => ref.read(appSettingsOpenerProvider).openCameraSettings(),
+                ),
+              ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

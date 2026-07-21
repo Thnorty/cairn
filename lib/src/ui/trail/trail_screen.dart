@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart'
-    show Colors, Material, MaterialPageRoute, MaterialType, Scaffold;
+    show Material, MaterialPageRoute, MaterialType;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,10 +16,13 @@ import '../theme/app_gradients.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
-import '../theme/screen_background.dart';
+import '../theme/screen_background.dart' show TopographicContourPainter;
+import '../widgets/app_scaffold.dart';
 import '../widgets/cairn_stack.dart';
 import '../widgets/ghost_cairn.dart';
+import '../widgets/glyphs.dart';
 import '../widgets/plus_glyph.dart';
+import '../widgets/screen_header.dart';
 
 /// Opens `NewHabitScreen` on top of the current route - the same navigation
 /// Home's own "New habit" pill/Empty Today CTA use (see
@@ -62,41 +65,37 @@ class TrailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final snapshotAsync = ref.watch(trailSnapshotProvider);
 
-    // Same reasoning as HomeScreen/ProfileScreen's own root Scaffold: this
+    // Same reasoning as HomeScreen/ProfileScreen's own [AppScaffold]: this
     // screen drops into AppShell's `IndexedStack` (already under its own
     // transparent `Material`) but must also render correctly standalone (a
     // widget test or the screenshot harness), so it supplies its own
-    // transparent one rather than depending on the caller remembering one.
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          // Opaque and full-bleed: sits behind the header, the chip row and
-          // the scrollable body, covering AppShell's shared ScreenBackground
-          // washes for every state (including the empty states below), not
-          // just the populated trail.
-          const Positioned.fill(child: _TrailScreenBackground()),
-          snapshotAsync.when(
-            data: (snapshot) {
-              if (snapshot.chips.isEmpty) {
-                // No tasks at all, anywhere in the app: the same empty-state
-                // illustration/copy Home shows for the identical condition
-                // (see this run's spec: "reuse Empty Today's visual
-                // language").
-                return EmptyTodayView(
-                  onNewHabit: () => _openNewHabitScreen(context),
-                );
-              }
-              return _TrailScreenBody(snapshot: snapshot, ref: ref);
-            },
-            // The stream's first emission is effectively synchronous (see
-            // HomeService.watchToday's doc comment; TrailService follows
-            // the same recipe), so there's no meaningful loading UI to
-            // design here.
-            loading: () => const SizedBox.shrink(),
-            error: (error, stackTrace) => Center(child: Text('$error')),
-          ),
-        ],
+    // transparent one rather than depending on the caller remembering one -
+    // see [AppScaffold]'s own doc comment.
+    return AppScaffold(
+      // Opaque and full-bleed: sits behind the header, the chip row and
+      // the scrollable body, covering AppShell's shared ScreenBackground
+      // washes for every state (including the empty states below), not
+      // just the populated trail.
+      background: const _TrailScreenBackground(),
+      child: snapshotAsync.when(
+        data: (snapshot) {
+          if (snapshot.chips.isEmpty) {
+            // No tasks at all, anywhere in the app: the same empty-state
+            // illustration/copy Home shows for the identical condition
+            // (see this run's spec: "reuse Empty Today's visual
+            // language").
+            return EmptyTodayView(
+              onNewHabit: () => _openNewHabitScreen(context),
+            );
+          }
+          return _TrailScreenBody(snapshot: snapshot, ref: ref);
+        },
+        // The stream's first emission is effectively synchronous (see
+        // HomeService.watchToday's doc comment; TrailService follows
+        // the same recipe), so there's no meaningful loading UI to
+        // design here.
+        loading: () => const SizedBox.shrink(),
+        error: (error, stackTrace) => Center(child: Text('$error')),
       ),
     );
   }
@@ -214,28 +213,22 @@ class _TrailHeader extends StatelessWidget {
     final locale = Localizations.localeOf(context);
 
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(24, 8, 24, 0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(l10n.trailHeaderEyebrow, style: AppTextStyles.sectionLabel),
-                const SizedBox(height: 4),
-                Text(taskTitle, style: AppTextStyles.screenTitle),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          _RankPill(
-            rank: rank,
-            metresText: l10n.trailRankMetresLabel(formatMetresNumber(altitude, locale)),
-          ),
-        ],
+      // Shared top-left inset for every tab screen (Home/Trail/Stats/
+      // Profile) and the VerificationHeader family - see
+      // `kScreenEdgePadding`'s own doc comment.
+      padding: kScreenEdgePadding,
+      child: ScreenHeader(
+        eyebrow: l10n.trailHeaderEyebrow,
+        title: taskTitle,
+        // ScreenHeader's own Row keeps the eyebrow top-aligned regardless of
+        // this pill's height - see ScreenHeader's doc comment on why (this
+        // is the exact drift this run's spec fixes: the old Row here used
+        // `crossAxisAlignment: end`, so the pill's own height silently
+        // pushed the eyebrow down relative to Stats/Profile).
+        trailing: _RankPill(
+          rank: rank,
+          metresText: l10n.trailRankMetresLabel(formatMetresNumber(altitude, locale)),
+        ),
       ),
     );
   }
@@ -268,7 +261,7 @@ class _RankPill extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: const _MountainGlyph(),
+            child: const MountainGlyph(color: AppColors.heroMountainStroke, size: 17),
           ),
           const SizedBox(width: 9),
           Column(
@@ -283,51 +276,6 @@ class _RankPill extends StatelessWidget {
       ),
     );
   }
-}
-
-/// The rank pill's mountain glyph (`M3 19l5.5-9 3.5 5 2-3 6.5 7z`) - the
-/// same path Profile's own rank-hero badge draws, duplicated privately here
-/// rather than shared, matching this codebase's existing precedent for
-/// small one-off glyph painters (e.g. `_ChevronRightPainter` in
-/// `new_habit_recurrence_panel.dart`, noted in `profile_screen.dart`'s own
-/// doc comment).
-class _MountainGlyph extends StatelessWidget {
-  const _MountainGlyph();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 17,
-      height: 17,
-      child: CustomPaint(painter: _MountainGlyphPainter()),
-    );
-  }
-}
-
-class _MountainGlyphPainter extends CustomPainter {
-  const _MountainGlyphPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final s = size.width / 24;
-    Offset p(double x, double y) => Offset(x * s, y * s);
-    final paint = Paint()
-      ..color = AppColors.heroMountainStroke
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2 * s
-      ..strokeJoin = StrokeJoin.round;
-    final path = Path()
-      ..moveTo(p(3, 19).dx, p(3, 19).dy)
-      ..lineTo(p(8.5, 10).dx, p(8.5, 10).dy)
-      ..lineTo(p(12, 15).dx, p(12, 15).dy)
-      ..lineTo(p(14, 12).dx, p(14, 12).dy)
-      ..lineTo(p(20.5, 19).dx, p(20.5, 19).dy)
-      ..close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(_MountainGlyphPainter oldDelegate) => false;
 }
 
 // ---------------------------------------------------------------------------
@@ -828,7 +776,7 @@ class _SettledCairnNode extends StatelessWidget {
       caption = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const _LightningGlyph(),
+          const LightningGlyph(color: AppColors.textFaint, size: 10),
           const SizedBox(width: 4),
           Text(
             l10n.trailBrokenCaption(cairn.stoneCount),
@@ -866,49 +814,6 @@ class _SettledCairnNode extends StatelessWidget {
 
     return broken ? Opacity(opacity: 0.52, child: content) : content;
   }
-}
-
-/// The broken cairn's small lightning-bolt glyph
-/// (`M13 3l-2 8h6l-8 10 2-8H5z`).
-class _LightningGlyph extends StatelessWidget {
-  const _LightningGlyph();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 10,
-      height: 10,
-      child: CustomPaint(painter: _LightningGlyphPainter()),
-    );
-  }
-}
-
-class _LightningGlyphPainter extends CustomPainter {
-  const _LightningGlyphPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final s = size.width / 24;
-    Offset p(double x, double y) => Offset(x * s, y * s);
-    final paint = Paint()
-      ..color = AppColors.textFaint
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.4 * s
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final path = Path()
-      ..moveTo(p(13, 3).dx, p(13, 3).dy)
-      ..lineTo(p(11, 11).dx, p(11, 11).dy)
-      ..lineTo(p(17, 11).dx, p(17, 11).dy)
-      ..lineTo(p(9, 21).dx, p(9, 21).dy)
-      ..lineTo(p(11, 13).dx, p(11, 13).dy)
-      ..lineTo(p(5, 13).dx, p(5, 13).dy)
-      ..close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(_LightningGlyphPainter oldDelegate) => false;
 }
 
 // ---------------------------------------------------------------------------
