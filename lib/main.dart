@@ -29,19 +29,19 @@ Future<void> main() async {
   runApp(const ProviderScope(child: CairnApp()));
 }
 
-/// App root. A [ConsumerWidget] so it can watch [proofRetryTriggerProvider]
-/// and [authBootstrapProvider]: both are lazy [Provider]s, so nothing
-/// constructs the pending-verification retry trigger (and starts its
-/// lifecycle listener/connectivity subscription), nor kicks off anonymous
-/// sign-in and the user_id backfill, until something watches them. The app
-/// root is the one place guaranteed to build for the whole lifetime of the
-/// running app.
+/// App root. A [ConsumerWidget] so it can watch [proofRetryTriggerProvider],
+/// [authBootstrapProvider], and [syncTriggerProvider]: all three are lazy
+/// [Provider]s, so nothing constructs the pending-verification retry
+/// trigger or the sync trigger (and starts their lifecycle
+/// listener/connectivity subscriptions), nor kicks off anonymous sign-in and
+/// the user_id backfill, until something watches them. The app root is the
+/// one place guaranteed to build for the whole lifetime of the running app.
 ///
 /// Deliberately not wired into `test/widget_test.dart`: that test pumps
 /// `MaterialApp(home: DebugScreen())` directly rather than [CairnApp], so
-/// watching either provider here never touches that test and never drags
-/// connectivity_plus's platform channel, or a real Supabase auth call, into
-/// it.
+/// watching any of these providers here never touches that test and never
+/// drags connectivity_plus's platform channel, or a real Supabase auth call,
+/// into it.
 class CairnApp extends ConsumerWidget {
   const CairnApp({super.key});
 
@@ -49,6 +49,7 @@ class CairnApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(proofRetryTriggerProvider);
     ref.watch(authBootstrapProvider);
+    ref.watch(syncTriggerProvider);
     return MaterialApp(
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       localizationsDelegates: AppLocalizations.localizationsDelegates,

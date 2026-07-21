@@ -64,22 +64,24 @@ abstract class SyncTransport {
   Future<void> push(SyncPushBatch batch);
 }
 
-/// Real remote transport (Phase 4b): maps the drift row types to/from the
-/// Supabase Postgres wire JSON and calls out over the network. Requires the
-/// remote tables and a live project, neither of which exist yet (Phase 4a is
-/// the client engine only), so every method is an explicit stub until then.
-/// This placeholder exists so the sync engine and its provider wiring have a
-/// real-implementation slot to point at without faking a network.
-class SupabaseSyncTransport implements SyncTransport {
-  const SupabaseSyncTransport();
+/// Stand-in transport for when no live Supabase project is configured
+/// (`AppConfig.isConfigured == false`, e.g. an offline-only build): every
+/// call throws, which [SyncService.syncOnce] already treats as "nothing
+/// accepted" (see its class doc comment), so `dirty` flags are never
+/// falsely cleared and no test that resolves [SyncService] through the
+/// provider graph without overriding the transport ever attempts a network
+/// call. The real, network-backed implementation is
+/// `SupabaseSyncTransport` in `supabase_sync_transport.dart` (Phase 4b).
+class UnconfiguredSyncTransport implements SyncTransport {
+  const UnconfiguredSyncTransport();
 
   @override
   Future<SyncPullResult> pull({required int cursor}) {
-    throw UnimplementedError('Phase 4b: needs the remote tables');
+    throw StateError('Sync transport unavailable: Supabase is not configured');
   }
 
   @override
   Future<void> push(SyncPushBatch batch) {
-    throw UnimplementedError('Phase 4b: needs the remote tables');
+    throw StateError('Sync transport unavailable: Supabase is not configured');
   }
 }

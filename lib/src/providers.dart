@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import 'clock.dart';
+import 'config.dart';
 import 'db/database.dart';
 import 'models/proof_verdict.dart';
 import 'repo/completion_repository.dart';
@@ -27,8 +28,10 @@ import 'services/stats_service.dart';
 import 'services/streak_service.dart';
 import 'services/supabase_proof_verifier.dart';
 import 'services/trail_service.dart';
+import 'sync/supabase_sync_transport.dart';
 import 'sync/sync_service.dart';
 import 'sync/sync_transport.dart';
+import 'sync/sync_trigger.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase(driftDatabase(name: 'cairn'));
@@ -347,23 +350,43 @@ final authBootstrapProvider = Provider<void>((ref) {
 });
 
 /// Seam for the Phase 4a delta-sync engine's remote side (see
-/// `lib/src/sync/sync_transport.dart`). Defaults to the [SupabaseSyncTransport]
-/// stub (Phase 4b work: real tables don't exist yet), so this provider exists
-/// purely to give [syncServiceProvider] a dependency and to give tests a
-/// clean seam to override with `test/support/fake_sync_transport.dart`'s
+/// `lib/src/sync/sync_transport.dart`). Points at the real, network-backed
+/// [SupabaseSyncTransport] (Phase 4b) only when a live Supabase project is
+/// configured; otherwise falls back to [UnconfiguredSyncTransport] so an
+/// offline/unconfigured build - and every existing test that resolves
+/// [SyncService] through the provider graph without overriding this - never
+/// attempts a network call. Tests needing a working fake "server" instead
+/// override this with `test/support/fake_sync_transport.dart`'s
 /// `FakeSyncTransport`.
-final syncTransportProvider =
-    Provider<SyncTransport>((ref) => const SupabaseSyncTransport());
+final syncTransportProvider = Provider<SyncTransport>((ref) {
+  if (!AppConfig.isConfigured) return const UnconfiguredSyncTransport();
+  return SupabaseSyncTransport();
+});
 
 /// The hand-rolled client delta-sync engine (Phase 4a), built from the local
-/// database and [syncTransportProvider]. Deliberately not watched or
-/// triggered anywhere in the app lifecycle yet (no foreground/connectivity
-/// wiring) - that wiring is human-gated Phase 4b work, once a real transport
-/// exists to sync against. Exists now so tests can drive [SyncService]
-/// through the provider graph with the transport overridden.
+/// database and [syncTransportProvider].
 final syncServiceProvider = Provider<SyncService>((ref) {
   return SyncService(
     ref.watch(databaseProvider),
     ref.watch(syncTransportProvider),
   );
+});
+
+/// Wires [SyncTrigger] into the app lifecycle, the same lazy-factory pattern
+/// as [proofRetryTriggerProvider]: resolves [syncServiceProvider] via
+/// `ref.read` inside a factory rather than `ref.watch`, so this provider has
+/// no build-time dependency edge on it (or on [authServiceProvider], read
+/// the same way for the `isSignedIn` guard) and is built once, for the life
+/// of the app, with its lifecycle listener/connectivity subscription started
+/// exactly once. Nothing constructs the trigger until something watches this
+/// provider, so the app root must watch it once at startup.
+final syncTriggerProvider = Provider<SyncTrigger>((ref) {
+  final trigger = SyncTrigger(
+    () => ref.read(syncServiceProvider),
+    isConfigured: () => AppConfig.isConfigured,
+    isSignedIn: () => ref.read(authServiceProvider).currentUserId != null,
+  );
+  trigger.start();
+  ref.onDispose(trigger.dispose);
+  return trigger;
 });
