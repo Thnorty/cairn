@@ -52,11 +52,11 @@ class HowCairnsWorkScreen extends StatelessWidget {
           RadialGradient(
             center: Alignment(0, -1.12),
             radius: 1.15,
-            colors: [Color(0x3D96A678), Color(0x0096A678)],
+            colors: [AppColors.onboardingVerificationSageWash, AppColors.sageWashEnd],
           ),
         ],
         contourOrigin: percentPositionToAlignment(50, -4),
-        contourRingColor: const Color(0x0D5A6448),
+        contourRingColor: AppColors.premiumContourRing,
         child: SafeArea(
           child: Column(
             children: [

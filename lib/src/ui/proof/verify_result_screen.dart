@@ -59,23 +59,23 @@ class VerifyResultScreen extends StatelessWidget {
         RadialGradient(
           center: Alignment(0, -1.16),
           radius: 1.15,
-          colors: [Color(0x477A8D60), Color(0x007A8D60)],
+          colors: [Color(0x477A8D60), AppColors.sageGlowEnd],
         ),
         RadialGradient(
           center: Alignment(1, -1),
           radius: 0.9,
-          colors: [Color(0x29968368), Color(0x00968368)],
+          colors: [AppColors.dustWashCorner, AppColors.dustWashEnd],
         ),
       ],
       contourOrigin: percentPositionToAlignment(50, -6),
-      contourRingColor: const Color(0x0D5A6E48),
+      contourRingColor: AppColors.contourRingSageDeep,
       onClose: onDone,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SealCircle(
             gradientColors: [AppColors.sageLight, AppColors.sage],
-            ringColor: Color(0x297A8D60),
+            ringColor: AppColors.sageChipBg,
             shadowColor: Color(0x8C5A6E3C),
             icon: SealCheckmarkIcon(),
           ),

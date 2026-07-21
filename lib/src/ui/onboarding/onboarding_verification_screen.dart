@@ -13,7 +13,7 @@ import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/card_surface.dart';
-import '../widgets/coming_soon_snack_bar.dart';
+import '../widgets/message_snack_bar.dart';
 import 'onboarding_header.dart';
 
 /// `Cairn Onboarding Verification.dc.html`: step 3 of 3 (the last) in the
@@ -58,7 +58,7 @@ class _OnboardingVerificationScreenState
   }
 
   void _showComingSoon(String message) {
-    context.showComingSoonSnackBar(message);
+    context.showMessageSnackBar(message);
   }
 
   @override
@@ -70,7 +70,7 @@ class _OnboardingVerificationScreenState
         RadialGradient(
           center: Alignment(0, -1.12),
           radius: 1.3,
-          colors: [AppColors.onboardingVerificationSageWash, Color(0x0096A678)],
+          colors: [AppColors.onboardingVerificationSageWash, AppColors.sageWashEnd],
         ),
       ],
       contourOrigin: percentPositionToAlignment(50, -4),

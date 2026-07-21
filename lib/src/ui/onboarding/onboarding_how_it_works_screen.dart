@@ -52,12 +52,12 @@ class OnboardingHowItWorksScreen extends StatelessWidget {
         RadialGradient(
           center: Alignment(0, -1.12),
           radius: 1.3,
-          colors: [AppColors.onboardingWelcomeSageWash, Color(0x0096A678)],
+          colors: [AppColors.onboardingWelcomeSageWash, AppColors.sageWashEnd],
         ),
         RadialGradient(
           center: Alignment(1, -0.92),
           radius: 0.9,
-          colors: [AppColors.clayTintBg, Color(0x00B27C5C)],
+          colors: [AppColors.clayTintBg, AppColors.clayWashEnd],
         ),
       ],
       contourOrigin: percentPositionToAlignment(50, -4),

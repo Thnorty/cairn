@@ -280,6 +280,12 @@ abstract final class AppColors {
   /// "+ Add a time".
   static const Color addTimeIconBg = Color(0x29786C58);
 
+  /// `#6e8056` at ~.6 alpha (`0 4px 8px -4px`) - the selected sage day-circle
+  /// / week-ordinal chip's drop shadow, shared by [DayCircle] and
+  /// `_WeekOrdinalChip` in `new_habit_recurrence_panel.dart` (centralized
+  /// this pass; the value was previously duplicated inline in both places).
+  static const Color selectedCircleShadow = Color(0x996E8056);
+
   // ---- Profile screen -----------------------------------------------------
 
   /// `#f0ece1` - the rank hero's primary text colour (inherited by its tier
@@ -351,9 +357,9 @@ abstract final class AppColors {
   static const Color accountIconStroke = Color(0xFF5C5344);
 
   /// `#c9c0b0` / `#a99f8c` - the account-status row's avatar-circle
-  /// gradient (150deg; the same pair Home's greeting avatar uses, kept as
-  /// its own token here since that one is a private literal in
-  /// `home_screen.dart`).
+  /// gradient (150deg), also reused by Home's own greeting avatar circle
+  /// (`_AvatarCircle` in `home_screen.dart`, repointed to this token this
+  /// pass rather than keeping its own matching private literal).
   static const Color accountAvatarLight = Color(0xFFC9C0B0);
   static const Color accountAvatarDark = Color(0xFFA99F8C);
 
@@ -389,7 +395,13 @@ abstract final class AppColors {
   // ---- Stats screen ---------------------------------------------------------
 
   /// rgba(120,108,88,.18) - a future weekday bar's faint fill on the Stats
-  /// screen's "This week" chart.
+  /// screen's "This week" chart. Numerically identical to the muted pill/
+  /// icon-circle background on Verify Failed's disabled "Try again
+  /// tomorrow" button and the AttemptsInfoCard icon circle on Verify
+  /// Failed/Verify Too Old (repointed to this token this pass rather than
+  /// keeping its own separately-named duplicate), kept as one token since
+  /// nothing in this file's own precedent (e.g. [achievedTierIconBg])
+  /// distinguishes "reused verbatim" from "coincidentally identical".
   static const Color statsFutureBarBg = Color(0x2E786C58);
 
   /// rgba(120,108,88,.2) - shared by the Stats screen's unfilled
@@ -484,4 +496,131 @@ abstract final class AppColors {
   /// rgba(178,124,92,.16) - the onboarding verification screen's footer
   /// permission-primer icon-circle background.
   static const Color onboardingPermissionIconBg = Color(0x29B27C5C);
+
+  // ---- Shared wash gradient stops (proof outcome / new habit / daily limit) -
+  // Centralized this pass: each hex below was previously re-typed as an
+  // inline literal in every screen that used it, rather than shared.
+
+  /// rgba(150,131,104,x) - the warm "dust" accent wash's transparent end
+  /// stop, reused verbatim across Cairn Complete, Camera Unavailable, New
+  /// Habit, Daily Limit, Verify Pending, Verify Failed, Verify Too Old and
+  /// Verify Result. Each screen's own non-zero-alpha start stop stays its
+  /// own token below ([dustWashCorner]/[dustWashPrimary]/[dustWashSoft]),
+  /// per this file's existing precedent of preserving distinct per-screen
+  /// alphas rather than merging them.
+  static const Color dustWashEnd = Color(0x00968368);
+
+  /// rgba(150,131,104,.16) - the dust wash's "second corner" start stop,
+  /// shared verbatim by Cairn Complete, Verify Pending, Verify Failed and
+  /// Verify Result's own second (bottom-right) wash.
+  static const Color dustWashCorner = Color(0x29968368);
+
+  /// rgba(150,131,104,.2) - the dust wash's single-wash start stop on New
+  /// Habit and Daily Limit.
+  static const Color dustWashPrimary = Color(0x33968368);
+
+  /// rgba(150,131,104,.14) - the dust wash's single-wash start stop on
+  /// Camera Unavailable and Verify Too Old.
+  static const Color dustWashSoft = Color(0x24968368);
+
+  /// rgba(150,166,120,0) - the sage wash's transparent end stop, shared by
+  /// Premium, Cairn Complete, the onboarding How It Works/Welcome/
+  /// Verification screens, and How Cairns Work (each screen keeps its own
+  /// distinct non-zero-alpha start token, e.g. [premiumSageWash]).
+  static const Color sageWashEnd = Color(0x0096A678);
+
+  /// rgba(178,124,92,0) - the clay wash's transparent end stop, shared by
+  /// Premium, the onboarding How It Works/Welcome screens, and Verify
+  /// Failed's own second wash.
+  static const Color clayWashEnd = Color(0x00B27C5C);
+
+  /// rgba(122,141,96,0) - a sage glow ring's transparent end stop (Cairn
+  /// Complete's hero halo, Camera Capture's "Verifying…" pulse ring, and
+  /// Verify Result's own hero halo).
+  static const Color sageGlowEnd = Color(0x007A8D60);
+
+  /// rgba(70,60,44,.05) - the default topographic contour-ring tint most
+  /// screens use (`ModalScaffold`/`ScreenBackground`'s own default, and the
+  /// explicit override on Camera Unavailable, Daily Limit, and Verify Too
+  /// Old): "Home's neutral warm-ink tint", per [premiumContourRing]'s own
+  /// doc comment contrasting the two.
+  static const Color contourRingNeutral = Color(0x0D463C2C);
+
+  /// rgba(90,110,72,.05) - a third, sage-forward contour-ring tint, one byte
+  /// off both [contourRingNeutral] and [premiumContourRing] (kept distinct
+  /// per this file's own precedent - see [trailWhereYouStartedText]), shared
+  /// by Cairn Complete and Verify Result's own celebratory wash.
+  static const Color contourRingSageDeep = Color(0x0D5A6E48);
+
+  // ---- Camera & photo-review dark chrome -------------------------------------
+
+  /// The live camera and photo-review screens' shared near-black scaffold
+  /// background, distinct from the warm-parchment [screenBackground] every
+  /// other screen uses (see `CameraCaptureScreen`'s own doc comment on why).
+  static const Color cameraChromeBackground = Color(0xFF211D18);
+
+  /// rgba(20,18,16,.4) - the dark "glass" circle/pill background shared by
+  /// the camera top bar's close button and Photo Review's review-prompt
+  /// pill.
+  static const Color cameraGlassBg = Color(0x66141210);
+
+  /// rgba(255,255,255,.16) - the dark "glass" border shared by Camera
+  /// Capture's icon buttons and Photo Review's glass secondary button.
+  static const Color cameraGlassBorder = Color(0x29FFFFFF);
+
+  /// rgba(20,18,14,0) - Photo Review's top/bottom scrim transparent end
+  /// stop (each scrim's own start alpha stays a distinct per-direction
+  /// literal).
+  static const Color photoScrimEnd = Color(0x0014120E);
+
+  // ---- Proof-outcome reason/attempts banners ---------------------------------
+  // Shared verbatim across Camera Unavailable, Verify Pending, Verify Too
+  // Old and (for the attempts-card pair) Verify Failed.
+
+  /// `#544d40` - the offline/settings/stale-photo reassurance banners' body
+  /// text colour.
+  static const Color reasonBannerText = Color(0xFF544D40);
+
+  /// `#463f31` - the same banners' bold lead-in span colour.
+  static const Color reasonBannerLeadText = Color(0xFF463F31);
+
+  /// `#8a7f6c` - the same banners' info-glyph icon colour.
+  static const Color reasonBannerIcon = Color(0xFF8A7F6C);
+
+  /// rgba(90,80,60,.45) - the muted "pending" SealCircle's drop-shadow
+  /// colour (Camera Unavailable, Verify Pending, Verify Too Old).
+  static const Color pendingSealShadow = Color(0x735A503C);
+
+  /// rgba(160,148,126,.16) - the same muted "pending" SealCircle's halo
+  /// ring colour, one alpha step off [pendingRing]'s own .2.
+  static const Color pendingSealRing = Color(0x29A0947E);
+
+  /// `#6d7a52` - the small sage checkmark icon inside AttemptsInfoCard on
+  /// Verify Failed and Verify Too Old.
+  static const Color attemptsCheckIcon = Color(0xFF6D7A52);
+
+  /// `#3f3a2f` - the bold emphasis text shared by AttemptsInfoCard and
+  /// Verify Pending's own info-chip card title.
+  static const Color cardEmphasisText = Color(0xFF3F3A2F);
+
+  // ---- Small stacked-stone glyphs ---------------------------------------------
+
+  /// `#b6ad9c` - the middle bar of Stats' small stacked-pebble glyph (the
+  /// "Stones placed" tile and every streak row).
+  static const Color pebbleGlyphMid = Color(0xFFB6AD9C);
+
+  /// `#aea491` - that same glyph's darkest bar, also reused by New Habit's
+  /// title-field cairn glyph.
+  static const Color pebbleGlyphDark = Color(0xFFAEA491);
+
+  /// `#a9b78e` - the middle bar shared by Camera Capture's "Verifying…"
+  /// mini-cairn glyph and Trail's selected-chip stacked-pebble glyph.
+  static const Color miniCairnMid = Color(0xFFA9B78E);
+
+  /// `#93a473` - the darkest bar in that same pair of glyphs.
+  static const Color miniCairnDark = Color(0xFF93A473);
+
+  /// `#b7a98f` - the outer two bars of Verify Pending's "held metres" mini
+  /// cairn glyph (its own middle bar, `#c8bba1`, stays a single-use literal).
+  static const Color heldMetresGlyphLight = Color(0xFFB7A98F);
 }

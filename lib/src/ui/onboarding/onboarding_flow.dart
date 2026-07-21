@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
-import '../widgets/coming_soon_snack_bar.dart';
+import '../widgets/message_snack_bar.dart';
 import 'onboarding_how_it_works_screen.dart';
 import 'onboarding_verification_screen.dart';
 import 'onboarding_welcome_screen.dart';
@@ -41,7 +41,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
   void _showComingSoon(String message) {
     final context = _navigatorKey.currentContext;
     if (context == null) return;
-    context.showComingSoonSnackBar(message);
+    context.showMessageSnackBar(message);
   }
 
   /// The "Allow camera" completion path (decision 4 in this run's spec):

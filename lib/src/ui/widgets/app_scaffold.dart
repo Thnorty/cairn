@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' show Colors, Scaffold;
 import 'package:flutter/widgets.dart';
 
+import '../theme/app_colors.dart';
 import '../theme/screen_background.dart';
 
 /// The pushed/modal screen family's shared outer wrapper:
@@ -35,7 +36,7 @@ class ModalScaffold extends StatelessWidget {
     required this.washes,
     this.showContour = true,
     this.contourOrigin = const Alignment(0.68, -0.92),
-    this.contourRingColor = const Color(0x0D463C2C),
+    this.contourRingColor = AppColors.contourRingNeutral,
     required this.child,
   });
 

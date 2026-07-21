@@ -40,11 +40,11 @@ class DailyLimitScreen extends StatelessWidget {
           RadialGradient(
             center: Alignment(0, -1.16),
             radius: 1.15,
-            colors: [Color(0x33968368), Color(0x00968368)],
+            colors: [AppColors.dustWashPrimary, AppColors.dustWashEnd],
           ),
         ],
         contourOrigin: percentPositionToAlignment(50, -6),
-        contourRingColor: const Color(0x0D463C2C),
+        contourRingColor: AppColors.contourRingNeutral,
         child: SafeArea(
           child: Column(
             children: [
@@ -159,7 +159,7 @@ class _ResetPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SealClockIcon(color: Color(0xFF6A6153), size: 16),
+          const SealClockIcon(color: AppColors.textMuted, size: 16),
           const SizedBox(width: 8),
           Text(
             label,

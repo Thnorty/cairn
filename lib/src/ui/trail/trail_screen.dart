@@ -16,7 +16,6 @@ import '../theme/app_gradients.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
-import '../theme/screen_background.dart' show TopographicContourPainter;
 import '../widgets/app_scaffold.dart';
 import '../widgets/cairn_stack.dart';
 import '../widgets/ghost_cairn.dart';
@@ -50,14 +49,14 @@ void _openNewHabitScreen(BuildContext context) {
 /// unlike Trail's placeholder predecessor - see [AppShell]'s doc comment on
 /// why the shared wordmark header is now hidden for this tab.
 ///
-/// [_TrailScreenBackground] paints one continuous opaque parchment wash +
-/// topo contour behind the *whole* screen (header, chips and the scrollable
-/// body alike), rather than each area painting its own: `AppShell` wraps
-/// every tab in `ScreenBackground`, whose default washes are tuned for Home
-/// (warm-clay + sage radial tints) and read as a visible seam if only part
-/// of this screen covers them. Painting one full-bleed layer here hides
-/// those washes entirely and guarantees the header's tone and the body's
-/// top tone are the same pixels, not just similar ones.
+/// The whole screen (fixed header, chip row and the scrollable body) is
+/// transparent, so it sits on `AppShell`'s shared `ScreenBackground` (the
+/// same parchment + warm-clay/sage washes + contour Home and Profile show)
+/// exactly like the other tabs - switching to Trail no longer changes the
+/// backdrop. Nothing here paints an opaque fill of its own, so that one
+/// shared background reads as a single unbroken surface (no header/body
+/// seam), which is why Trail previously needed a full-bleed layer but no
+/// longer does.
 class TrailScreen extends ConsumerWidget {
   const TrailScreen({super.key});
 
@@ -72,11 +71,13 @@ class TrailScreen extends ConsumerWidget {
     // transparent one rather than depending on the caller remembering one -
     // see [AppScaffold]'s own doc comment.
     return AppScaffold(
-      // Opaque and full-bleed: sits behind the header, the chip row and
-      // the scrollable body, covering AppShell's shared ScreenBackground
-      // washes for every state (including the empty states below), not
-      // just the populated trail.
-      background: const _TrailScreenBackground(),
+      // No background override: the Trail uses AppShell's shared
+      // ScreenBackground, the same parchment + washes + contour Home and
+      // Profile show, so switching to this tab no longer shifts the
+      // backdrop. The header, chip row and scrollable body are all
+      // transparent, so that one shared background reads as a single
+      // unbroken surface behind them (no seam) - which is why the Trail no
+      // longer paints its own full-bleed gradient.
       child: snapshotAsync.when(
         data: (snapshot) {
           if (snapshot.chips.isEmpty) {
@@ -97,44 +98,6 @@ class TrailScreen extends ConsumerWidget {
         loading: () => const SizedBox.shrink(),
         error: (error, stackTrace) => Center(child: Text('$error')),
       ),
-    );
-  }
-}
-
-/// The Trail screen's one continuous background layer: the parchment
-/// gradient + faint topo contour `Cairn Trail.dc.html`'s scrollable body
-/// uses (`#e9e1d3` at the top fading to `#e6ddcd` at the bottom), now
-/// painted once behind the entire screen instead of only behind the
-/// scrollable trail - see [TrailScreen]'s own doc comment for why. Static
-/// (it does not scroll with the trail content below it): it only needs to
-/// cover the fixed viewport, not the trail's full scrollable height, and a
-/// non-scrolling backdrop is what makes the header and the body read as one
-/// unbroken surface.
-class _TrailScreenBackground extends StatelessWidget {
-  const _TrailScreenBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        const Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(gradient: AppGradients.trailBackground),
-          ),
-        ),
-        Positioned.fill(
-          child: Opacity(
-            opacity: 0.5,
-            child: CustomPaint(
-              painter: TopographicContourPainter(
-                origin: const Alignment(0.2, -0.88),
-                ringSpacing: 30,
-                ringColor: const Color(0x0D5A6448),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -353,12 +316,13 @@ class _StackedPebbleGlyph extends StatelessWidget {
 
   // (width, height, colour) verbatim from the design's three stacked spans.
   // The first colour matches AppColors.heroLabelSage (#c2cdae) exactly; the
-  // other two have no existing token (single use), kept as local literals
-  // per this file's own precedent for one-off decorative colours.
+  // other two match AppColors.miniCairnMid/miniCairnDark, shared with Camera
+  // Capture's "Verifying…" mini-cairn glyph (centralized this pass - they
+  // were previously each a single-use local literal here).
   static const _stones = [
     (width: 7.0, height: 3.0, color: AppColors.heroLabelSage),
-    (width: 11.0, height: 4.0, color: Color(0xFFA9B78E)),
-    (width: 14.0, height: 4.0, color: Color(0xFF93A473)),
+    (width: 11.0, height: 4.0, color: AppColors.miniCairnMid),
+    (width: 14.0, height: 4.0, color: AppColors.miniCairnDark),
   ];
 
   @override

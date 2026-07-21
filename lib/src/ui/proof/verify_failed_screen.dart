@@ -88,12 +88,12 @@ class VerifyFailedScreen extends StatelessWidget {
         RadialGradient(
           center: Alignment(0, -1.16),
           radius: 1.15,
-          colors: [Color(0x38B27C5C), Color(0x00B27C5C)],
+          colors: [Color(0x38B27C5C), AppColors.clayWashEnd],
         ),
         RadialGradient(
           center: Alignment(1, -1),
           radius: 0.9,
-          colors: [Color(0x29968368), Color(0x00968368)],
+          colors: [AppColors.dustWashCorner, AppColors.dustWashEnd],
         ),
       ],
       contourOrigin: percentPositionToAlignment(50, -6),
@@ -191,8 +191,8 @@ class VerifyFailedScreen extends StatelessWidget {
           // cause of the cairn/meta-line/attempts-card overlap this
           // run's spec reported. Do not re-add it.
           AttemptsInfoCard(
-            icon: const SealCheckmarkIcon(color: Color(0xFF6D7A52), size: 14),
-            iconBackground: const Color(0x2E786C58),
+            icon: const SealCheckmarkIcon(color: AppColors.attemptsCheckIcon, size: 14),
+            iconBackground: AppColors.statsFutureBarBg,
             emphasisText: l10n.triesLeftToday(attemptsRemaining),
           ),
           PrimaryButton(
@@ -261,7 +261,7 @@ class _DisabledActionButton extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsetsDirectional.symmetric(vertical: 17),
       decoration: BoxDecoration(
-        color: const Color(0x2E786C58),
+        color: AppColors.statsFutureBarBg,
         borderRadius: BorderRadius.circular(AppRadii.buttonLarge),
       ),
       child: Row(

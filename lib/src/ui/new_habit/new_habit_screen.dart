@@ -20,7 +20,7 @@ import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/card_surface.dart';
-import '../widgets/coming_soon_snack_bar.dart';
+import '../widgets/message_snack_bar.dart';
 import '../widgets/glyphs.dart';
 import 'monthly_ordinal.dart';
 import 'new_habit_recurrence_panel.dart';
@@ -161,7 +161,7 @@ class _NewHabitScreenState extends ConsumerState<NewHabitScreen> {
       if (mounted) Navigator.of(context).pop();
     } on ArgumentError catch (error) {
       if (!mounted) return;
-      context.showComingSoonSnackBar(error.message?.toString() ?? error.toString());
+      context.showMessageSnackBar(error.message?.toString() ?? error.toString());
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -177,7 +177,7 @@ class _NewHabitScreenState extends ConsumerState<NewHabitScreen> {
         RadialGradient(
           center: Alignment(-0.64, -1.16),
           radius: 1.3,
-          colors: [Color(0x33968368), Color(0x00968368)],
+          colors: [AppColors.dustWashPrimary, AppColors.dustWashEnd],
         ),
       ],
       child: Column(
@@ -335,7 +335,7 @@ class _TitleFieldCairnGlyph extends StatelessWidget {
   static const _bars = [
     (width: 9.0, color: AppColors.sage),
     (width: 14.0, color: Color(0xFFB1A796)),
-    (width: 18.0, color: Color(0xFFAEA491)),
+    (width: 18.0, color: AppColors.pebbleGlyphDark),
   ];
 
   @override

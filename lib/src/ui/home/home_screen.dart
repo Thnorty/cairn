@@ -14,7 +14,7 @@ import '../proof/camera_capture_screen.dart';
 import '../proof/proof_outcome_routing.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
-import '../widgets/coming_soon_snack_bar.dart';
+import '../widgets/message_snack_bar.dart';
 import '../widgets/plus_glyph.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/wordmark_glyph.dart';
@@ -130,7 +130,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       CompletionRejectedAlreadyCompleted() => 'Already completed',
       _ => 'Something went wrong',
     };
-    context.showComingSoonSnackBar(message);
+    context.showMessageSnackBar(message);
   }
 
   @override
@@ -271,7 +271,7 @@ class _SummaryDot extends StatelessWidget {
       height: 4,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: Color(0xFFC4BBAA),
+          color: AppColors.premiumFooterDotColor,
           shape: BoxShape.circle,
         ),
       ),
@@ -341,7 +341,7 @@ class _AvatarCircle extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment(-0.5, -1),
           end: Alignment(0.5, 1),
-          colors: [Color(0xFFC9C0B0), Color(0xFFA99F8C)],
+          colors: [AppColors.accountAvatarLight, AppColors.accountAvatarDark],
         ),
       ),
       alignment: Alignment.center,
@@ -351,7 +351,7 @@ class _AvatarCircle extends StatelessWidget {
           fontFamily: 'Work Sans',
           fontWeight: FontWeight.w600,
           fontSize: 14,
-          color: Color(0xFF453F35),
+          color: AppColors.inkDimmed,
         ),
       ),
     );

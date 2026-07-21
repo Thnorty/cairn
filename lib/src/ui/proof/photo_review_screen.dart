@@ -60,7 +60,7 @@ class PhotoReviewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: const Color(0xFF211D18),
+      backgroundColor: AppColors.cameraChromeBackground,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -109,7 +109,7 @@ class _StillPhoto extends StatelessWidget {
       File(path),
       fit: BoxFit.cover,
       errorBuilder: (context, error, stackTrace) =>
-          const DecoratedBox(decoration: BoxDecoration(color: Color(0xFF211D18))),
+          const DecoratedBox(decoration: BoxDecoration(color: AppColors.cameraChromeBackground)),
     );
   }
 }
@@ -132,7 +132,7 @@ class _TopScrim extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0x8C14120E), Color(0x0014120E)],
+              colors: [Color(0x8C14120E), AppColors.photoScrimEnd],
             ),
           ),
         ),
@@ -160,7 +160,7 @@ class _BottomScrim extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
-              colors: [Color(0xB814120E), Color(0x0014120E)],
+              colors: [Color(0xB814120E), AppColors.photoScrimEnd],
             ),
           ),
         ),
@@ -182,7 +182,7 @@ class _ReviewPrompt extends StatelessWidget {
       child: Container(
         padding: const EdgeInsetsDirectional.symmetric(horizontal: 16, vertical: 7),
         decoration: BoxDecoration(
-          color: const Color(0x66141210),
+          color: AppColors.cameraGlassBg,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: const Color(0x14FFFFFF)),
         ),
@@ -215,7 +215,7 @@ class _SearchGlyphPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final stroke = Paint()
-      ..color = const Color(0xFFC2CDAE)
+      ..color = AppColors.heroLabelSage
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.8
       ..strokeCap = StrokeCap.round
@@ -297,12 +297,12 @@ class _GlassButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0x8028241C),
             borderRadius: BorderRadius.circular(AppRadii.buttonMedium),
-            border: Border.all(color: const Color(0x29FFFFFF)),
+            border: Border.all(color: AppColors.cameraGlassBorder),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const RefreshCycleGlyph(color: Color(0xFFF2EDE2), size: 18),
+              const RefreshCycleGlyph(color: AppColors.chipInactiveLight, size: 18),
               const SizedBox(width: 9),
               Text(
                 label,
@@ -310,7 +310,7 @@ class _GlassButton extends StatelessWidget {
                   fontFamily: 'Work Sans',
                   fontWeight: FontWeight.w600,
                   fontSize: 15,
-                  color: Color(0xFFF2EDE2),
+                  color: AppColors.chipInactiveLight,
                 ),
               ),
             ],

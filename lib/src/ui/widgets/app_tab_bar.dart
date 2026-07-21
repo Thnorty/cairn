@@ -50,17 +50,24 @@ class AppTabBar extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(40, 12, 40, 26),
+          // Reduced side inset (16 vs the old 40) so each tab's Expanded
+          // slot fills the bar with no dead gaps between tabs; the icons
+          // still land within ~3px of their previous positions.
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 22),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               for (var i = 0; i < tabs.length; i++)
-                _TabItem(
-                  shape: tabs[i].$1,
-                  label: tabs[i].$2,
-                  selected: i == currentIndex,
-                  onTap: () => onTap(i),
+                // Expanded so each tab's tappable area spans its full
+                // quarter of the bar - taps in the space between icons now
+                // register instead of falling into a dead gap.
+                Expanded(
+                  child: _TabItem(
+                    shape: tabs[i].$1,
+                    label: tabs[i].$2,
+                    selected: i == currentIndex,
+                    onTap: () => onTap(i),
+                  ),
                 ),
             ],
           ),
@@ -93,8 +100,11 @@ class _TabItem extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
-        child: SizedBox(
-          width: 48,
+        // The opaque hit area fills the tab's Expanded slot width; the
+        // vertical padding makes it taller than the icon+label alone, so a
+        // tap that lands a little high or low still registers.
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

@@ -12,6 +12,7 @@ import '../../providers.dart';
 import '../../services/camera_session.dart';
 import '../../services/photo_capture.dart' show CapturedPhoto;
 import '../../services/proof_flow.dart';
+import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
 import '../widgets/status_chip.dart' show GalleryGlyph;
 import 'camera_chrome.dart';
@@ -286,7 +287,7 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF211D18),
+      backgroundColor: AppColors.cameraChromeBackground,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -323,7 +324,7 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
         // reviewing. Kept only so this switch stays exhaustive.
         return const SizedBox.shrink();
       case _CameraPhase.initializing:
-        return const DecoratedBox(decoration: BoxDecoration(color: Color(0xFF211D18)));
+        return const DecoratedBox(decoration: BoxDecoration(color: AppColors.cameraChromeBackground));
     }
   }
 
@@ -417,7 +418,7 @@ class _BottomControls extends StatelessWidget {
         children: [
           _IconLabelButton(
             key: const ValueKey('camera-gallery'),
-            icon: const GalleryGlyph(color: Color(0xFFF2EDE2)),
+            icon: const GalleryGlyph(color: AppColors.chipInactiveLight),
             label: galleryLabel,
             onTap: onGallery,
           ),
@@ -471,7 +472,7 @@ class _IconLabelButton extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0x80282420),
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0x29FFFFFF)),
+                  border: Border.all(color: AppColors.cameraGlassBorder),
                 ),
                 alignment: Alignment.center,
                 child: icon,
@@ -583,7 +584,7 @@ class _VerifyingOverlayState extends State<_VerifyingOverlay>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
-                            colors: [Color(0x807A8D60), Color(0x007A8D60)],
+                            colors: [Color(0x807A8D60), AppColors.sageGlowEnd],
                           ),
                         ),
                       ),
@@ -603,7 +604,7 @@ class _VerifyingOverlayState extends State<_VerifyingOverlay>
             fontFamily: 'Zilla Slab',
             fontWeight: FontWeight.w600,
             fontSize: 24,
-            color: Color(0xFFF4F0E6),
+            color: AppColors.sageChipText,
           ),
         ),
         const SizedBox(height: 6),
@@ -622,9 +623,9 @@ class _MiniCairnGlyph extends StatelessWidget {
   const _MiniCairnGlyph();
 
   static const _bars = [
-    (width: 14.0, color: Color(0xFFC2CDAE)),
-    (width: 22.0, color: Color(0xFFA9B78E)),
-    (width: 30.0, color: Color(0xFF93A473)),
+    (width: 14.0, color: AppColors.heroLabelSage),
+    (width: 22.0, color: AppColors.miniCairnMid),
+    (width: 30.0, color: AppColors.miniCairnDark),
   ];
 
   @override

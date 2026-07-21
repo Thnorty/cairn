@@ -83,16 +83,16 @@ class CairnCompleteScreen extends StatelessWidget {
         RadialGradient(
           center: Alignment(0, -1.16),
           radius: 1.2,
-          colors: [Color(0x5796A678), Color(0x0096A678)],
+          colors: [Color(0x5796A678), AppColors.sageWashEnd],
         ),
         RadialGradient(
           center: Alignment(1, -1),
           radius: 0.9,
-          colors: [Color(0x29968368), Color(0x00968368)],
+          colors: [AppColors.dustWashCorner, AppColors.dustWashEnd],
         ),
       ],
       contourOrigin: percentPositionToAlignment(50, -6),
-      contourRingColor: const Color(0x0D5A6E48),
+      contourRingColor: AppColors.contourRingSageDeep,
       onClose: onDone,
       headerLabel: l10n.cairnCompleteHeaderLabel,
       headerLabelColor: AppColors.sageText,
@@ -229,7 +229,7 @@ class _CompletedCairnHero extends StatelessWidget {
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
-                colors: [Color(0x387A8D60), Color(0x007A8D60)],
+                colors: [AppColors.onboardingSageCardBorder, AppColors.sageGlowEnd],
                 stops: [0, 0.68],
               ),
             ),

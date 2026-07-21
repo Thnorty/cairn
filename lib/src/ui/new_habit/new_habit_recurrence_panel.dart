@@ -189,7 +189,7 @@ class DayCircle extends StatelessWidget {
                 boxShadow: selected
                     ? const [
                         BoxShadow(
-                          color: Color(0x996E8056), // 0 4px 8px -4px rgba(90,110,60,.6)
+                          color: AppColors.selectedCircleShadow,
                           offset: Offset(0, 4),
                           blurRadius: 8,
                           spreadRadius: -4,
@@ -597,7 +597,7 @@ class _WeekOrdinalChip extends StatelessWidget {
               boxShadow: selected
                   ? const [
                       BoxShadow(
-                        color: Color(0x996E8056),
+                        color: AppColors.selectedCircleShadow,
                         offset: Offset(0, 4),
                         blurRadius: 8,
                         spreadRadius: -4,

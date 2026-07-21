@@ -12,7 +12,7 @@ import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/cairn_stack.dart';
-import '../widgets/coming_soon_snack_bar.dart';
+import '../widgets/message_snack_bar.dart';
 
 /// Pushes [PremiumScreen] on top of the current route. Shared by every
 /// Premium affordance in the app that navigates via a live [BuildContext]
@@ -50,7 +50,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
   _PremiumPlan _selectedPlan = _PremiumPlan.yearly;
 
   void _showComingSoon(AppLocalizations l10n) {
-    context.showComingSoonSnackBar(l10n.premiumComingSoonSnackbar);
+    context.showMessageSnackBar(l10n.premiumComingSoonSnackbar);
   }
 
   @override
@@ -66,12 +66,12 @@ class _PremiumScreenState extends State<PremiumScreen> {
         RadialGradient(
           center: Alignment(0, -1.12),
           radius: 1.3,
-          colors: [AppColors.premiumSageWash, Color(0x0096A678)],
+          colors: [AppColors.premiumSageWash, AppColors.sageWashEnd],
         ),
         RadialGradient(
           center: Alignment(1, -0.92),
           radius: 0.9,
-          colors: [AppColors.clayTintBg, Color(0x00B27C5C)],
+          colors: [AppColors.clayTintBg, AppColors.clayWashEnd],
         ),
       ],
       contourOrigin: percentPositionToAlignment(50, -6),

@@ -195,16 +195,16 @@ class _StackedPebbleGlyph extends StatelessWidget {
   /// the design's three stacked spans.
   static const _tileStones = [
     (width: 9.0, height: 4.0, color: AppColors.sage),
-    (width: 14.0, height: 5.0, color: Color(0xFFB6AD9C)),
-    (width: 18.0, height: 5.0, color: Color(0xFFAEA491)),
+    (width: 14.0, height: 5.0, color: AppColors.pebbleGlyphMid),
+    (width: 18.0, height: 5.0, color: AppColors.pebbleGlyphDark),
   ];
 
   /// Slightly larger variant for a current-streak row's glyph, verbatim from
   /// the design's own (distinct) three stacked spans there.
   static const rowStones = [
     (width: 10.0, height: 4.0, color: AppColors.sage),
-    (width: 15.0, height: 5.0, color: Color(0xFFB6AD9C)),
-    (width: 20.0, height: 5.0, color: Color(0xFFAEA491)),
+    (width: 15.0, height: 5.0, color: AppColors.pebbleGlyphMid),
+    (width: 20.0, height: 5.0, color: AppColors.pebbleGlyphDark),
   ];
 
   final List<({double width, double height, Color color})> stones;

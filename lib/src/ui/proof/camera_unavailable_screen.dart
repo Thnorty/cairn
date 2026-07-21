@@ -198,11 +198,11 @@ class _CameraUnavailableScreenState extends ConsumerState<CameraUnavailableScree
         RadialGradient(
           center: Alignment(0, -1.16),
           radius: 1.15,
-          colors: [Color(0x24968368), Color(0x00968368)],
+          colors: [AppColors.dustWashSoft, AppColors.dustWashEnd],
         ),
       ],
       contourOrigin: percentPositionToAlignment(50, -6),
-      contourRingColor: const Color(0x0D463C2C),
+      contourRingColor: AppColors.contourRingNeutral,
       child: Column(
         children: [
           VerificationHeader(
@@ -218,8 +218,8 @@ class _CameraUnavailableScreenState extends ConsumerState<CameraUnavailableScree
                   const SealCircle(
                     size: 64,
                     gradientColors: [AppColors.pendingSealLight, AppColors.pendingSealDark],
-                    ringColor: Color(0x29A0947E),
-                    shadowColor: Color(0x735A503C),
+                    ringColor: AppColors.pendingSealRing,
+                    shadowColor: AppColors.pendingSealShadow,
                     icon: SealCameraOffIcon(),
                   ),
                   const SizedBox(height: 16),
@@ -236,7 +236,7 @@ class _CameraUnavailableScreenState extends ConsumerState<CameraUnavailableScree
                         TextSpan(text: '${l10n.cameraUnavailableBodyLead} '),
                         TextSpan(
                           text: '${widget.taskTitle} ',
-                          style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF544D40)),
+                          style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.reasonBannerText),
                         ),
                         TextSpan(text: l10n.cameraUnavailableBodyTrail),
                       ],
@@ -255,14 +255,14 @@ class _CameraUnavailableScreenState extends ConsumerState<CameraUnavailableScree
                   ),
                   const SizedBox(height: 18),
                   ReasonBanner(
-                    backgroundColor: const Color(0x1F786C58),
-                    iconColor: const Color(0xFF8A7F6C),
-                    textColor: const Color(0xFF544D40),
+                    backgroundColor: AppColors.pillToggleTrackBg,
+                    iconColor: AppColors.reasonBannerIcon,
+                    textColor: AppColors.reasonBannerText,
                     spans: [
                       TextSpan(text: '${l10n.settingsHintLead} '),
                       TextSpan(
                         text: l10n.settingsHintEmphasis,
-                        style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF463F31)),
+                        style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.reasonBannerLeadText),
                       ),
                       TextSpan(text: l10n.settingsHintTrail),
                     ],

@@ -11,6 +11,7 @@ library;
 import 'package:flutter/material.dart' show MaterialLocalizations;
 import 'package:flutter/widgets.dart';
 
+import '../theme/app_colors.dart';
 import '../widgets/status_chip.dart' show CloseGlyph;
 
 /// The top bar shared by the live camera screen and the photo review
@@ -40,9 +41,9 @@ class CameraTopBar extends StatelessWidget {
               child: Container(
                 width: 40,
                 height: 40,
-                decoration: const BoxDecoration(color: Color(0x66141210), shape: BoxShape.circle),
+                decoration: const BoxDecoration(color: AppColors.cameraGlassBg, shape: BoxShape.circle),
                 alignment: Alignment.center,
-                child: const CloseGlyph(color: Color(0xFFF2EDE2), size: 16),
+                child: const CloseGlyph(color: AppColors.chipInactiveLight, size: 16),
               ),
             ),
           ),
@@ -82,7 +83,7 @@ class CameraTaskPill extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 fontSize: 10.5,
                 letterSpacing: 2,
-                color: Color(0xFFC2CDAE),
+                color: AppColors.heroLabelSage,
               ),
             ),
             const SizedBox(height: 3),
@@ -92,7 +93,7 @@ class CameraTaskPill extends StatelessWidget {
                 fontFamily: 'Zilla Slab',
                 fontWeight: FontWeight.w600,
                 fontSize: 19,
-                color: Color(0xFFF4F0E6),
+                color: AppColors.sageChipText,
               ),
             ),
           ],
@@ -109,7 +110,7 @@ class CameraTaskPill extends StatelessWidget {
 /// "redo" in the other), so this is one glyph parameterised by colour/size
 /// rather than two near-identical private painters.
 class RefreshCycleGlyph extends StatelessWidget {
-  const RefreshCycleGlyph({super.key, this.color = const Color(0xFFF2EDE2), this.size = 23});
+  const RefreshCycleGlyph({super.key, this.color = AppColors.chipInactiveLight, this.size = 23});
 
   final Color color;
   final double size;

@@ -423,7 +423,7 @@ class _ProofPlaceholder extends StatelessWidget {
                   // the closest bundled substitute for a small caption.
                   fontFamily: AppFontFamilies.workSans,
                   fontSize: 7,
-                  color: Color(0xFF5C5344),
+                  color: AppColors.accountIconStroke,
                   letterSpacing: 0.3,
                 ),
               ),

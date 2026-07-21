@@ -48,12 +48,12 @@ class VerifyPendingScreen extends StatelessWidget {
         RadialGradient(
           center: Alignment(0, -1.16),
           radius: 1.15,
-          colors: [Color(0x3D968368), Color(0x00968368)],
+          colors: [Color(0x3D968368), AppColors.dustWashEnd],
         ),
         RadialGradient(
           center: Alignment(1, -1),
           radius: 0.9,
-          colors: [Color(0x29968368), Color(0x00968368)],
+          colors: [AppColors.dustWashCorner, AppColors.dustWashEnd],
         ),
       ],
       contourOrigin: percentPositionToAlignment(50, -6),
@@ -67,8 +67,8 @@ class VerifyPendingScreen extends StatelessWidget {
               AppColors.pendingSealLight,
               AppColors.pendingSealDark,
             ],
-            ringColor: Color(0x29A0947E),
-            shadowColor: Color(0x735A503C),
+            ringColor: AppColors.pendingSealRing,
+            shadowColor: AppColors.pendingSealShadow,
             icon: SealClockIcon(),
           ),
           const SizedBox(height: 14),
@@ -97,12 +97,12 @@ class VerifyPendingScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           ReasonBanner(
-            backgroundColor: const Color(0x1F786C58),
-            iconColor: const Color(0xFF8A7F6C),
+            backgroundColor: AppColors.pillToggleTrackBg,
+            iconColor: AppColors.reasonBannerIcon,
             leadText: l10n.offlineReassuranceLead,
-            leadColor: const Color(0xFF463F31),
+            leadColor: AppColors.reasonBannerLeadText,
             bodyText: l10n.offlineReassuranceBody,
-            textColor: const Color(0xFF544D40),
+            textColor: AppColors.reasonBannerText,
           ),
           const SizedBox(height: 12),
           Row(
@@ -170,7 +170,7 @@ class _InfoChipCard extends StatelessWidget {
                     fontFamily: AppFontFamilies.workSans,
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
-                    color: Color(0xFF3F3A2F),
+                    color: AppColors.cardEmphasisText,
                   ),
                 ),
                 Text(
@@ -237,9 +237,9 @@ class _HeldMetresIcon extends StatelessWidget {
   const _HeldMetresIcon();
 
   static const _bars = [
-    (width: 8.0, color: Color(0xFFB7A98F)),
+    (width: 8.0, color: AppColors.heldMetresGlyphLight),
     (width: 14.0, color: Color(0xFFC8BBA1)),
-    (width: 19.0, color: Color(0xFFB7A98F)),
+    (width: 19.0, color: AppColors.heldMetresGlyphLight),
   ];
 
   @override

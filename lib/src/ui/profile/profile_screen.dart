@@ -16,7 +16,7 @@ import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
 import '../trail/how_cairns_work_screen.dart';
 import '../widgets/app_scaffold.dart';
-import '../widgets/coming_soon_snack_bar.dart';
+import '../widgets/message_snack_bar.dart';
 import '../widgets/glyphs.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/tab_icons.dart';
@@ -47,7 +47,7 @@ class ProfileScreen extends ConsumerWidget {
     final snapshotAsync = ref.watch(profileSnapshotProvider);
 
     void showComingSoon() {
-      context.showComingSoonSnackBar(l10n.profileComingSoonSnackbar);
+      context.showMessageSnackBar(l10n.profileComingSoonSnackbar);
     }
 
     // This screen gets dropped into AppShell's `IndexedStack` (which already

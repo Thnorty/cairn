@@ -195,7 +195,7 @@ class ProofPhotoPebble extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.proofPhoto),
-        border: Border.all(color: const Color(0x59FFFFFF)),
+        border: Border.all(color: AppColors.cardBorder),
         boxShadow: AppShadows.proofPhoto,
       ),
       child: Stack(
@@ -228,7 +228,7 @@ class _ProofPhotoPlaceholder extends StatelessWidget {
             style: const TextStyle(
               fontFamily: AppFontFamilies.workSans,
               fontSize: 11,
-              color: Color(0xFF5C5344),
+              color: AppColors.accountIconStroke,
               letterSpacing: 0.3,
             ),
           ),
@@ -391,13 +391,13 @@ class AttemptsInfoCard extends StatelessWidget {
                     fontFamily: AppFontFamilies.workSans,
                     fontSize: 12.5,
                     height: 1.4,
-                    color: Color(0xFF544D40),
+                    color: AppColors.reasonBannerText,
                   ),
                   children: [
                     if (lead != null) TextSpan(text: '$lead '),
                     TextSpan(
                       text: emphasisText,
-                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF3F3A2F)),
+                      style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.cardEmphasisText),
                     ),
                   ],
                 ),
