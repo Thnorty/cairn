@@ -27,14 +27,12 @@ import '../widgets/screen_header.dart';
 /// screen with no manual refresh. This screen brings its own fixed header
 /// (eyebrow + title, the same treatment Profile's own header uses - see
 /// [AppShell]'s doc comment on why the shared wordmark header is hidden for
-/// every tab now) and its own full-bleed, washless background
-/// ([_StatsScreenBackground]) rather than `ScreenBackground`'s default
-/// Home-tuned washes/contour: `Cairn Stats.dc.html`'s scroll body has no
-/// wash/contour of its own (unlike Trail's own multi-stop gradient), just
-/// the flat parchment base colour, so painting that flat colour behind the
-/// whole screen (header included) is what hides Home's washes without
-/// introducing a seam - the same rationale `_TrailScreenBackground` gives
-/// for Trail's own (differently-toned) full-bleed layer.
+/// every tab now). The whole screen (header and scrollable body) is
+/// transparent, so it sits on `AppShell`'s shared `ScreenBackground` (the
+/// same parchment + warm-clay/sage washes + contour Home, Profile and Trail
+/// show), so switching to Stats no longer changes the backdrop. Nothing here
+/// paints an opaque fill of its own, so that one shared background reads as a
+/// single unbroken surface (no header/body seam).
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
 
@@ -52,7 +50,6 @@ class StatsScreen extends ConsumerWidget {
     // supplies its own transparent one, stacked on top of its own full-bleed
     // background - see [AppScaffold]'s own doc comment.
     return AppScaffold(
-      background: const _StatsScreenBackground(),
       child: Padding(
         // Shared top-left inset for every tab screen (Home/Trail/Stats/
         // Profile) and the VerificationHeader family - see
@@ -83,21 +80,6 @@ class StatsScreen extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// The Stats screen's one continuous background layer: a flat parchment
-/// fill covering the whole screen (header and scrollable body alike) - see
-/// [StatsScreen]'s own doc comment for why no wash/contour is painted here
-/// (the canonical design has none for this screen).
-class _StatsScreenBackground extends StatelessWidget {
-  const _StatsScreenBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    return const DecoratedBox(
-      decoration: BoxDecoration(color: AppColors.screenBackground),
     );
   }
 }
