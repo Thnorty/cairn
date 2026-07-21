@@ -49,12 +49,12 @@ class DailyLimitScreen extends StatelessWidget {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(22, 8, 22, 0),
-                // Top-left, mirroring VerificationHeader's own close-button
-                // placement (this run's spec): an authorized deviation from
-                // Cairn Daily Limit.dc.html's own top-right close-X, for
-                // cross-screen consistency (every close/dismiss control in
-                // this app now sits top-left).
+                padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 0),
+                // Symmetric top-left corner (16/16, the same inset and
+                // distance from top and left as VerificationHeader's own
+                // close button): an authorized deviation from Cairn Daily
+                // Limit.dc.html's own top-right close-X, for cross-screen
+                // consistency (every close/dismiss control now sits top-left).
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
                   child: CloseCircleButton(onTap: onMaybeLater),

@@ -53,7 +53,7 @@ class AppTabBar extends StatelessWidget {
           // Reduced side inset (16 vs the old 40) so each tab's Expanded
           // slot fills the bar with no dead gaps between tabs; the icons
           // still land within ~3px of their previous positions.
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 22),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [

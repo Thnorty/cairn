@@ -65,7 +65,10 @@ class VerificationHeader extends StatelessWidget {
         ? AppTextStyles.sectionLabel
         : AppTextStyles.sectionLabel.copyWith(color: labelColor);
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(24, 8, 24, 0),
+      // Symmetric top-left corner inset so the close (X) button sits the
+      // same distance from the top and the left edge (16/16), shared by
+      // every screen that uses this header.
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
