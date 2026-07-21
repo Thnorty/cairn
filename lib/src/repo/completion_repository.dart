@@ -195,6 +195,7 @@ class CompletionRepository {
                 pointsAwarded: Value(points),
                 userId: Value(_currentUserId()),
                 updatedAt: now,
+                dirty: const Value(true),
               ),
             );
       } on SqliteException catch (e) {
@@ -503,6 +504,7 @@ class CompletionRepository {
                   verdictMeta: Value(jsonEncode(verdict.toJson())),
                   userId: Value(_currentUserId()),
                   updatedAt: now,
+                  dirty: const Value(true),
                 ),
               );
           final attemptsNow = await _liveAttemptsCountToday(taskId, today);
@@ -568,6 +570,7 @@ class CompletionRepository {
               pointsAwarded: Value(points),
               userId: Value(_currentUserId()),
               updatedAt: now,
+              dirty: const Value(true),
             ),
           );
     } on SqliteException catch (e) {
@@ -663,6 +666,7 @@ class CompletionRepository {
             verificationStatus: const Value(VerificationStatus.verified),
             verificationMeta: Value(jsonEncode(verdict.toJson())),
             updatedAt: Value(now),
+            dirty: const Value(true),
           ));
           return _RetryOutcome.verified;
         }
@@ -674,6 +678,7 @@ class CompletionRepository {
             verificationMeta: Value(jsonEncode(verdict.toJson())),
             deletedAt: Value(now),
             updatedAt: Value(now),
+            dirty: const Value(true),
           ));
           await _db.into(_db.verificationAttempts).insert(
                 VerificationAttemptsCompanion.insert(
@@ -685,6 +690,7 @@ class CompletionRepository {
                   verdictMeta: Value(jsonEncode(verdict.toJson())),
                   userId: Value(_currentUserId()),
                   updatedAt: now,
+                  dirty: const Value(true),
                 ),
               );
         });
@@ -700,6 +706,7 @@ class CompletionRepository {
         .write(CompletionsCompanion(
       deletedAt: Value(now),
       updatedAt: Value(now),
+      dirty: const Value(true),
     ));
   }
 
@@ -838,12 +845,14 @@ class CompletionRepository {
               .write(CompletionsCompanion(
         userId: Value(userId),
         updatedAt: Value(now),
+        dirty: const Value(true),
       ));
       await (_db.update(_db.verificationAttempts)
             ..where((a) => a.userId.isNull()))
           .write(VerificationAttemptsCompanion(
         userId: Value(userId),
         updatedAt: Value(now),
+        dirty: const Value(true),
       ));
       return completionsUpdated;
     });

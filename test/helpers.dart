@@ -39,6 +39,7 @@ Task makeTask({
   required LocalDate startDate,
   LocalDate? endDate,
   bool archived = false,
+  bool dirty = true,
 }) {
   return Task(
     id: id,
@@ -56,6 +57,7 @@ Task makeTask({
     archived: archived,
     createdAt: 0,
     updatedAt: 0,
+    dirty: dirty,
   );
 }
 

@@ -191,6 +191,19 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _dirtyMeta = const VerificationMeta('dirty');
+  @override
+  late final GeneratedColumn<bool> dirty = GeneratedColumn<bool>(
+    'dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -211,6 +224,7 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     createdAt,
     updatedAt,
     deletedAt,
+    dirty,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -299,6 +313,12 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
       context.handle(
         _deletedAtMeta,
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('dirty')) {
+      context.handle(
+        _dirtyMeta,
+        dirty.isAcceptableOrUnknown(data['dirty']!, _dirtyMeta),
       );
     }
     return context;
@@ -396,6 +416,10 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
         DriftSqlType.int,
         data['${effectivePrefix}deleted_at'],
       ),
+      dirty: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}dirty'],
+      )!,
     );
   }
 
@@ -473,6 +497,15 @@ class Task extends DataClass implements Insertable<Task> {
 
   /// Sync tombstone (rows are never hard-deleted).
   final int? deletedAt;
+
+  /// True iff this row has a local change not yet acknowledged by the sync
+  /// engine's `push` (see `lib/src/sync/sync_service.dart`). Every
+  /// repository write to this table sets this true; the ONLY place that
+  /// sets it false is the sync engine's pull-apply (a pulled row is server
+  /// truth, already in sync by definition) and a successful push-ack for
+  /// exactly the rows it sent. Defaults true so existing rows from before
+  /// this column existed are swept up by the first sync after upgrade.
+  final bool dirty;
   const Task({
     required this.id,
     required this.title,
@@ -492,6 +525,7 @@ class Task extends DataClass implements Insertable<Task> {
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
+    required this.dirty,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -554,6 +588,7 @@ class Task extends DataClass implements Insertable<Task> {
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<int>(deletedAt);
     }
+    map['dirty'] = Variable<bool>(dirty);
     return map;
   }
 
@@ -597,6 +632,7 @@ class Task extends DataClass implements Insertable<Task> {
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      dirty: Value(dirty),
     );
   }
 
@@ -626,6 +662,7 @@ class Task extends DataClass implements Insertable<Task> {
       createdAt: serializer.fromJson<int>(json['createdAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
       deletedAt: serializer.fromJson<int?>(json['deletedAt']),
+      dirty: serializer.fromJson<bool>(json['dirty']),
     );
   }
   @override
@@ -652,6 +689,7 @@ class Task extends DataClass implements Insertable<Task> {
       'createdAt': serializer.toJson<int>(createdAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
       'deletedAt': serializer.toJson<int?>(deletedAt),
+      'dirty': serializer.toJson<bool>(dirty),
     };
   }
 
@@ -674,6 +712,7 @@ class Task extends DataClass implements Insertable<Task> {
     int? createdAt,
     int? updatedAt,
     Value<int?> deletedAt = const Value.absent(),
+    bool? dirty,
   }) => Task(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -693,6 +732,7 @@ class Task extends DataClass implements Insertable<Task> {
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    dirty: dirty ?? this.dirty,
   );
   Task copyWithCompanion(TasksCompanion data) {
     return Task(
@@ -724,6 +764,7 @@ class Task extends DataClass implements Insertable<Task> {
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      dirty: data.dirty.present ? data.dirty.value : this.dirty,
     );
   }
 
@@ -747,7 +788,8 @@ class Task extends DataClass implements Insertable<Task> {
           ..write('userId: $userId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('deletedAt: $deletedAt')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('dirty: $dirty')
           ..write(')'))
         .toString();
   }
@@ -772,6 +814,7 @@ class Task extends DataClass implements Insertable<Task> {
     createdAt,
     updatedAt,
     deletedAt,
+    dirty,
   );
   @override
   bool operator ==(Object other) =>
@@ -794,7 +837,8 @@ class Task extends DataClass implements Insertable<Task> {
           other.userId == this.userId &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
-          other.deletedAt == this.deletedAt);
+          other.deletedAt == this.deletedAt &&
+          other.dirty == this.dirty);
 }
 
 class TasksCompanion extends UpdateCompanion<Task> {
@@ -816,6 +860,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
   final Value<int> createdAt;
   final Value<int> updatedAt;
   final Value<int?> deletedAt;
+  final Value<bool> dirty;
   final Value<int> rowid;
   const TasksCompanion({
     this.id = const Value.absent(),
@@ -836,6 +881,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.dirty = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TasksCompanion.insert({
@@ -857,6 +903,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     required int createdAt,
     required int updatedAt,
     this.deletedAt = const Value.absent(),
+    this.dirty = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        title = Value(title),
@@ -883,6 +930,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
     Expression<int>? deletedAt,
+    Expression<bool>? dirty,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -904,6 +952,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (dirty != null) 'dirty': dirty,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -927,6 +976,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Value<int>? createdAt,
     Value<int>? updatedAt,
     Value<int?>? deletedAt,
+    Value<bool>? dirty,
     Value<int>? rowid,
   }) {
     return TasksCompanion(
@@ -948,6 +998,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
+      dirty: dirty ?? this.dirty,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1023,6 +1074,9 @@ class TasksCompanion extends UpdateCompanion<Task> {
     if (deletedAt.present) {
       map['deleted_at'] = Variable<int>(deletedAt.value);
     }
+    if (dirty.present) {
+      map['dirty'] = Variable<bool>(dirty.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1050,6 +1104,7 @@ class TasksCompanion extends UpdateCompanion<Task> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('dirty: $dirty, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1211,6 +1266,19 @@ class $CompletionsTable extends Completions
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _dirtyMeta = const VerificationMeta('dirty');
+  @override
+  late final GeneratedColumn<bool> dirty = GeneratedColumn<bool>(
+    'dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1227,6 +1295,7 @@ class $CompletionsTable extends Completions
     userId,
     updatedAt,
     deletedAt,
+    dirty,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1326,6 +1395,12 @@ class $CompletionsTable extends Completions
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
       );
     }
+    if (data.containsKey('dirty')) {
+      context.handle(
+        _dirtyMeta,
+        dirty.isAcceptableOrUnknown(data['dirty']!, _dirtyMeta),
+      );
+    }
     return context;
   }
 
@@ -1398,6 +1473,10 @@ class $CompletionsTable extends Completions
         DriftSqlType.int,
         data['${effectivePrefix}deleted_at'],
       ),
+      dirty: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}dirty'],
+      )!,
     );
   }
 
@@ -1444,6 +1523,9 @@ class Completion extends DataClass implements Insertable<Completion> {
   final String? userId;
   final int updatedAt;
   final int? deletedAt;
+
+  /// See [Tasks.dirty]'s doc comment; identical contract here.
+  final bool dirty;
   const Completion({
     required this.id,
     required this.taskId,
@@ -1459,6 +1541,7 @@ class Completion extends DataClass implements Insertable<Completion> {
     this.userId,
     required this.updatedAt,
     this.deletedAt,
+    required this.dirty,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1501,6 +1584,7 @@ class Completion extends DataClass implements Insertable<Completion> {
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<int>(deletedAt);
     }
+    map['dirty'] = Variable<bool>(dirty);
     return map;
   }
 
@@ -1532,6 +1616,7 @@ class Completion extends DataClass implements Insertable<Completion> {
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      dirty: Value(dirty),
     );
   }
 
@@ -1558,6 +1643,7 @@ class Completion extends DataClass implements Insertable<Completion> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
       deletedAt: serializer.fromJson<int?>(json['deletedAt']),
+      dirty: serializer.fromJson<bool>(json['dirty']),
     );
   }
   @override
@@ -1584,6 +1670,7 @@ class Completion extends DataClass implements Insertable<Completion> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<int>(updatedAt),
       'deletedAt': serializer.toJson<int?>(deletedAt),
+      'dirty': serializer.toJson<bool>(dirty),
     };
   }
 
@@ -1602,6 +1689,7 @@ class Completion extends DataClass implements Insertable<Completion> {
     Value<String?> userId = const Value.absent(),
     int? updatedAt,
     Value<int?> deletedAt = const Value.absent(),
+    bool? dirty,
   }) => Completion(
     id: id ?? this.id,
     taskId: taskId ?? this.taskId,
@@ -1621,6 +1709,7 @@ class Completion extends DataClass implements Insertable<Completion> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    dirty: dirty ?? this.dirty,
   );
   Completion copyWithCompanion(CompletionsCompanion data) {
     return Completion(
@@ -1654,6 +1743,7 @@ class Completion extends DataClass implements Insertable<Completion> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      dirty: data.dirty.present ? data.dirty.value : this.dirty,
     );
   }
 
@@ -1673,7 +1763,8 @@ class Completion extends DataClass implements Insertable<Completion> {
           ..write('pointsAwarded: $pointsAwarded, ')
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('deletedAt: $deletedAt')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('dirty: $dirty')
           ..write(')'))
         .toString();
   }
@@ -1694,6 +1785,7 @@ class Completion extends DataClass implements Insertable<Completion> {
     userId,
     updatedAt,
     deletedAt,
+    dirty,
   );
   @override
   bool operator ==(Object other) =>
@@ -1712,7 +1804,8 @@ class Completion extends DataClass implements Insertable<Completion> {
           other.pointsAwarded == this.pointsAwarded &&
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
-          other.deletedAt == this.deletedAt);
+          other.deletedAt == this.deletedAt &&
+          other.dirty == this.dirty);
 }
 
 class CompletionsCompanion extends UpdateCompanion<Completion> {
@@ -1730,6 +1823,7 @@ class CompletionsCompanion extends UpdateCompanion<Completion> {
   final Value<String?> userId;
   final Value<int> updatedAt;
   final Value<int?> deletedAt;
+  final Value<bool> dirty;
   final Value<int> rowid;
   const CompletionsCompanion({
     this.id = const Value.absent(),
@@ -1746,6 +1840,7 @@ class CompletionsCompanion extends UpdateCompanion<Completion> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.dirty = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   CompletionsCompanion.insert({
@@ -1763,6 +1858,7 @@ class CompletionsCompanion extends UpdateCompanion<Completion> {
     this.userId = const Value.absent(),
     required int updatedAt,
     this.deletedAt = const Value.absent(),
+    this.dirty = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        taskId = Value(taskId),
@@ -1784,6 +1880,7 @@ class CompletionsCompanion extends UpdateCompanion<Completion> {
     Expression<String>? userId,
     Expression<int>? updatedAt,
     Expression<int>? deletedAt,
+    Expression<bool>? dirty,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1801,6 +1898,7 @@ class CompletionsCompanion extends UpdateCompanion<Completion> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (dirty != null) 'dirty': dirty,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1820,6 +1918,7 @@ class CompletionsCompanion extends UpdateCompanion<Completion> {
     Value<String?>? userId,
     Value<int>? updatedAt,
     Value<int?>? deletedAt,
+    Value<bool>? dirty,
     Value<int>? rowid,
   }) {
     return CompletionsCompanion(
@@ -1837,6 +1936,7 @@ class CompletionsCompanion extends UpdateCompanion<Completion> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
+      dirty: dirty ?? this.dirty,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1894,6 +1994,9 @@ class CompletionsCompanion extends UpdateCompanion<Completion> {
     if (deletedAt.present) {
       map['deleted_at'] = Variable<int>(deletedAt.value);
     }
+    if (dirty.present) {
+      map['dirty'] = Variable<bool>(dirty.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1917,6 +2020,7 @@ class CompletionsCompanion extends UpdateCompanion<Completion> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('dirty: $dirty, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2025,6 +2129,19 @@ class $VerificationAttemptsTable extends VerificationAttempts
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _dirtyMeta = const VerificationMeta('dirty');
+  @override
+  late final GeneratedColumn<bool> dirty = GeneratedColumn<bool>(
+    'dirty',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dirty" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2036,6 +2153,7 @@ class $VerificationAttemptsTable extends VerificationAttempts
     userId,
     updatedAt,
     deletedAt,
+    dirty,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2108,6 +2226,12 @@ class $VerificationAttemptsTable extends VerificationAttempts
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
       );
     }
+    if (data.containsKey('dirty')) {
+      context.handle(
+        _dirtyMeta,
+        dirty.isAcceptableOrUnknown(data['dirty']!, _dirtyMeta),
+      );
+    }
     return context;
   }
 
@@ -2156,6 +2280,10 @@ class $VerificationAttemptsTable extends VerificationAttempts
         DriftSqlType.int,
         data['${effectivePrefix}deleted_at'],
       ),
+      dirty: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}dirty'],
+      )!,
     );
   }
 
@@ -2188,6 +2316,9 @@ class VerificationAttempt extends DataClass
   final String? userId;
   final int updatedAt;
   final int? deletedAt;
+
+  /// See [Tasks.dirty]'s doc comment; identical contract here.
+  final bool dirty;
   const VerificationAttempt({
     required this.id,
     required this.taskId,
@@ -2198,6 +2329,7 @@ class VerificationAttempt extends DataClass
     this.userId,
     required this.updatedAt,
     this.deletedAt,
+    required this.dirty,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2223,6 +2355,7 @@ class VerificationAttempt extends DataClass
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<int>(deletedAt);
     }
+    map['dirty'] = Variable<bool>(dirty);
     return map;
   }
 
@@ -2243,6 +2376,7 @@ class VerificationAttempt extends DataClass
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      dirty: Value(dirty),
     );
   }
 
@@ -2261,6 +2395,7 @@ class VerificationAttempt extends DataClass
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
       deletedAt: serializer.fromJson<int?>(json['deletedAt']),
+      dirty: serializer.fromJson<bool>(json['dirty']),
     );
   }
   @override
@@ -2276,6 +2411,7 @@ class VerificationAttempt extends DataClass
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<int>(updatedAt),
       'deletedAt': serializer.toJson<int?>(deletedAt),
+      'dirty': serializer.toJson<bool>(dirty),
     };
   }
 
@@ -2289,6 +2425,7 @@ class VerificationAttempt extends DataClass
     Value<String?> userId = const Value.absent(),
     int? updatedAt,
     Value<int?> deletedAt = const Value.absent(),
+    bool? dirty,
   }) => VerificationAttempt(
     id: id ?? this.id,
     taskId: taskId ?? this.taskId,
@@ -2299,6 +2436,7 @@ class VerificationAttempt extends DataClass
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    dirty: dirty ?? this.dirty,
   );
   VerificationAttempt copyWithCompanion(VerificationAttemptsCompanion data) {
     return VerificationAttempt(
@@ -2317,6 +2455,7 @@ class VerificationAttempt extends DataClass
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      dirty: data.dirty.present ? data.dirty.value : this.dirty,
     );
   }
 
@@ -2331,7 +2470,8 @@ class VerificationAttempt extends DataClass
           ..write('verdictMeta: $verdictMeta, ')
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('deletedAt: $deletedAt')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('dirty: $dirty')
           ..write(')'))
         .toString();
   }
@@ -2347,6 +2487,7 @@ class VerificationAttempt extends DataClass
     userId,
     updatedAt,
     deletedAt,
+    dirty,
   );
   @override
   bool operator ==(Object other) =>
@@ -2360,7 +2501,8 @@ class VerificationAttempt extends DataClass
           other.verdictMeta == this.verdictMeta &&
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
-          other.deletedAt == this.deletedAt);
+          other.deletedAt == this.deletedAt &&
+          other.dirty == this.dirty);
 }
 
 class VerificationAttemptsCompanion
@@ -2374,6 +2516,7 @@ class VerificationAttemptsCompanion
   final Value<String?> userId;
   final Value<int> updatedAt;
   final Value<int?> deletedAt;
+  final Value<bool> dirty;
   final Value<int> rowid;
   const VerificationAttemptsCompanion({
     this.id = const Value.absent(),
@@ -2385,6 +2528,7 @@ class VerificationAttemptsCompanion
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.dirty = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   VerificationAttemptsCompanion.insert({
@@ -2397,6 +2541,7 @@ class VerificationAttemptsCompanion
     this.userId = const Value.absent(),
     required int updatedAt,
     this.deletedAt = const Value.absent(),
+    this.dirty = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        taskId = Value(taskId),
@@ -2413,6 +2558,7 @@ class VerificationAttemptsCompanion
     Expression<String>? userId,
     Expression<int>? updatedAt,
     Expression<int>? deletedAt,
+    Expression<bool>? dirty,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2425,6 +2571,7 @@ class VerificationAttemptsCompanion
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (dirty != null) 'dirty': dirty,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2439,6 +2586,7 @@ class VerificationAttemptsCompanion
     Value<String?>? userId,
     Value<int>? updatedAt,
     Value<int?>? deletedAt,
+    Value<bool>? dirty,
     Value<int>? rowid,
   }) {
     return VerificationAttemptsCompanion(
@@ -2451,6 +2599,7 @@ class VerificationAttemptsCompanion
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
+      dirty: dirty ?? this.dirty,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2489,6 +2638,9 @@ class VerificationAttemptsCompanion
     if (deletedAt.present) {
       map['deleted_at'] = Variable<int>(deletedAt.value);
     }
+    if (dirty.present) {
+      map['dirty'] = Variable<bool>(dirty.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2507,6 +2659,7 @@ class VerificationAttemptsCompanion
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('dirty: $dirty, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2761,6 +2914,7 @@ typedef $$TasksTableCreateCompanionBuilder =
       required int createdAt,
       required int updatedAt,
       Value<int?> deletedAt,
+      Value<bool> dirty,
       Value<int> rowid,
     });
 typedef $$TasksTableUpdateCompanionBuilder =
@@ -2783,6 +2937,7 @@ typedef $$TasksTableUpdateCompanionBuilder =
       Value<int> createdAt,
       Value<int> updatedAt,
       Value<int?> deletedAt,
+      Value<bool> dirty,
       Value<int> rowid,
     });
 
@@ -2942,6 +3097,11 @@ class $$TasksTableFilterComposer extends Composer<_$AppDatabase, $TasksTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
   Expression<bool> completionsRefs(
     Expression<bool> Function($$CompletionsTableFilterComposer f) f,
   ) {
@@ -3091,6 +3251,11 @@ class $$TasksTableOrderingComposer
     column: $table.deletedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TasksTableAnnotationComposer
@@ -3168,6 +3333,9 @@ class $$TasksTableAnnotationComposer
 
   GeneratedColumn<int> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get dirty =>
+      $composableBuilder(column: $table.dirty, builder: (column) => column);
 
   Expression<T> completionsRefs<T extends Object>(
     Expression<T> Function($$CompletionsTableAnnotationComposer a) f,
@@ -3270,6 +3438,7 @@ class $$TasksTableTableManager
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int?> deletedAt = const Value.absent(),
+                Value<bool> dirty = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TasksCompanion(
                 id: id,
@@ -3290,6 +3459,7 @@ class $$TasksTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                dirty: dirty,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3312,6 +3482,7 @@ class $$TasksTableTableManager
                 required int createdAt,
                 required int updatedAt,
                 Value<int?> deletedAt = const Value.absent(),
+                Value<bool> dirty = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TasksCompanion.insert(
                 id: id,
@@ -3332,6 +3503,7 @@ class $$TasksTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                dirty: dirty,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -3434,6 +3606,7 @@ typedef $$CompletionsTableCreateCompanionBuilder =
       Value<String?> userId,
       required int updatedAt,
       Value<int?> deletedAt,
+      Value<bool> dirty,
       Value<int> rowid,
     });
 typedef $$CompletionsTableUpdateCompanionBuilder =
@@ -3452,6 +3625,7 @@ typedef $$CompletionsTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<int> updatedAt,
       Value<int?> deletedAt,
+      Value<bool> dirty,
       Value<int> rowid,
     });
 
@@ -3555,6 +3729,11 @@ class $$CompletionsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$TasksTableFilterComposer get taskId {
     final $$TasksTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -3653,6 +3832,11 @@ class $$CompletionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$TasksTableOrderingComposer get taskId {
     final $$TasksTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -3744,6 +3928,9 @@ class $$CompletionsTableAnnotationComposer
   GeneratedColumn<int> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
+  GeneratedColumn<bool> get dirty =>
+      $composableBuilder(column: $table.dirty, builder: (column) => column);
+
   $$TasksTableAnnotationComposer get taskId {
     final $$TasksTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -3811,6 +3998,7 @@ class $$CompletionsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int?> deletedAt = const Value.absent(),
+                Value<bool> dirty = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CompletionsCompanion(
                 id: id,
@@ -3827,6 +4015,7 @@ class $$CompletionsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                dirty: dirty,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3846,6 +4035,7 @@ class $$CompletionsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 required int updatedAt,
                 Value<int?> deletedAt = const Value.absent(),
+                Value<bool> dirty = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CompletionsCompanion.insert(
                 id: id,
@@ -3862,6 +4052,7 @@ class $$CompletionsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                dirty: dirty,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -3942,6 +4133,7 @@ typedef $$VerificationAttemptsTableCreateCompanionBuilder =
       Value<String?> userId,
       required int updatedAt,
       Value<int?> deletedAt,
+      Value<bool> dirty,
       Value<int> rowid,
     });
 typedef $$VerificationAttemptsTableUpdateCompanionBuilder =
@@ -3955,6 +4147,7 @@ typedef $$VerificationAttemptsTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<int> updatedAt,
       Value<int?> deletedAt,
+      Value<bool> dirty,
       Value<int> rowid,
     });
 
@@ -4040,6 +4233,11 @@ class $$VerificationAttemptsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$TasksTableFilterComposer get taskId {
     final $$TasksTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -4113,6 +4311,11 @@ class $$VerificationAttemptsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get dirty => $composableBuilder(
+    column: $table.dirty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$TasksTableOrderingComposer get taskId {
     final $$TasksTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4176,6 +4379,9 @@ class $$VerificationAttemptsTableAnnotationComposer
 
   GeneratedColumn<int> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get dirty =>
+      $composableBuilder(column: $table.dirty, builder: (column) => column);
 
   $$TasksTableAnnotationComposer get taskId {
     final $$TasksTableAnnotationComposer composer = $composerBuilder(
@@ -4246,6 +4452,7 @@ class $$VerificationAttemptsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int?> deletedAt = const Value.absent(),
+                Value<bool> dirty = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => VerificationAttemptsCompanion(
                 id: id,
@@ -4257,6 +4464,7 @@ class $$VerificationAttemptsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                dirty: dirty,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4270,6 +4478,7 @@ class $$VerificationAttemptsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 required int updatedAt,
                 Value<int?> deletedAt = const Value.absent(),
+                Value<bool> dirty = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => VerificationAttemptsCompanion.insert(
                 id: id,
@@ -4281,6 +4490,7 @@ class $$VerificationAttemptsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                dirty: dirty,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

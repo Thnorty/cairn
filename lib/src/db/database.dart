@@ -120,6 +120,15 @@ class Tasks extends Table {
   /// Sync tombstone (rows are never hard-deleted).
   IntColumn get deletedAt => integer().nullable()();
 
+  /// True iff this row has a local change not yet acknowledged by the sync
+  /// engine's `push` (see `lib/src/sync/sync_service.dart`). Every
+  /// repository write to this table sets this true; the ONLY place that
+  /// sets it false is the sync engine's pull-apply (a pulled row is server
+  /// truth, already in sync by definition) and a successful push-ack for
+  /// exactly the rows it sent. Defaults true so existing rows from before
+  /// this column existed are swept up by the first sync after upgrade.
+  BoolColumn get dirty => boolean().withDefault(const Constant(true))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -153,6 +162,9 @@ class Completions extends Table {
   TextColumn get userId => text().nullable()();
   IntColumn get updatedAt => integer()();
   IntColumn get deletedAt => integer().nullable()();
+
+  /// See [Tasks.dirty]'s doc comment; identical contract here.
+  BoolColumn get dirty => boolean().withDefault(const Constant(true))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -188,6 +200,9 @@ class VerificationAttempts extends Table {
   IntColumn get updatedAt => integer()();
   IntColumn get deletedAt => integer().nullable()();
 
+  /// See [Tasks.dirty]'s doc comment; identical contract here.
+  BoolColumn get dirty => boolean().withDefault(const Constant(true))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -211,7 +226,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -232,6 +247,15 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 4) {
             await m.createTable(appSettings);
+          }
+          if (from < 5) {
+            // Sync dirty-tracking (Phase 4a). Existing rows default to
+            // dirty=true, so the first sync after upgrading pushes every
+            // row that predates this column - correct, since none of them
+            // have ever been synced.
+            await m.addColumn(tasks, tasks.dirty);
+            await m.addColumn(completions, completions.dirty);
+            await m.addColumn(verificationAttempts, verificationAttempts.dirty);
           }
         },
       );

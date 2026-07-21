@@ -18,6 +18,7 @@ Completion stone(String taskId, LocalDate date, {int slot = 0}) {
     verificationStatus: VerificationStatus.verified,
     pointsAwarded: 0,
     updatedAt: 0,
+    dirty: true,
   );
 }
 

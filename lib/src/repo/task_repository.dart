@@ -82,6 +82,7 @@ class TaskRepository {
       userId: Value(userId ?? _currentUserId()),
       createdAt: now,
       updatedAt: now,
+      dirty: const Value(true),
     );
     await _db.into(_db.tasks).insert(task);
     return (_db.select(_db.tasks)..where((t) => t.id.equals(task.id.value)))
@@ -145,7 +146,10 @@ class TaskRepository {
     );
 
     await (_db.update(_db.tasks)..where((t) => t.id.equals(taskId))).write(
-      changes.copyWith(updatedAt: Value(_clock.nowEpochMillis())),
+      changes.copyWith(
+        updatedAt: Value(_clock.nowEpochMillis()),
+        dirty: const Value(true),
+      ),
     );
   }
 
@@ -244,6 +248,7 @@ class TaskRepository {
       TasksCompanion(
         archived: Value(archived),
         updatedAt: Value(_clock.nowEpochMillis()),
+        dirty: const Value(true),
       ),
     );
   }
@@ -252,7 +257,11 @@ class TaskRepository {
   Future<void> tombstoneDelete(String taskId) async {
     final now = _clock.nowEpochMillis();
     await (_db.update(_db.tasks)..where((t) => t.id.equals(taskId))).write(
-      TasksCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+      TasksCompanion(
+        deletedAt: Value(now),
+        updatedAt: Value(now),
+        dirty: const Value(true),
+      ),
     );
   }
 
@@ -320,6 +329,7 @@ class TaskRepository {
       TasksCompanion(
         userId: Value(userId),
         updatedAt: Value(_clock.nowEpochMillis()),
+        dirty: const Value(true),
       ),
     );
   }

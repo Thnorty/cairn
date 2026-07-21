@@ -27,6 +27,8 @@ import 'services/stats_service.dart';
 import 'services/streak_service.dart';
 import 'services/supabase_proof_verifier.dart';
 import 'services/trail_service.dart';
+import 'sync/sync_service.dart';
+import 'sync/sync_transport.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase(driftDatabase(name: 'cairn'));
@@ -342,4 +344,26 @@ final authBootstrapProvider = Provider<void>((ref) {
   }
 
   unawaited(run());
+});
+
+/// Seam for the Phase 4a delta-sync engine's remote side (see
+/// `lib/src/sync/sync_transport.dart`). Defaults to the [SupabaseSyncTransport]
+/// stub (Phase 4b work: real tables don't exist yet), so this provider exists
+/// purely to give [syncServiceProvider] a dependency and to give tests a
+/// clean seam to override with `test/support/fake_sync_transport.dart`'s
+/// `FakeSyncTransport`.
+final syncTransportProvider =
+    Provider<SyncTransport>((ref) => const SupabaseSyncTransport());
+
+/// The hand-rolled client delta-sync engine (Phase 4a), built from the local
+/// database and [syncTransportProvider]. Deliberately not watched or
+/// triggered anywhere in the app lifecycle yet (no foreground/connectivity
+/// wiring) - that wiring is human-gated Phase 4b work, once a real transport
+/// exists to sync against. Exists now so tests can drive [SyncService]
+/// through the provider graph with the transport overridden.
+final syncServiceProvider = Provider<SyncService>((ref) {
+  return SyncService(
+    ref.watch(databaseProvider),
+    ref.watch(syncTransportProvider),
+  );
 });
