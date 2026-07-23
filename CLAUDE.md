@@ -64,6 +64,31 @@ Full rationale for every decision below lives in `docs/proof-todo-app-guideline.
 - `lib/src/debug/` — Phase 1 debug screen
 - `test/` — unit tests are the acceptance criteria; run `flutter test` after every change.
 
+## Using `agy` (Antigravity CLI) as a Gemini subagent
+
+`agy` (Antigravity CLI, at `C:\Users\thnorty\AppData\Local\agy\bin\agy.exe`) can be driven non-interactively to farm a task out to **Gemini 3.6 Flash (High)**. There are no named `agy` agents configured, so a "subagent" is just a scripted `--prompt` run. This is a supplementary tool, not a replacement for the `cairn-implementer` workflow; use it for scoped, throwaway, or second-opinion tasks.
+
+**Canonical invocation** (verified working 2026-07-23):
+
+```
+agy --model gemini-3.6-flash-high \
+    --add-dir "C:\Users\thnorty\Documents\cairn" \
+    --dangerously-skip-permissions \
+    --print-timeout 20m \
+    --prompt "<the task>"
+```
+
+Rules learned from testing, each one load-bearing:
+
+- **Model:** `--model gemini-3.6-flash-high`. The reasoning effort (high/medium/low) is **baked into the model name**, so `--effort` is redundant; don't pass it. `agy models` lists the full set.
+- **Prompt:** pass with `--prompt "…"` (or `--print "…"`). **Never use the `-p` short alias alongside other flags**: it is a string flag that greedily swallows the *next flag* as its value and silently corrupts the prompt.
+- **Yes, you need `--dangerously-skip-permissions`** (that is the "--yolo" flag) for any real work. In headless print mode, file **edits are auto-approved** but **shell/terminal commands are auto-denied** ("a tool required the 'command' permission that headless mode cannot prompt for"). Gemini reaches for the shell even to *read* files (grep/cat), so without this flag it cannot inspect the repo, let alone run `flutter test`.
+  - Scoped alternative to the blanket flag: add allow-rules to `C:\Users\thnorty\.gemini\antigravity-cli\settings.json` under `permissions.allow`, e.g. `"command(flutter)"`, `"command(dart)"`. `"command(git)"` is already allowlisted there. Those then run headless *without* the yolo flag.
+- **Always pass `--add-dir "<repo path>"`.** By default print mode runs in a **private scratch workspace** (`~/.gemini/antigravity-cli/scratch`), **not** the cwd, so it will not touch this repo unless pointed at it.
+- **`--print-timeout` defaults to 5m**, which is too short for the full suite (659+ tests). Bump it (`20m`, or `1200s`; Go-duration format).
+- Read-only / planning: `--mode plan` (no edits) or `--mode accept-edits`; `--sandbox` restricts the terminal (the opposite of yolo). Multi-turn: `-c`/`--continue` resumes the last conversation, `--conversation <ID>` a specific one.
+- **Caveat when Claude Code launches it:** running `agy --dangerously-skip-permissions` against this repo from within a Claude session can be blocked by Claude Code's own sandbox classifier; it may need an explicit Bash allow-rule, or the human runs it directly.
+
 ## Git
 
 - **Never run `git commit`, `git add`, `git push`, or any other state-changing git command.** The human owns all commits.
