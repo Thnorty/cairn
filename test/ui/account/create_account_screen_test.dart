@@ -1,6 +1,7 @@
 import 'package:cairn/l10n/generated/app_localizations.dart';
 import 'package:cairn/src/services/account_error.dart';
 import 'package:cairn/src/ui/account/create_account_screen.dart';
+import 'package:cairn/src/ui/account/password_requirements_checklist.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,7 +32,7 @@ void main() {
     );
   }
 
-  testWidgets('renders the title, body, free-trail chip, fields, and requirements hint',
+  testWidgets('renders the title, body, free-trail chip, fields, and requirements checklist',
       (tester) async {
     final harness = buildAccountTestHarness();
     addTearDown(harness.db.close);
@@ -42,9 +43,15 @@ void main() {
     expect(find.text('Email'), findsOneWidget);
     expect(find.text('Password'), findsOneWidget);
     expect(
-      find.text('Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.'),
+      find.descendant(
+        of: find.byType(PasswordRequirementsChecklist),
+        matching: find.text('At least 8 characters'),
+      ),
       findsOneWidget,
     );
+    expect(find.text('An uppercase letter'), findsOneWidget);
+    expect(find.text('A lowercase letter'), findsOneWidget);
+    expect(find.text('A number'), findsOneWidget);
     expect(find.text('Create account'), findsOneWidget);
   });
 
@@ -60,9 +67,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.'),
+      find.descendant(
+        of: find.byType(PasswordRequirementsChecklist),
+        matching: find.text('At least 8 characters'),
+      ),
       findsOneWidget,
     );
+    expect(find.text('An uppercase letter'), findsOneWidget);
+    expect(find.text('A lowercase letter'), findsOneWidget);
+    expect(find.text('A number'), findsOneWidget);
     expect(harness.auth.startEmailUpgradeCalls, isEmpty);
   });
 
@@ -83,6 +96,7 @@ void main() {
 
     await tester.enterText(find.byType(TextField).first, 'new@example.com');
     await tester.enterText(find.byType(TextField).last, 'Abcdefg1');
+    await tester.ensureVisible(find.text('Create account'));
     await tester.tap(find.text('Create account'));
     await tester.pumpAndSettle();
 
@@ -102,6 +116,7 @@ void main() {
 
     await tester.enterText(find.byType(TextField).first, 'taken@example.com');
     await tester.enterText(find.byType(TextField).last, 'Abcdefg1');
+    await tester.ensureVisible(find.text('Create account'));
     await tester.tap(find.text('Create account'));
     await tester.pumpAndSettle();
 
@@ -120,6 +135,7 @@ void main() {
 
     await tester.enterText(find.byType(TextField).first, 'new@example.com');
     await tester.enterText(find.byType(TextField).last, 'Abcdefg1');
+    await tester.ensureVisible(find.text('Create account'));
     await tester.tap(find.text('Create account'));
     await tester.pumpAndSettle();
 

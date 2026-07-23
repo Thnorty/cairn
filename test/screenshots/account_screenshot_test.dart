@@ -5,6 +5,7 @@ import 'package:cairn/l10n/generated/app_localizations.dart';
 import 'package:cairn/src/models/trail_summary.dart';
 import 'package:cairn/src/ui/account/create_account_screen.dart';
 import 'package:cairn/src/ui/account/enter_code_screen.dart';
+import 'package:cairn/src/ui/account/forgot_password_screen.dart';
 import 'package:cairn/src/ui/account/keep_which_trail_screen.dart';
 import 'package:cairn/src/ui/account/set_new_password_screen.dart';
 import 'package:cairn/src/ui/account/sign_in_screen.dart';
@@ -91,6 +92,21 @@ void main() {
       ),
     ));
     await captureAt392x846(tester, 'account_create.png');
+  });
+
+  testScreenshotWidgets('1b. Forgot password', (tester) async {
+    final harness = buildAccountTestHarness();
+    addTearDown(harness.db.close);
+    await tester.pumpWidget(shell(
+      harness,
+      ForgotPasswordScreen(
+        onClose: () {},
+        onBack: () {},
+        initialEmail: 'ototatik@gmail.com',
+        onCodeSent: (_) {},
+      ),
+    ));
+    await captureAt392x846(tester, 'account_forgot_password.png');
   });
 
   testScreenshotWidgets('2. Sign in', (tester) async {

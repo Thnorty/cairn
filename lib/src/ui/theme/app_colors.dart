@@ -681,6 +681,12 @@ abstract final class AppColors {
   /// clay "Sign out" pill border.
   static const Color accountSignOutBorder = Color(0x6BA6603D);
 
+  /// rgba(109,128,86,.18) - live password checklist met rule circle background.
+  static const Color accountRuleSageCircleBg = Color(0x2E6D8056);
+
+  /// rgba(179,84,58,.14) - live password checklist unmet rule circle background.
+  static const Color accountRuleClayCircleBg = Color(0x24B3543A);
+
   // ---- Dialogs (Cairn Dialog.dc.html) ----------------------------------
 
   /// rgba(30,25,18,.52) - dialog scrim overlay background.

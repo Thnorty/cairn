@@ -12,6 +12,7 @@ import '../widgets/screen_header.dart';
 import 'account_chrome.dart';
 import 'email_field.dart';
 import 'password_field.dart';
+import 'password_requirements_checklist.dart';
 
 /// Frame 1 of `Cairn Account.dc.html`: email + password, a free-trail
 /// reassurance chip, and the "Create account" sage CTA. Step 1 of the
@@ -76,9 +77,6 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
     });
 
     if (!meetsPasswordPolicy(password)) {
-      setState(() {
-        _passwordError = l10n.accountPasswordRequirements;
-      });
       return;
     }
 
@@ -103,6 +101,7 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
             _offlineMessage = l10n.accountRateLimitedError;
           case AccountError.invalidCode:
           case AccountError.invalidCredentials:
+          case AccountError.samePassword:
           case AccountError.unknown:
             _offlineMessage = l10n.accountUnknownError;
         }
@@ -167,20 +166,15 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                     hintText:
                         l10n.accountPasswordHintCreate(kMinPasswordLength),
                     enabled: !_isLoading,
+                    onChanged: (_) => setState(() {}),
                     error: _passwordError == null
                         ? null
                         : AccountFieldErrorRow(message: _passwordError!),
                   ),
-                  if (_passwordError == null)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(top: 8),
-                      child: Text(
-                        l10n.accountPasswordRequirements,
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.labelGrey,
-                        ),
-                      ),
-                    ),
+                  const SizedBox(height: 10),
+                  PasswordRequirementsChecklist(
+                    password: _passwordController.text,
+                  ),
                   const SizedBox(height: 26),
                   AccountSubmitButton(
                     label: l10n.accountCreateButton,

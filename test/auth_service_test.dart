@@ -216,6 +216,21 @@ void main() {
       );
     });
 
+    test('same_password -> samePassword', () async {
+      final gateway = FakeGoTrueGateway()
+        ..updatePasswordError = const AuthApiException(
+          'New password should be different from the old password.',
+          code: 'same_password',
+        );
+      final auth = SupabaseAuthService(gateway: gateway);
+
+      await expectLater(
+        auth.setPassword('Same1234'),
+        throwsA(isA<AccountException>()
+            .having((e) => e.error, 'error', AccountError.samePassword)),
+      );
+    });
+
     test('AuthWeakPasswordException -> weakPassword regardless of code',
         () async {
       final gateway = FakeGoTrueGateway()

@@ -1317,6 +1317,30 @@
   "@accountForgotPasswordNeedsEmailError": {
     "description": "Inline error shown under the email field on the Sign in screen when Forgot password? is tapped without a valid email entered."
   },
+  "accountForgotPasswordTitle": "Forgot your password?",
+  "@accountForgotPasswordTitle": {
+    "description": "Title on the Forgot password screen."
+  },
+  "accountForgotPasswordBody": "Enter your account email and we'll send you a 6-digit code to reset it.",
+  "@accountForgotPasswordBody": {
+    "description": "Body copy under the title on the Forgot password screen."
+  },
+  "accountSendCodeButton": "Send code",
+  "@accountSendCodeButton": {
+    "description": "Primary CTA on the Forgot password screen."
+  },
+  "accountSendingCodeLoading": "Sending code...",
+  "@accountSendingCodeLoading": {
+    "description": "Label shown on the Forgot password screen's primary CTA while sendPasswordResetCode is in flight, replacing accountSendCodeButton and paired with a spinner."
+  },
+  "accountRememberedItLead": "Remembered it?",
+  "@accountRememberedItLead": {
+    "description": "Plain lead clause under the Forgot password screen's primary CTA, immediately preceding the accountSignInLink link in the same line."
+  },
+  "accountInvalidEmailError": "Enter a valid email address.",
+  "@accountInvalidEmailError": {
+    "description": "Inline error shown under the email field on the Forgot password screen when an invalid or empty email address is submitted."
+  },
   "accountSigningInLoading": "Signing in...",
   "@accountSigningInLoading": {
     "description": "Label shown on the Sign in screen's primary CTA while signIn is in flight, replacing accountSignInLink and paired with a spinner."
@@ -1495,6 +1519,26 @@
   "accountPasswordRequirements": "Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.",
   "@accountPasswordRequirements": {
     "description": "Visible password policy requirements hint and inline error message, stating the full password policy (min 8 chars + upper + lower + digit)."
+  },
+  "accountRuleMinLength": "At least 8 characters",
+  "@accountRuleMinLength": {
+    "description": "Password requirement rule label for minimum length in the live password checklist."
+  },
+  "accountRuleUppercase": "An uppercase letter",
+  "@accountRuleUppercase": {
+    "description": "Password requirement rule label for uppercase letter in the live password checklist."
+  },
+  "accountRuleLowercase": "A lowercase letter",
+  "@accountRuleLowercase": {
+    "description": "Password requirement rule label for lowercase letter in the live password checklist."
+  },
+  "accountRuleDigit": "A number",
+  "@accountRuleDigit": {
+    "description": "Password requirement rule label for digit in the live password checklist."
+  },
+  "accountSamePasswordError": "Your new password must be different from your current password.",
+  "@accountSamePasswordError": {
+    "description": "Inline error under the new password field on the Set new password screen when AccountError.samePassword is returned."
   },
   "accountInvalidCodeError": "That code didn't match. Check it and try again.",
   "@accountInvalidCodeError": {

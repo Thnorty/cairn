@@ -28,4 +28,26 @@ void main() {
       expect(meetsPasswordPolicy('SecureP4ssword!'), isTrue);
     });
   });
+
+  group('individual predicates', () {
+    test('passwordHasMinLength', () {
+      expect(passwordHasMinLength('1234567'), isFalse);
+      expect(passwordHasMinLength('12345678'), isTrue);
+    });
+
+    test('passwordHasUppercase', () {
+      expect(passwordHasUppercase('abc123'), isFalse);
+      expect(passwordHasUppercase('aBc123'), isTrue);
+    });
+
+    test('passwordHasLowercase', () {
+      expect(passwordHasLowercase('ABC123'), isFalse);
+      expect(passwordHasLowercase('ABc123'), isTrue);
+    });
+
+    test('passwordHasDigit', () {
+      expect(passwordHasDigit('Abcdefgh'), isFalse);
+      expect(passwordHasDigit('Abcdefg1'), isTrue);
+    });
+  });
 }

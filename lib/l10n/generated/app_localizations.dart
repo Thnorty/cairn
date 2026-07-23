@@ -1496,6 +1496,42 @@ abstract class AppLocalizations {
   /// **'Enter your email above first, then tap Forgot password.'**
   String get accountForgotPasswordNeedsEmailError;
 
+  /// Title on the Forgot password screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot your password?'**
+  String get accountForgotPasswordTitle;
+
+  /// Body copy under the title on the Forgot password screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your account email and we\'ll send you a 6-digit code to reset it.'**
+  String get accountForgotPasswordBody;
+
+  /// Primary CTA on the Forgot password screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Send code'**
+  String get accountSendCodeButton;
+
+  /// Label shown on the Forgot password screen's primary CTA while sendPasswordResetCode is in flight, replacing accountSendCodeButton and paired with a spinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending code...'**
+  String get accountSendingCodeLoading;
+
+  /// Plain lead clause under the Forgot password screen's primary CTA, immediately preceding the accountSignInLink link in the same line.
+  ///
+  /// In en, this message translates to:
+  /// **'Remembered it?'**
+  String get accountRememberedItLead;
+
+  /// Inline error shown under the email field on the Forgot password screen when an invalid or empty email address is submitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address.'**
+  String get accountInvalidEmailError;
+
   /// Label shown on the Sign in screen's primary CTA while signIn is in flight, replacing accountSignInLink and paired with a spinner.
   ///
   /// In en, this message translates to:
@@ -1723,6 +1759,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.'**
   String get accountPasswordRequirements;
+
+  /// Password requirement rule label for minimum length in the live password checklist.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 8 characters'**
+  String get accountRuleMinLength;
+
+  /// Password requirement rule label for uppercase letter in the live password checklist.
+  ///
+  /// In en, this message translates to:
+  /// **'An uppercase letter'**
+  String get accountRuleUppercase;
+
+  /// Password requirement rule label for lowercase letter in the live password checklist.
+  ///
+  /// In en, this message translates to:
+  /// **'A lowercase letter'**
+  String get accountRuleLowercase;
+
+  /// Password requirement rule label for digit in the live password checklist.
+  ///
+  /// In en, this message translates to:
+  /// **'A number'**
+  String get accountRuleDigit;
+
+  /// Inline error under the new password field on the Set new password screen when AccountError.samePassword is returned.
+  ///
+  /// In en, this message translates to:
+  /// **'Your new password must be different from your current password.'**
+  String get accountSamePasswordError;
 
   /// Inline error on the Enter Code screen when AccountError.invalidCode is returned.
   ///

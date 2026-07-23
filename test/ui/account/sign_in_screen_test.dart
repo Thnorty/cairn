@@ -125,65 +125,19 @@ void main() {
     expect(find.text("You're offline. Try again once you're connected."), findsOneWidget);
   });
 
-  testWidgets('"Forgot password?" sends the reset code and forwards the '
-      'typed email', (tester) async {
+  testWidgets('"Forgot password?" fires onForgotPassword with typed email '
+      '(navigation only; no reset code sent)', (tester) async {
     final harness = buildAccountTestHarness();
     addTearDown(harness.db.close);
     String? forgotEmail;
     await pump(tester, harness, onForgotPassword: (email) => forgotEmail = email);
 
-    await tester.enterText(find.byType(TextField).first, 'a@b.com');
+    await tester.enterText(find.byType(TextField).first, 'user@example.com');
     await tester.tap(find.text('Forgot password?'));
     await tester.pumpAndSettle();
 
-    expect(harness.auth.sendPasswordResetCodeCalls, ['a@b.com']);
-    expect(forgotEmail, 'a@b.com');
-  });
-
-  testWidgets('"Forgot password?" with an empty or invalid email shows inline error '
-      'and does not navigate', (tester) async {
-    final harness = buildAccountTestHarness();
-    addTearDown(harness.db.close);
-    String? forgotEmail;
-    await pump(tester, harness, onForgotPassword: (email) => forgotEmail = email);
-
-    // Tap with empty email
-    await tester.tap(find.text('Forgot password?'));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('Enter your email above first, then tap Forgot password.'),
-      findsOneWidget,
-    );
+    expect(forgotEmail, 'user@example.com');
     expect(harness.auth.sendPasswordResetCodeCalls, isEmpty);
-    expect(forgotEmail, isNull);
-
-    // Enter invalid email (missing @)
-    await tester.enterText(find.byType(TextField).first, 'invalidemail');
-    await tester.tap(find.text('Forgot password?'));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('Enter your email above first, then tap Forgot password.'),
-      findsOneWidget,
-    );
-    expect(harness.auth.sendPasswordResetCodeCalls, isEmpty);
-    expect(forgotEmail, isNull);
-
-    // Now enter valid email and verify error clears on typing and send succeeds
-    await tester.enterText(find.byType(TextField).first, 'valid@example.com');
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('Enter your email above first, then tap Forgot password.'),
-      findsNothing,
-    );
-
-    await tester.tap(find.text('Forgot password?'));
-    await tester.pumpAndSettle();
-
-    expect(harness.auth.sendPasswordResetCodeCalls, ['valid@example.com']);
-    expect(forgotEmail, 'valid@example.com');
   });
 
   testWidgets('"New here? Create an account" fires onCreateAccount', (tester) async {

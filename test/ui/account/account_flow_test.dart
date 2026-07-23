@@ -66,6 +66,7 @@ void main() {
     expect(find.text('Keep your trail safe'), findsOneWidget);
     await tester.enterText(find.byType(TextField).first, 'new@example.com');
     await tester.enterText(find.byType(TextField).last, 'Abcdefg1');
+    await tester.ensureVisible(find.text('Create account'));
     await tester.tap(find.text('Create account'));
     await tester.pumpAndSettle();
 
@@ -159,7 +160,7 @@ void main() {
     expect(localTasks, isEmpty); // replaced by the (empty) cloud account
   });
 
-  testWidgets('password reset end to end: Sign in -> Forgot password -> '
+  testWidgets('password reset end to end: Sign in -> Forgot password screen -> '
       'Enter code -> Set new password -> flow closes', (tester) async {
     final harness = buildAccountTestHarness();
     addTearDown(harness.db.close);
@@ -167,6 +168,14 @@ void main() {
 
     await tester.enterText(find.byType(TextField).first, 'a@b.com');
     await tester.tap(find.text('Forgot password?'));
+    await tester.pumpAndSettle();
+
+    // Now on Forgot password screen
+    expect(find.text('Forgot your password?'), findsOneWidget);
+    expect(find.text('a@b.com'), findsOneWidget);
+    expect(harness.auth.sendPasswordResetCodeCalls, isEmpty);
+
+    await tester.tap(find.text('Send code'));
     await tester.pumpAndSettle();
 
     expect(harness.auth.sendPasswordResetCodeCalls, ['a@b.com']);

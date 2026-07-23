@@ -920,6 +920,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter your email above first, then tap Forgot password.';
 
   @override
+  String get accountForgotPasswordTitle => 'Forgot your password?';
+
+  @override
+  String get accountForgotPasswordBody =>
+      'Enter your account email and we\'ll send you a 6-digit code to reset it.';
+
+  @override
+  String get accountSendCodeButton => 'Send code';
+
+  @override
+  String get accountSendingCodeLoading => 'Sending code...';
+
+  @override
+  String get accountRememberedItLead => 'Remembered it?';
+
+  @override
+  String get accountInvalidEmailError => 'Enter a valid email address.';
+
+  @override
   String get accountSigningInLoading => 'Signing in...';
 
   @override
@@ -1068,6 +1087,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountPasswordRequirements =>
       'Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.';
+
+  @override
+  String get accountRuleMinLength => 'At least 8 characters';
+
+  @override
+  String get accountRuleUppercase => 'An uppercase letter';
+
+  @override
+  String get accountRuleLowercase => 'A lowercase letter';
+
+  @override
+  String get accountRuleDigit => 'A number';
+
+  @override
+  String get accountSamePasswordError =>
+      'Your new password must be different from your current password.';
 
   @override
   String get accountInvalidCodeError =>

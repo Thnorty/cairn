@@ -36,8 +36,8 @@ class SignInScreen extends ConsumerStatefulWidget {
   final void Function(TrailSummary local, TrailSummary remote)
       onNeedsTrailChoice;
 
-  /// "Forgot password?" tapped: the caller sends the reset code for
-  /// [email] and pushes Enter Code (purpose = reset).
+  /// "Forgot password?" tapped: navigates to the Forgot password screen,
+  /// prefilling this email.
   final void Function(String email) onForgotPassword;
 
   /// "New here? Create an account" tapped.
@@ -57,8 +57,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
-  bool _isSendingReset = false;
-  String? _emailError;
   String? _passwordError;
   String? _offlineMessage;
 
@@ -75,7 +73,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     final password = _passwordController.text;
 
     setState(() {
-      _emailError = null;
       _passwordError = null;
       _offlineMessage = null;
       _isLoading = true;
@@ -105,6 +102,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           case AccountError.emailInUse:
           case AccountError.weakPassword:
           case AccountError.invalidCode:
+          case AccountError.samePassword:
           case AccountError.unknown:
             _offlineMessage = l10n.accountUnknownError;
         }
@@ -114,49 +112,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     }
   }
 
-  Future<void> _forgotPassword() async {
-    if (_isSendingReset) return;
-
-    final l10n = AppLocalizations.of(context)!;
-    final email = _emailController.text.trim();
-    final atIndex = email.indexOf('@');
-    final isWellFormed = email.isNotEmpty &&
-        atIndex > 0 &&
-        atIndex == email.lastIndexOf('@') &&
-        atIndex < email.length - 1;
-
-    if (!isWellFormed) {
-      setState(() {
-        _emailError = l10n.accountForgotPasswordNeedsEmailError;
-      });
-      return;
-    }
-
-    setState(() {
-      _emailError = null;
-      _offlineMessage = null;
-      _isSendingReset = true;
-    });
-    try {
-      await ref.read(accountServiceProvider).sendPasswordResetCode(email);
-      if (!mounted) return;
-      widget.onForgotPassword(email);
-    } on AccountException catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _offlineMessage = e.error == AccountError.offline
-            ? l10n.accountOfflineBannerGeneric
-            : l10n.accountUnknownError;
-      });
-    } finally {
-      if (mounted) setState(() => _isSendingReset = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final busy = _isLoading || _isSendingReset;
+    final busy = _isLoading;
 
     return ModalScaffold(
       washes: accountFormWashes,
@@ -188,16 +147,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     controller: _emailController,
                     hintText: l10n.accountEmailHint,
                     enabled: !busy,
-                    error: _emailError == null
-                        ? null
-                        : AccountFieldErrorRow(message: _emailError!),
-                    onChanged: _emailError == null
-                        ? null
-                        : (_) {
-                            if (_emailError != null) {
-                              setState(() => _emailError = null);
-                            }
-                          },
                   ),
                   const SizedBox(height: 15),
                   PasswordField(
@@ -217,7 +166,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                         label: l10n.accountForgotPasswordLink,
                         fontWeight: FontWeight.w500,
                         fontSize: 13,
-                        onTap: busy ? () {} : _forgotPassword,
+                        onTap: busy
+                            ? () {}
+                            : () => widget.onForgotPassword(
+                                  _emailController.text.trim(),
+                                ),
                       ),
                     ),
                   ),

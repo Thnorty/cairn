@@ -17,6 +17,10 @@ enum AccountError {
   /// Code `weak_password` (or the dedicated `AuthWeakPasswordException`).
   weakPassword,
 
+  /// `updateUser(password: ...)` failed because the new password is identical
+  /// to the account's current password. Code `same_password`.
+  samePassword,
+
   /// `verifyOtp` failed: the 6-digit code was wrong, already used, or has
   /// expired. Code `otp_expired` - Supabase's Auth server does not
   /// distinguish "wrong" from "expired" in the code it returns.
@@ -79,6 +83,8 @@ AccountError mapAuthError(Object error) {
         return AccountError.emailInUse;
       case 'weak_password':
         return AccountError.weakPassword;
+      case 'same_password':
+        return AccountError.samePassword;
       case 'otp_expired':
         return AccountError.invalidCode;
       case 'invalid_credentials':
@@ -87,6 +93,9 @@ AccountError mapAuthError(Object error) {
       case 'over_sms_send_rate_limit':
       case 'over_request_rate_limit':
         return AccountError.rateLimited;
+    }
+    if (error.message.toLowerCase().contains('different from the old password')) {
+      return AccountError.samePassword;
     }
   }
 

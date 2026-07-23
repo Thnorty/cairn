@@ -131,6 +131,7 @@ class _EnterCodeScreenState extends ConsumerState<EnterCodeScreen> {
           case AccountError.emailInUse:
           case AccountError.weakPassword:
           case AccountError.invalidCredentials:
+          case AccountError.samePassword:
           case AccountError.unknown:
             _error = l10n.accountUnknownError;
         }

@@ -132,10 +132,13 @@ class _OtpBoxState extends State<_OtpBox> {
   @override
   Widget build(BuildContext context) {
     final active = widget.focusNode.hasFocus;
-    return SizedBox(
-      width: 46,
-      height: 56,
-      child: DecoratedBox(
+    return GestureDetector(
+      onTap: () => widget.focusNode.requestFocus(),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 46,
+        height: 56,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           gradient: AppGradients.premiumBg,
           borderRadius: BorderRadius.circular(13),
@@ -160,7 +163,6 @@ class _OtpBoxState extends State<_OtpBox> {
           focusNode: widget.focusNode,
           autofocus: widget.autofocus,
           textAlign: TextAlign.center,
-          textAlignVertical: TextAlignVertical.center,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           style: AppTextStyles.otpDigit,

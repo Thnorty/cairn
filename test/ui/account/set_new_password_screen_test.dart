@@ -1,5 +1,6 @@
 import 'package:cairn/l10n/generated/app_localizations.dart';
 import 'package:cairn/src/services/account_error.dart';
+import 'package:cairn/src/ui/account/password_requirements_checklist.dart';
 import 'package:cairn/src/ui/account/set_new_password_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,7 +32,7 @@ void main() {
     );
   }
 
-  testWidgets('renders the title, body with the email, field, and requirements hint',
+  testWidgets('renders the title, body with the email, field, and requirements checklist',
       (tester) async {
     final harness = buildAccountTestHarness();
     addTearDown(harness.db.close);
@@ -43,9 +44,15 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text('Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.'),
+      find.descendant(
+        of: find.byType(PasswordRequirementsChecklist),
+        matching: find.text('At least 8 characters'),
+      ),
       findsOneWidget,
     );
+    expect(find.text('An uppercase letter'), findsOneWidget);
+    expect(find.text('A lowercase letter'), findsOneWidget);
+    expect(find.text('A number'), findsOneWidget);
   });
 
   testWidgets('an invalid password (violating policy) is rejected client-side', (tester) async {
@@ -58,9 +65,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.'),
+      find.descendant(
+        of: find.byType(PasswordRequirementsChecklist),
+        matching: find.text('At least 8 characters'),
+      ),
       findsOneWidget,
     );
+    expect(find.text('An uppercase letter'), findsOneWidget);
+    expect(find.text('A lowercase letter'), findsOneWidget);
+    expect(find.text('A number'), findsOneWidget);
     expect(harness.auth.setPasswordCalls, isEmpty);
   });
 
@@ -90,5 +103,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text("You're offline. Try again once you're connected."), findsOneWidget);
+  });
+
+  testWidgets('samePassword shows inline error under password field',
+      (tester) async {
+    final harness = buildAccountTestHarness();
+    harness.auth.setPasswordError =
+        const AccountException(AccountError.samePassword);
+    addTearDown(harness.db.close);
+    await pump(tester, harness);
+
+    await tester.enterText(find.byType(TextField), 'Abcdefg1');
+    await tester.tap(find.text('Save password'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Your new password must be different from your current password.'),
+      findsOneWidget,
+    );
   });
 }

@@ -6,6 +6,7 @@ import '../../models/trail_summary.dart';
 import '../../providers.dart';
 import 'create_account_screen.dart';
 import 'enter_code_screen.dart';
+import 'forgot_password_screen.dart';
 import 'keep_which_trail_screen.dart';
 import 'set_new_password_screen.dart';
 import 'sign_in_screen.dart';
@@ -14,14 +15,15 @@ import 'sign_in_screen.dart';
 enum AccountEntryPoint { createAccount, signIn }
 
 /// Hosts every Phase 4b account-upgrade screen (Create account, Sign in,
-/// Enter code, Set a new password, Keep which trail) on its OWN nested
-/// [Navigator], the same pattern `OnboardingFlow` uses and for the same
-/// reason: pushing these as a single route (wherever the caller pushes
-/// [AccountFlow] itself - Profile's root navigator, or onboarding's own
-/// nested navigator) means closing the whole multi-screen flow is always
-/// exactly one pop of that one route, regardless of how many screens deep
-/// the user navigated (Create account -> Enter code -> ... ), rather than
-/// each screen needing to pop itself off some shared root stack N times.
+/// Forgot password, Enter code, Set a new password, Keep which trail) on
+/// its OWN nested [Navigator], the same pattern `OnboardingFlow` uses and
+/// for the same reason: pushing these as a single route (wherever the
+/// caller pushes [AccountFlow] itself - Profile's root navigator, or
+/// onboarding's own nested navigator) means closing the whole multi-screen
+/// flow is always exactly one pop of that one route, regardless of how
+/// many screens deep the user navigated (Create account -> Enter code -> ... ),
+/// rather than each screen needing to pop itself off some shared root stack
+/// N times.
 ///
 /// [start] picks the initial screen: Profile's "Create" action opens at
 /// [AccountEntryPoint.createAccount]; onboarding's "I already have an
@@ -45,6 +47,7 @@ class _AccountFlowState extends ConsumerState<AccountFlow> {
 
   static const _createRoute = '/create';
   static const _signInRoute = '/sign-in';
+  static const _forgotPasswordRoute = '/forgot-password';
   static const _enterCodeRoute = '/enter-code';
   static const _setNewPasswordRoute = '/set-new-password';
   static const _keepWhichTrailRoute = '/keep-which-trail';
@@ -99,6 +102,25 @@ class _AccountFlowState extends ConsumerState<AccountFlow> {
                 },
                 onForgotPassword: (email) {
                   _navigatorKey.currentState!.pushNamed(
+                    _forgotPasswordRoute,
+                    arguments: _ForgotPasswordArgs(email: email),
+                  );
+                },
+                onCreateAccount: () =>
+                    _navigatorKey.currentState!.pushNamed(_createRoute),
+              ),
+            );
+
+          case _forgotPasswordRoute:
+            final args = settings.arguments as _ForgotPasswordArgs?;
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => ForgotPasswordScreen(
+                onClose: _closeFlow,
+                onBack: () => _navigatorKey.currentState!.pop(),
+                initialEmail: args?.email,
+                onCodeSent: (email) {
+                  _navigatorKey.currentState!.pushNamed(
                     _enterCodeRoute,
                     arguments: _EnterCodeArgs(
                       purpose: AccountCodePurpose.passwordReset,
@@ -106,8 +128,6 @@ class _AccountFlowState extends ConsumerState<AccountFlow> {
                     ),
                   );
                 },
-                onCreateAccount: () =>
-                    _navigatorKey.currentState!.pushNamed(_createRoute),
               ),
             );
 
@@ -183,6 +203,11 @@ class _AccountFlowState extends ConsumerState<AccountFlow> {
 class _SignInArgs {
   final String? prefillEmail;
   const _SignInArgs({this.prefillEmail});
+}
+
+class _ForgotPasswordArgs {
+  final String? email;
+  const _ForgotPasswordArgs({this.email});
 }
 
 class _EnterCodeArgs {

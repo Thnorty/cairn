@@ -8,7 +8,7 @@
 library;
 
 import 'package:flutter/material.dart'
-    show CircularProgressIndicator, Material, MaterialType;
+    show CircularProgressIndicator, Material, MaterialLocalizations, MaterialType;
 import 'package:flutter/widgets.dart';
 
 import '../proof/verification_chrome.dart'
@@ -17,6 +17,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/buttons.dart';
+import '../widgets/glyphs.dart' show BackChevronGlyph;
 import '../widgets/screen_header.dart';
 
 /// The sage-tinted top wash + contour origin shared by the "form" account
@@ -69,6 +70,62 @@ class AccountCloseButtonRow extends StatelessWidget {
       child: Align(
         alignment: AlignmentDirectional.centerStart,
         child: CloseCircleButton(onTap: onClose),
+      ),
+    );
+  }
+}
+
+/// The circular back button reused by account screens that navigate backward.
+class BackCircleButton extends StatelessWidget {
+  const BackCircleButton({super.key, required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final backLabel = MaterialLocalizations.of(context).backButtonTooltip;
+    return Material(
+      type: MaterialType.transparency,
+      child: Semantics(
+        button: true,
+        label: backLabel,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            width: 38,
+            height: 38,
+            decoration: const BoxDecoration(
+              color: AppColors.awaitingChipBg,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: const BackChevronGlyph(color: AppColors.iconMuted, size: 16),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The back button row shared by account-flow screens that pop back,
+/// positioned top-left matching [AccountCloseButtonRow].
+class AccountBackButtonRow extends StatelessWidget {
+  const AccountBackButtonRow({super.key, required this.onBack});
+
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsetsDirectional.only(
+        start: kScreenEdgePadding.start,
+        end: kScreenEdgePadding.end,
+        top: 12,
+      ),
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: BackCircleButton(onTap: onBack),
       ),
     );
   }
