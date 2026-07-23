@@ -4,9 +4,8 @@ import 'package:flutter/material.dart' show MaterialPageRoute;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
-import '../widgets/message_snack_bar.dart';
+import '../account/account_flow.dart';
 import 'onboarding_how_it_works_screen.dart';
 import 'onboarding_verification_screen.dart';
 import 'onboarding_welcome_screen.dart';
@@ -37,12 +36,6 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
 
   static const _howItWorksRoute = '/how-it-works';
   static const _verificationRoute = '/verification';
-
-  void _showComingSoon(String message) {
-    final context = _navigatorKey.currentContext;
-    if (context == null) return;
-    context.showMessageSnackBar(message);
-  }
 
   /// The "Allow camera" completion path (decision 4 in this run's spec):
   /// entry is never gated on the OS permission prompt's outcome, only on it
@@ -79,11 +72,23 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
         }
         return MaterialPageRoute<void>(
           settings: settings,
-          builder: (routeContext) => OnboardingWelcomeScreen(
+          builder: (_) => OnboardingWelcomeScreen(
             onStartClimbing: () => _navigatorKey.currentState!.pushNamed(_howItWorksRoute),
-            onAlreadyHaveAccount: () => _showComingSoon(
-              AppLocalizations.of(routeContext)!.onboardingSignInComingSoonSnackbar,
+            // Pushes the full account flow (Sign in first) on THIS SAME
+            // nested Navigator, per this run's spec. AccountFlow's
+            // onComplete marks onboarding complete and hands off to
+            // AppShell (via onboardingCompleteProvider) on a successful
+            // sign-in; a plain close-via-X just pops back to this welcome
+            // screen, same as any other pushed route here.
+            onAlreadyHaveAccount: () => _navigatorKey.currentState!.push(
+              MaterialPageRoute<void>(
+                builder: (_) => AccountFlow(
+                  start: AccountEntryPoint.signIn,
+                  onComplete: () => unawaited(_completeOnboarding()),
+                ),
+              ),
             ),
+            showAlreadyHaveAccount: ref.watch(accountFeatureAvailableProvider),
           ),
         );
       },

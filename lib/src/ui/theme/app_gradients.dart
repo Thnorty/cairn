@@ -183,6 +183,20 @@ abstract final class AppGradients {
     );
   }
 
+  /// Account screens' sage CTA gradient, 155deg (see
+  /// [AppColors.accountSageButtonLight]/[AppColors.accountSageButtonDark]).
+  static LinearGradient get sageButton {
+    final (begin, end) = cssGradientAlignment(155);
+    return LinearGradient(
+      begin: begin,
+      end: end,
+      colors: const [
+        AppColors.accountSageButtonLight,
+        AppColors.accountSageButtonDark,
+      ],
+    );
+  }
+
   /// Trail screen's scrollable-body background wash, 180deg (top to
   /// bottom) `#e9e1d3 0% -> #e7e4d4 30% -> #e8e6d6 60% -> #e6ddcd 100%`.
   static const LinearGradient trailBackground = LinearGradient(

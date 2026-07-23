@@ -825,4 +825,90 @@ void main() {
       expect(await repo.completionsCountForWeekOf(d(2026, 7, 8)), 0);
     });
   });
+
+  group('localTrailSummary', () {
+    test('zero stones and a null lastClimb with no completions at all',
+        () async {
+      final clock = FixedClock(d(2026, 7, 10));
+      final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
+
+      final summary = await completionRepo.localTrailSummary();
+
+      expect(summary.stones, 0);
+      expect(summary.lastClimb, isNull);
+    });
+
+    test('counts live completions (verified and pending alike) and reports '
+        'the latest occurrence_date', () async {
+      final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
+      final task = await taskRepo.createTask(
+        title: 'Push-ups',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      final verifiedRepo = CompletionRepository(
+        db,
+        FixedClock(d(2026, 7, 8)),
+        verifier: FakeProofVerifier(),
+      );
+      await verifiedRepo.completeOccurrence(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 8),
+      );
+
+      final pendingRepo = CompletionRepository(
+        db,
+        FixedClock(d(2026, 7, 10)),
+        verifier: FakeProofVerifier(
+          (_) => const VerifierUnavailable('offline'),
+        ),
+      );
+      await pendingRepo.completeWithProof(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+        proof: _proof(),
+      );
+
+      final summary = await verifiedRepo.localTrailSummary();
+      expect(summary.stones, 2);
+      expect(summary.lastClimb, d(2026, 7, 10));
+    });
+
+    test('a tombstoned completion is excluded from both the count and the '
+        'latest-date calculation', () async {
+      final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
+      final task = await taskRepo.createTask(
+        title: 'Push-ups',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      final repoDay8 = CompletionRepository(
+        db,
+        FixedClock(d(2026, 7, 8)),
+        verifier: FakeProofVerifier(),
+      );
+      await repoDay8.completeOccurrence(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 8),
+      );
+
+      final repoDay10 = CompletionRepository(
+        db,
+        FixedClock(d(2026, 7, 10)),
+        verifier: FakeProofVerifier(),
+      );
+      final result = await repoDay10.completeOccurrence(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+      );
+      final day10Completion = (result as CompletionRecorded).completion;
+      await repoDay10.tombstoneDelete(day10Completion.id);
+
+      final summary = await repoDay10.localTrailSummary();
+      expect(summary.stones, 1);
+      expect(summary.lastClimb, d(2026, 7, 8));
+    });
+  });
 }

@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../helpers.dart';
+import '../../support/fake_auth_service.dart';
 
 /// Wraps [testWidgets] with the same drift-stream-teardown fix-up
 /// `home_screen_test.dart` and `app_shell_test.dart` use: cancelling
@@ -250,8 +251,8 @@ void main() {
 
   group('account status, premium, and settings rows', () {
     testProfileWidgets(
-        'renders the anonymous-account row and tapping Create shows a '
-        'coming-soon snackbar rather than navigating anywhere', (tester) async {
+        'renders the anonymous-account row and tapping Create opens the '
+        'Phase 4b account flow at the Create account screen', (tester) async {
       final db = await pumpProfile(
         tester,
         clock: FixedClock(d(2026, 7, 10)),
@@ -272,10 +273,8 @@ void main() {
       await tester.tap(find.text('Create'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Coming soon'), findsOneWidget);
-      // Still on the same screen - no navigation happened.
-      expect(find.byType(ProfileScreen), findsOneWidget);
-      expect(find.text('Climbing anonymously'), findsOneWidget);
+      expect(find.text('Keep your trail safe'), findsOneWidget);
+      expect(find.byType(ProfileScreen), findsNothing);
     });
 
     testProfileWidgets(
@@ -352,6 +351,58 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(HowCairnsWorkScreen), findsOneWidget);
+    });
+
+    testProfileWidgets(
+        'renders the signed-in account row (not the anonymous row) once '
+        'signed in, with the email and no "Climbing anonymously"', (tester) async {
+      final db = inMemoryDatabase();
+      addTearDown(db.close);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            clockProvider.overrideWithValue(FixedClock(d(2026, 7, 10))),
+            authServiceProvider.overrideWithValue(
+              FakeAuthService(
+                userId: 'real-user',
+                userEmail: 'me@example.com',
+                isAnonymousUser: false,
+              ),
+            ),
+          ],
+          child: wrap(const ProfileScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Signed in'), findsOneWidget);
+      expect(find.text('me@example.com'), findsOneWidget);
+      expect(find.text('Your trail is backed up.'), findsOneWidget);
+      expect(find.text('Climbing anonymously'), findsNothing);
+    });
+
+    testProfileWidgets(
+        'hides the account entry entirely when no live Supabase project is '
+        'configured', (tester) async {
+      final db = inMemoryDatabase();
+      addTearDown(db.close);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            clockProvider.overrideWithValue(FixedClock(d(2026, 7, 10))),
+            accountFeatureAvailableProvider.overrideWithValue(false),
+          ],
+          child: wrap(const ProfileScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Climbing anonymously'), findsNothing);
+      expect(find.text('Signed in'), findsNothing);
+      // The rest of the screen still renders normally.
+      expect(find.text('Cairn Premium'), findsOneWidget);
     });
   });
 

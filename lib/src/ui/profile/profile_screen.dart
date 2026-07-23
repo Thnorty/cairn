@@ -6,8 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../l10n/date_number_formatting.dart';
 import '../../providers.dart';
+import '../../services/account_service.dart';
 import '../../services/points_service.dart';
 import '../../services/profile_service.dart';
+import '../account/account_flow.dart';
+import '../account/signed_in_account_row.dart';
 import '../premium/premium_screen.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
@@ -16,7 +19,6 @@ import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
 import '../trail/how_cairns_work_screen.dart';
 import '../widgets/app_scaffold.dart';
-import '../widgets/message_snack_bar.dart';
 import '../widgets/glyphs.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/tab_icons.dart';
@@ -45,9 +47,15 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final snapshotAsync = ref.watch(profileSnapshotProvider);
+    final accountFeatureAvailable = ref.watch(accountFeatureAvailableProvider);
+    final accountStateAsync = ref.watch(accountStateProvider);
 
-    void showComingSoon() {
-      context.showMessageSnackBar(l10n.profileComingSoonSnackbar);
+    void openCreateAccountFlow() {
+      Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const AccountFlow(start: AccountEntryPoint.createAccount),
+        ),
+      );
     }
 
     // This screen gets dropped into AppShell's `IndexedStack` (which already
@@ -56,8 +64,9 @@ class ProfileScreen extends ConsumerWidget {
     // the screenshot harness pumping just `ProfileScreen`), so - same
     // reasoning as `HomeScreen`'s own [AppScaffold] - it supplies its own
     // transparent one: that also gives every `Text` below a real `Material`
-    // ancestor (see AppShell's build() comment) and gives `showComingSoon`'s
-    // `ScaffoldMessenger.showSnackBar` a real `Scaffold` to present into.
+    // ancestor (see AppShell's build() comment) and gives the sign-out
+    // confirmation dialog's `ScaffoldMessenger`/`Navigator` a real `Scaffold`
+    // to present into.
     return AppScaffold(
       child: Padding(
         // Shared top-left inset for every tab screen (Home/Trail/Stats/
@@ -76,7 +85,9 @@ class ProfileScreen extends ConsumerWidget {
               child: snapshotAsync.when(
                 data: (snapshot) => _ProfileBody(
                   snapshot: snapshot,
-                  onCreateAccount: showComingSoon,
+                  accountFeatureAvailable: accountFeatureAvailable,
+                  accountStateAsync: accountStateAsync,
+                  onCreateAccount: openCreateAccountFlow,
                   onPremiumTap: () => openPremiumScreen(context),
                 ),
                 // The stream's first emission is effectively synchronous
@@ -97,11 +108,25 @@ class ProfileScreen extends ConsumerWidget {
 class _ProfileBody extends StatelessWidget {
   const _ProfileBody({
     required this.snapshot,
+    required this.accountFeatureAvailable,
+    required this.accountStateAsync,
     required this.onCreateAccount,
     required this.onPremiumTap,
   });
 
   final ProfileSnapshot snapshot;
+
+  /// False when no live Supabase project is configured
+  /// ([AccountFeatureAvailableProvider]); the whole account entry (both the
+  /// anonymous "Climbing anonymously / Create" row and the signed-in row)
+  /// is hidden in that case, per this run's spec, rather than showing a
+  /// feature with nothing to talk to.
+  final bool accountFeatureAvailable;
+
+  /// Anonymous-vs-signed-in state (`accountStateProvider`); decides which of
+  /// the two account rows renders.
+  final AsyncValue<AccountState> accountStateAsync;
+
   final VoidCallback onCreateAccount;
   final VoidCallback onPremiumTap;
 
@@ -116,8 +141,33 @@ class _ProfileBody extends StatelessWidget {
           const SizedBox(height: 14),
           _RankLadderPanel(rank: snapshot.rank),
           const SizedBox(height: 14),
-          _AccountStatusRow(onCreate: onCreateAccount),
-          const SizedBox(height: 14),
+          if (accountFeatureAvailable) ...[
+            accountStateAsync.when(
+              // AccountState.isAnonymous being false does NOT by itself mean
+              // "signed in with an email": per AuthService's own doc
+              // comment, it is also false when there is no session at all
+              // (e.g. Supabase never initialized, or auth bootstrap hasn't
+              // run yet), in which case email is null too. The signed-in
+              // row only ever renders once there is a real email to show;
+              // every other case (anonymous, or no session yet) falls back
+              // to the ordinary "Climbing anonymously / Create" row.
+              data: (state) {
+                final email = state.email;
+                if (!state.isAnonymous && email != null) {
+                  return SignedInAccountRow(email: email);
+                }
+                return _AccountStatusRow(onCreate: onCreateAccount);
+              },
+              // Resolves effectively synchronously (a plain getter wrapped
+              // in Future.value - see accountStateProvider's own doc
+              // comment), so there's no meaningful loading UI to design
+              // here, same reasoning as profileSnapshotProvider's own
+              // loading branch above.
+              loading: () => const SizedBox.shrink(),
+              error: (error, stackTrace) => Text('$error'),
+            ),
+            const SizedBox(height: 14),
+          ],
           _PremiumRow(onTap: onPremiumTap),
           const SizedBox(height: 22),
           const _SettingsSection(),

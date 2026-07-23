@@ -798,4 +798,116 @@ abstract final class AppTextStyles {
     fontSize: 14,
     color: AppColors.inkPrimary,
   );
+
+  // ---- Account screens (Cairn Account.dc.html) -------------------------
+
+  /// 14px Work Sans 400 - the account-flow header subtitle under the
+  /// eyebrow+title (Create account / Sign in / Set new password screens).
+  /// Distinct from [body] (13px): a size step up, matching the source
+  /// file's own literal.
+  static const TextStyle accountHeaderSubtitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 14,
+    height: 1.5,
+    color: AppColors.textMuted,
+  );
+
+  /// 12.5px Work Sans 500 - an account-flow field label ("Email",
+  /// "Password", "New password"). Distinct from [caption] (12.5px/400): a
+  /// weight step up, matching the source file's own literal.
+  static const TextStyle accountFieldLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w500,
+    fontSize: 12.5,
+    color: AppColors.textMuted,
+  );
+
+  /// 15px Work Sans 400 - an account-flow text field's input value.
+  static const TextStyle accountFieldInput = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 15,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 12.5px Work Sans 500 - the account-flow "Free. Your trail stays
+  /// exactly as it is." chip label.
+  static const TextStyle accountFreeChipLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w500,
+    fontSize: 12.5,
+    color: AppColors.sageReasonBody,
+  );
+
+  /// 22px Work Sans 600 - the Enter Code screen's 6-box OTP digit text.
+  static const TextStyle otpDigit = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 22,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 12.5px Work Sans 400 - an account-flow inline field-error line, and the
+  /// account offline banner's body text.
+  static const TextStyle accountInlineError = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 12.5,
+    color: AppColors.terracotta,
+  );
+
+  /// 15.5px Work Sans 600 - the "Keep which trail" chooser card's title
+  /// ("This device" / "This account").
+  static const TextStyle accountTrailOptionTitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 15.5,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 12.5px Work Sans 400 - the "Keep which trail" chooser card's stone
+  /// count/last-climb subtitle; callers `.copyWith` the italic
+  /// "No activity yet" empty-state colour ([AppColors.labelGrey]).
+  static const TextStyle accountTrailOptionSubtitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 12.5,
+    color: AppColors.textMuted,
+  );
+
+  /// 15px Work Sans 600 - the signed-in account row's "Signed in" title
+  /// (Profile screen, Frame 6).
+  static const TextStyle accountSignedInTitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 15,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 12.5px Work Sans 400 - the signed-in account row's email line.
+  static const TextStyle accountSignedInEmail = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 12.5,
+    color: AppColors.textMuted,
+  );
+
+  /// 11.5px Work Sans 500 - the signed-in account row's "Your trail is
+  /// backed up." line.
+  static const TextStyle accountBackedUpLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w500,
+    fontSize: 11.5,
+    color: AppColors.sageText,
+  );
+
+  /// 12.5px Work Sans 600 - the signed-in account row's clay "Sign out"
+  /// pill label.
+  static const TextStyle accountSignOutLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 12.5,
+    color: AppColors.terracotta,
+  );
 }

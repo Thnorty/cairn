@@ -91,16 +91,18 @@ void main() {
   });
 
   group('already have an account', () {
-    testWidgets('shows the coming-soon snackbar', (tester) async {
+    testWidgets(
+        'pushes the Phase 4b account flow (Sign in screen) on the internal '
+        'Navigator', (tester) async {
       await pumpWelcome(tester);
 
       await tester.tap(find.text('I already have an account'));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
-      expect(
-        find.text('Signing in to an existing account is coming soon.'),
-        findsOneWidget,
-      );
+      expect(find.text('Welcome back'), findsOneWidget);
+      expect(find.text('Sign in to pick up your trail on this device.'),
+          findsOneWidget);
+      expect(find.text('I already have an account'), findsNothing);
     });
   });
 }

@@ -818,7 +818,7 @@ abstract class AppLocalizations {
   /// **'Unlimited proofs, backup, deeper insights.'**
   String get profilePremiumSubtitle;
 
-  /// Snackbar shown when tapping the Profile screen's 'Create' account action or its Cairn Premium row, both of which are out of scope for this phase (Phase 4 accounts, post-MVP Premium) and are deliberate no-ops-for-now rather than a fake/invented flow.
+  /// No longer shown anywhere in the Profile screen (its Cairn Premium row navigates to PremiumScreen directly, and Phase 4b wires the account-status row's 'Create' action to the real account-upgrade flow), but kept as a translated string rather than deleted in case a future regression needs a coming-soon snackbar back.
   ///
   /// In en, this message translates to:
   /// **'Coming soon'**
@@ -1298,7 +1298,7 @@ abstract class AppLocalizations {
   /// **'I already have an account'**
   String get onboardingAlreadyHaveAccountButton;
 
-  /// Snackbar shown when tapping onboardingAlreadyHaveAccountButton, same no-op-for-now pattern as profileComingSoonSnackbar/premiumComingSoonSnackbar for their own screens' out-of-scope affordances.
+  /// No longer shown anywhere (Phase 4b wires onboardingAlreadyHaveAccountButton to a real Sign in screen instead), but kept as a translated string rather than deleted in case a future regression needs the old snackbar text back.
   ///
   /// In en, this message translates to:
   /// **'Signing in to an existing account is coming soon.'**
@@ -1393,6 +1393,366 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A privacy details page is coming soon.'**
   String get onboardingPrivacyComingSoonSnackbar;
+
+  /// All-caps eyebrow label above the title on the Create account / Sign in / Set new password screens (Cairn Account.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCOUNT'**
+  String get accountEyebrowLabel;
+
+  /// Title on the Create account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your trail safe'**
+  String get accountCreateTitle;
+
+  /// Body copy under the title on the Create account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account and your stones, cairns, and rank move with you to any device. Nothing you\'ve climbed is lost.'**
+  String get accountCreateBody;
+
+  /// Sage-tinted chip on the Create account screen, reassuring the user this upgrade is free and non-destructive.
+  ///
+  /// In en, this message translates to:
+  /// **'Free. Your trail stays exactly as it is.'**
+  String get accountFreeTrailChip;
+
+  /// Label above the email field, shared by every account-flow screen that has one (Create account, Sign in).
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get accountEmailLabel;
+
+  /// Placeholder text in the account-flow email field.
+  ///
+  /// In en, this message translates to:
+  /// **'you@example.com'**
+  String get accountEmailHint;
+
+  /// Label above the password field on the Create account and Sign in screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get accountPasswordLabel;
+
+  /// Placeholder text in the Create account screen's password field. min is kMinPasswordLength.
+  ///
+  /// In en, this message translates to:
+  /// **'At least {min} characters'**
+  String accountPasswordHintCreate(int min);
+
+  /// Placeholder text in the Sign in screen's password field.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password'**
+  String get accountPasswordHintSignIn;
+
+  /// Primary CTA on the Create account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get accountCreateButton;
+
+  /// Label shown on the Create account screen's primary CTA while startCreateAccount is in flight, replacing accountCreateButton and paired with a spinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating account...'**
+  String get accountCreatingAccountLoading;
+
+  /// Plain lead clause under the Create account screen's primary CTA, immediately preceding the accountSignInLink link in the same line.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get accountAlreadyHaveAccountLead;
+
+  /// Link text following accountAlreadyHaveAccountLead on the Create account screen; navigates to the Sign in screen. Also reused as the Sign in screen's own primary CTA label.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get accountSignInLink;
+
+  /// Title on the Sign in screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get accountSignInTitle;
+
+  /// Body copy under the title on the Sign in screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to pick up your trail on this device.'**
+  String get accountSignInBody;
+
+  /// Link under the Sign in screen's password field; starts the password-reset flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get accountForgotPasswordLink;
+
+  /// Label shown on the Sign in screen's primary CTA while signIn is in flight, replacing accountSignInLink and paired with a spinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing in...'**
+  String get accountSigningInLoading;
+
+  /// Plain lead clause under the Sign in screen's primary CTA, immediately preceding the accountCreateAccountLink link in the same line.
+  ///
+  /// In en, this message translates to:
+  /// **'New here?'**
+  String get accountNewHereLead;
+
+  /// Link text following accountNewHereLead on the Sign in screen; navigates to the Create account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account'**
+  String get accountCreateAccountLink;
+
+  /// Small eyebrow label above the title on the Enter Code screen (Cairn Account.dc.html Frame 3), shared by both the create-account email-verification purpose and the password-reset purpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get accountEnterCodeEyebrow;
+
+  /// Title on the Enter Code screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the code'**
+  String get accountEnterCodeTitle;
+
+  /// Body copy on the Enter Code screen when its purpose is verifying a new account's email (the create-account flow).
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a 6-digit code to {email}. Your trail is safe on this device in the meantime.'**
+  String accountEnterCodeBodyVerify(String email);
+
+  /// Body copy on the Enter Code screen when its purpose is password recovery (the reset-password flow). Authored for this purpose - the canonical design shows only the verify-email wording (accountEnterCodeBodyVerify) and notes the same screen serves both purposes with varied subcopy.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a 6-digit code to {email} to reset your password.'**
+  String accountEnterCodeBodyReset(String email);
+
+  /// Primary CTA on the Enter Code screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get accountVerifyButton;
+
+  /// Label shown on the Enter Code screen's primary CTA while the code is being checked, replacing accountVerifyButton and paired with a spinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying...'**
+  String get accountVerifyingLoading;
+
+  /// Disabled resend-code button label on the Enter Code screen during the cooldown, e.g. 'Resend code in 0:28'. time is a plain minutes:seconds countdown string built by the widget, not run through NumberFormat (it is not a locale-sensitive quantity, the same way a stopwatch display isn't).
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code in {time}'**
+  String accountResendCodeCountdown(String time);
+
+  /// Enabled resend-code button label on the Enter Code screen once the cooldown has elapsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get accountResendCodeButton;
+
+  /// Small eyebrow label above the title on the Set a new password screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get accountSetNewPasswordEyebrow;
+
+  /// Title on the Set a new password screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a new password'**
+  String get accountSetNewPasswordTitle;
+
+  /// Body copy under the title on the Set a new password screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a new password for {email} and you\'re back on your trail.'**
+  String accountSetNewPasswordBody(String email);
+
+  /// Label above the password field on the Set a new password screen.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get accountNewPasswordLabel;
+
+  /// Primary CTA on the Set a new password screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Save password'**
+  String get accountSavePasswordButton;
+
+  /// Label shown on the Set a new password screen's primary CTA while setNewPassword is in flight, replacing accountSavePasswordButton and paired with a spinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get accountSavingPasswordLoading;
+
+  /// Small eyebrow label above the title on the Keep which trail chooser screen.
+  ///
+  /// In en, this message translates to:
+  /// **'One last step'**
+  String get accountKeepWhichTrailEyebrow;
+
+  /// Title on the Keep which trail chooser screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep which trail?'**
+  String get accountKeepWhichTrailTitle;
+
+  /// Body copy under the title on the Keep which trail chooser screen.
+  ///
+  /// In en, this message translates to:
+  /// **'This device and this account both have a trail. Keep one, the other is replaced. Nothing merges.'**
+  String get accountKeepWhichTrailBody;
+
+  /// Title of the 'keep this device's trail' option card on the Keep which trail chooser screen.
+  ///
+  /// In en, this message translates to:
+  /// **'This device'**
+  String get accountThisDeviceLabel;
+
+  /// Title of the 'keep this account's trail' option card on the Keep which trail chooser screen.
+  ///
+  /// In en, this message translates to:
+  /// **'This account'**
+  String get accountThisAccountLabel;
+
+  /// Subtitle of a Keep which trail option card whose last climb was today, e.g. '12 stones · last climb today'.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 stone} other{{count} stones}} · last climb today'**
+  String accountStonesLastClimbToday(num count);
+
+  /// Subtitle of a Keep which trail option card whose last climb was on an earlier date, e.g. '48 stones · last climb Jul 2'. date is pre-formatted by the caller via formatShortMonthDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 stone} other{{count} stones}} · last climb {date}'**
+  String accountStonesLastClimbDate(num count, String date);
+
+  /// Italic subtitle of a Keep which trail option card whose side has zero stones (the empty-state variant shown in Cairn Account.dc.html's variants column).
+  ///
+  /// In en, this message translates to:
+  /// **'No activity yet'**
+  String get accountNoActivityYet;
+
+  /// Clay warning line on the Keep which trail chooser screen shown while 'This device' is selected, naming how many of the account's stones would be replaced.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeping this device replaces the account\'s {count, plural, one{1 stone} other{{count} stones}} everywhere. This can\'t be undone.'**
+  String accountConsequenceKeepDevice(num count);
+
+  /// Clay warning line on the Keep which trail chooser screen shown while 'This account' is selected, naming how many of this device's stones would be replaced. Authored as the symmetric counterpart to accountConsequenceKeepDevice - the canonical design only shows the 'This device' selected state.
+  ///
+  /// In en, this message translates to:
+  /// **'Using this account replaces this device\'s {count, plural, one{1 stone} other{{count} stones}}. This can\'t be undone.'**
+  String accountConsequenceKeepAccount(num count);
+
+  /// Primary CTA on the Keep which trail chooser screen while 'This device' is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this device\'s trail'**
+  String get accountKeepDeviceButton;
+
+  /// Primary CTA on the Keep which trail chooser screen while 'This account' is selected. Authored as the symmetric counterpart to accountKeepDeviceButton - the canonical design only shows the 'This device' selected state.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this account\'s trail'**
+  String get accountKeepAccountButton;
+
+  /// Label shown on the Keep which trail chooser screen's primary CTA while keepThisDevice/useAccount is in flight, replacing accountKeepDeviceButton/accountKeepAccountButton and paired with a spinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Applying...'**
+  String get accountApplyingLoading;
+
+  /// Title of the Profile screen's signed-in account row (Cairn Account.dc.html Frame 6), replacing the anonymous 'Climbing anonymously' row once an account upgrade completes.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in'**
+  String get accountSignedInTitle;
+
+  /// Sage reassurance line under the email on the Profile screen's signed-in account row.
+  ///
+  /// In en, this message translates to:
+  /// **'Your trail is backed up.'**
+  String get accountTrailBackedUpLabel;
+
+  /// Clay pill button on the Profile screen's signed-in account row; opens the sign-out confirmation dialog. Also reused as that dialog's own confirm action label.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get accountSignOutButton;
+
+  /// Title of the confirmation dialog shown when tapping accountSignOutButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out?'**
+  String get accountSignOutConfirmTitle;
+
+  /// Body copy of the sign-out confirmation dialog, reassuring the user that signing out does not delete local data.
+  ///
+  /// In en, this message translates to:
+  /// **'Your trail is backed up and stays on this device.'**
+  String get accountSignOutConfirmBody;
+
+  /// Inline error under the Create account screen's email field when AccountError.emailInUse is returned. Immediately followed by the tappable accountSignInInsteadLink in the same line.
+  ///
+  /// In en, this message translates to:
+  /// **'That email is already in use.'**
+  String get accountEmailInUseError;
+
+  /// Tappable link following accountEmailInUseError; navigates to the Sign in screen with the email pre-filled.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in instead?'**
+  String get accountSignInInsteadLink;
+
+  /// Inline error under a password field: shown client-side on the Create account screen when the typed password is shorter than kMinPasswordLength, and also used to surface a server-side AccountError.weakPassword rejection (using the same kMinPasswordLength figure, the best local approximation of Supabase's own password policy).
+  ///
+  /// In en, this message translates to:
+  /// **'Password needs at least {min} characters.'**
+  String accountPasswordTooShortError(int min);
+
+  /// Inline error on the Enter Code screen when AccountError.invalidCode is returned.
+  ///
+  /// In en, this message translates to:
+  /// **'That code didn\'t match. Check it and try again.'**
+  String get accountInvalidCodeError;
+
+  /// Inline error on the Sign in screen when AccountError.invalidCredentials is returned.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect email or password.'**
+  String get accountInvalidCredentialsError;
+
+  /// Inline/banner error shown across the account-flow screens when AccountError.rateLimited is returned. Authored copy - no canonical design variant covers this state.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Wait a moment and try again.'**
+  String get accountRateLimitedError;
+
+  /// Inline/banner error shown across the account-flow screens for any AccountError.unknown or unmapped failure. Authored copy - no canonical design variant covers this state.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get accountUnknownError;
+
+  /// Offline banner copy on the Create account screen when AccountError.offline is returned (Cairn Account.dc.html's own offline-banner variant).
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Connect to create your account.'**
+  String get accountOfflineBannerCreate;
+
+  /// Offline banner copy on every other account-flow screen (Sign in, Enter Code, Set new password, Keep which trail) when AccountError.offline is returned. Authored copy adapting the canonical design's Create-account-specific offline banner (accountOfflineBannerCreate) to a screen-neutral wording.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Try again once you\'re connected.'**
+  String get accountOfflineBannerGeneric;
 }
 
 class _AppLocalizationsDelegate

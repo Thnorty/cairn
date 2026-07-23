@@ -164,6 +164,28 @@ abstract final class AppShadows {
     ),
   ];
 
+  /// Account screens' sage CTA button, mirroring [buttonLarge]'s shape with
+  /// a sage-tinted colour: `0 10px 20px -8px rgba(70,88,50,.55)`.
+  static const List<BoxShadow> sageButtonLarge = [
+    BoxShadow(
+      color: AppColors.accountSageButtonShadow,
+      offset: Offset(0, 10),
+      blurRadius: 20,
+      spreadRadius: -8,
+    ),
+  ];
+
+  /// Account screens' sage CTA button, small variant, mirroring
+  /// [buttonSmall]'s shape with a sage-tinted colour.
+  static const List<BoxShadow> sageButtonSmall = [
+    BoxShadow(
+      color: AppColors.accountSageButtonShadow,
+      offset: Offset(0, 6),
+      blurRadius: 13,
+      spreadRadius: -5,
+    ),
+  ];
+
   /// Premium screen's "Best value · save 42%" ribbon:
   /// `0 4px 8px -4px rgba(90,110,60,.6)`.
   static const List<BoxShadow> premiumRibbon = [

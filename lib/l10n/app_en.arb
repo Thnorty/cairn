@@ -758,7 +758,7 @@
 
   "profileComingSoonSnackbar": "Coming soon",
   "@profileComingSoonSnackbar": {
-    "description": "Snackbar shown when tapping the Profile screen's 'Create' account action or its Cairn Premium row, both of which are out of scope for this phase (Phase 4 accounts, post-MVP Premium) and are deliberate no-ops-for-now rather than a fake/invented flow."
+    "description": "No longer shown anywhere in the Profile screen (its Cairn Premium row navigates to PremiumScreen directly, and Phase 4b wires the account-status row's 'Create' action to the real account-upgrade flow), but kept as a translated string rather than deleted in case a future regression needs a coming-soon snackbar back."
   },
 
   "profileSettingsSectionLabel": "SETTINGS",
@@ -1172,7 +1172,7 @@
   },
   "onboardingSignInComingSoonSnackbar": "Signing in to an existing account is coming soon.",
   "@onboardingSignInComingSoonSnackbar": {
-    "description": "Snackbar shown when tapping onboardingAlreadyHaveAccountButton, same no-op-for-now pattern as profileComingSoonSnackbar/premiumComingSoonSnackbar for their own screens' out-of-scope affordances."
+    "description": "No longer shown anywhere (Phase 4b wires onboardingAlreadyHaveAccountButton to a real Sign in screen instead), but kept as a translated string rather than deleted in case a future regression needs the old snackbar text back."
   },
 
   "onboardingHowItWorksTitle": "How it works",
@@ -1240,5 +1240,286 @@
   "onboardingPrivacyComingSoonSnackbar": "A privacy details page is coming soon.",
   "@onboardingPrivacyComingSoonSnackbar": {
     "description": "Snackbar shown when tapping onboardingLearnMorePrivacyLink."
+  },
+
+  "accountEyebrowLabel": "ACCOUNT",
+  "@accountEyebrowLabel": {
+    "description": "All-caps eyebrow label above the title on the Create account / Sign in / Set new password screens (Cairn Account.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+
+  "accountCreateTitle": "Keep your trail safe",
+  "@accountCreateTitle": {
+    "description": "Title on the Create account screen."
+  },
+  "accountCreateBody": "Create an account and your stones, cairns, and rank move with you to any device. Nothing you've climbed is lost.",
+  "@accountCreateBody": {
+    "description": "Body copy under the title on the Create account screen."
+  },
+  "accountFreeTrailChip": "Free. Your trail stays exactly as it is.",
+  "@accountFreeTrailChip": {
+    "description": "Sage-tinted chip on the Create account screen, reassuring the user this upgrade is free and non-destructive."
+  },
+
+  "accountEmailLabel": "Email",
+  "@accountEmailLabel": {
+    "description": "Label above the email field, shared by every account-flow screen that has one (Create account, Sign in)."
+  },
+  "accountEmailHint": "you@example.com",
+  "@accountEmailHint": {
+    "description": "Placeholder text in the account-flow email field."
+  },
+  "accountPasswordLabel": "Password",
+  "@accountPasswordLabel": {
+    "description": "Label above the password field on the Create account and Sign in screens."
+  },
+  "accountPasswordHintCreate": "At least {min} characters",
+  "@accountPasswordHintCreate": {
+    "description": "Placeholder text in the Create account screen's password field. min is kMinPasswordLength.",
+    "placeholders": {
+      "min": { "type": "int", "example": "6" }
+    }
+  },
+  "accountPasswordHintSignIn": "Your password",
+  "@accountPasswordHintSignIn": {
+    "description": "Placeholder text in the Sign in screen's password field."
+  },
+
+  "accountCreateButton": "Create account",
+  "@accountCreateButton": {
+    "description": "Primary CTA on the Create account screen."
+  },
+  "accountCreatingAccountLoading": "Creating account...",
+  "@accountCreatingAccountLoading": {
+    "description": "Label shown on the Create account screen's primary CTA while startCreateAccount is in flight, replacing accountCreateButton and paired with a spinner."
+  },
+  "accountAlreadyHaveAccountLead": "Already have an account?",
+  "@accountAlreadyHaveAccountLead": {
+    "description": "Plain lead clause under the Create account screen's primary CTA, immediately preceding the accountSignInLink link in the same line."
+  },
+  "accountSignInLink": "Sign in",
+  "@accountSignInLink": {
+    "description": "Link text following accountAlreadyHaveAccountLead on the Create account screen; navigates to the Sign in screen. Also reused as the Sign in screen's own primary CTA label."
+  },
+
+  "accountSignInTitle": "Welcome back",
+  "@accountSignInTitle": {
+    "description": "Title on the Sign in screen."
+  },
+  "accountSignInBody": "Sign in to pick up your trail on this device.",
+  "@accountSignInBody": {
+    "description": "Body copy under the title on the Sign in screen."
+  },
+  "accountForgotPasswordLink": "Forgot password?",
+  "@accountForgotPasswordLink": {
+    "description": "Link under the Sign in screen's password field; starts the password-reset flow."
+  },
+  "accountSigningInLoading": "Signing in...",
+  "@accountSigningInLoading": {
+    "description": "Label shown on the Sign in screen's primary CTA while signIn is in flight, replacing accountSignInLink and paired with a spinner."
+  },
+  "accountNewHereLead": "New here?",
+  "@accountNewHereLead": {
+    "description": "Plain lead clause under the Sign in screen's primary CTA, immediately preceding the accountCreateAccountLink link in the same line."
+  },
+  "accountCreateAccountLink": "Create an account",
+  "@accountCreateAccountLink": {
+    "description": "Link text following accountNewHereLead on the Sign in screen; navigates to the Create account screen."
+  },
+
+  "accountEnterCodeEyebrow": "Verify",
+  "@accountEnterCodeEyebrow": {
+    "description": "Small eyebrow label above the title on the Enter Code screen (Cairn Account.dc.html Frame 3), shared by both the create-account email-verification purpose and the password-reset purpose."
+  },
+  "accountEnterCodeTitle": "Enter the code",
+  "@accountEnterCodeTitle": {
+    "description": "Title on the Enter Code screen."
+  },
+  "accountEnterCodeBodyVerify": "We sent a 6-digit code to {email}. Your trail is safe on this device in the meantime.",
+  "@accountEnterCodeBodyVerify": {
+    "description": "Body copy on the Enter Code screen when its purpose is verifying a new account's email (the create-account flow).",
+    "placeholders": {
+      "email": { "type": "String", "example": "you@example.com" }
+    }
+  },
+  "accountEnterCodeBodyReset": "We sent a 6-digit code to {email} to reset your password.",
+  "@accountEnterCodeBodyReset": {
+    "description": "Body copy on the Enter Code screen when its purpose is password recovery (the reset-password flow). Authored for this purpose - the canonical design shows only the verify-email wording (accountEnterCodeBodyVerify) and notes the same screen serves both purposes with varied subcopy.",
+    "placeholders": {
+      "email": { "type": "String", "example": "you@example.com" }
+    }
+  },
+  "accountVerifyButton": "Verify",
+  "@accountVerifyButton": {
+    "description": "Primary CTA on the Enter Code screen."
+  },
+  "accountVerifyingLoading": "Verifying...",
+  "@accountVerifyingLoading": {
+    "description": "Label shown on the Enter Code screen's primary CTA while the code is being checked, replacing accountVerifyButton and paired with a spinner."
+  },
+  "accountResendCodeCountdown": "Resend code in {time}",
+  "@accountResendCodeCountdown": {
+    "description": "Disabled resend-code button label on the Enter Code screen during the cooldown, e.g. 'Resend code in 0:28'. time is a plain minutes:seconds countdown string built by the widget, not run through NumberFormat (it is not a locale-sensitive quantity, the same way a stopwatch display isn't).",
+    "placeholders": {
+      "time": { "type": "String", "example": "0:28" }
+    }
+  },
+  "accountResendCodeButton": "Resend code",
+  "@accountResendCodeButton": {
+    "description": "Enabled resend-code button label on the Enter Code screen once the cooldown has elapsed."
+  },
+
+  "accountSetNewPasswordEyebrow": "Reset password",
+  "@accountSetNewPasswordEyebrow": {
+    "description": "Small eyebrow label above the title on the Set a new password screen."
+  },
+  "accountSetNewPasswordTitle": "Set a new password",
+  "@accountSetNewPasswordTitle": {
+    "description": "Title on the Set a new password screen."
+  },
+  "accountSetNewPasswordBody": "Choose a new password for {email} and you're back on your trail.",
+  "@accountSetNewPasswordBody": {
+    "description": "Body copy under the title on the Set a new password screen.",
+    "placeholders": {
+      "email": { "type": "String", "example": "you@example.com" }
+    }
+  },
+  "accountNewPasswordLabel": "New password",
+  "@accountNewPasswordLabel": {
+    "description": "Label above the password field on the Set a new password screen."
+  },
+  "accountSavePasswordButton": "Save password",
+  "@accountSavePasswordButton": {
+    "description": "Primary CTA on the Set a new password screen."
+  },
+  "accountSavingPasswordLoading": "Saving...",
+  "@accountSavingPasswordLoading": {
+    "description": "Label shown on the Set a new password screen's primary CTA while setNewPassword is in flight, replacing accountSavePasswordButton and paired with a spinner."
+  },
+
+  "accountKeepWhichTrailEyebrow": "One last step",
+  "@accountKeepWhichTrailEyebrow": {
+    "description": "Small eyebrow label above the title on the Keep which trail chooser screen."
+  },
+  "accountKeepWhichTrailTitle": "Keep which trail?",
+  "@accountKeepWhichTrailTitle": {
+    "description": "Title on the Keep which trail chooser screen."
+  },
+  "accountKeepWhichTrailBody": "This device and this account both have a trail. Keep one, the other is replaced. Nothing merges.",
+  "@accountKeepWhichTrailBody": {
+    "description": "Body copy under the title on the Keep which trail chooser screen."
+  },
+  "accountThisDeviceLabel": "This device",
+  "@accountThisDeviceLabel": {
+    "description": "Title of the 'keep this device's trail' option card on the Keep which trail chooser screen."
+  },
+  "accountThisAccountLabel": "This account",
+  "@accountThisAccountLabel": {
+    "description": "Title of the 'keep this account's trail' option card on the Keep which trail chooser screen."
+  },
+  "accountStonesLastClimbToday": "{count, plural, one{1 stone} other{{count} stones}} · last climb today",
+  "@accountStonesLastClimbToday": {
+    "description": "Subtitle of a Keep which trail option card whose last climb was today, e.g. '12 stones · last climb today'.",
+    "placeholders": {
+      "count": { "type": "num", "example": "12" }
+    }
+  },
+  "accountStonesLastClimbDate": "{count, plural, one{1 stone} other{{count} stones}} · last climb {date}",
+  "@accountStonesLastClimbDate": {
+    "description": "Subtitle of a Keep which trail option card whose last climb was on an earlier date, e.g. '48 stones · last climb Jul 2'. date is pre-formatted by the caller via formatShortMonthDay.",
+    "placeholders": {
+      "count": { "type": "num", "example": "48" },
+      "date": { "type": "String", "example": "Jul 2" }
+    }
+  },
+  "accountNoActivityYet": "No activity yet",
+  "@accountNoActivityYet": {
+    "description": "Italic subtitle of a Keep which trail option card whose side has zero stones (the empty-state variant shown in Cairn Account.dc.html's variants column)."
+  },
+  "accountConsequenceKeepDevice": "Keeping this device replaces the account's {count, plural, one{1 stone} other{{count} stones}} everywhere. This can't be undone.",
+  "@accountConsequenceKeepDevice": {
+    "description": "Clay warning line on the Keep which trail chooser screen shown while 'This device' is selected, naming how many of the account's stones would be replaced.",
+    "placeholders": {
+      "count": { "type": "num", "example": "48" }
+    }
+  },
+  "accountConsequenceKeepAccount": "Using this account replaces this device's {count, plural, one{1 stone} other{{count} stones}}. This can't be undone.",
+  "@accountConsequenceKeepAccount": {
+    "description": "Clay warning line on the Keep which trail chooser screen shown while 'This account' is selected, naming how many of this device's stones would be replaced. Authored as the symmetric counterpart to accountConsequenceKeepDevice - the canonical design only shows the 'This device' selected state.",
+    "placeholders": {
+      "count": { "type": "num", "example": "12" }
+    }
+  },
+  "accountKeepDeviceButton": "Keep this device's trail",
+  "@accountKeepDeviceButton": {
+    "description": "Primary CTA on the Keep which trail chooser screen while 'This device' is selected."
+  },
+  "accountKeepAccountButton": "Keep this account's trail",
+  "@accountKeepAccountButton": {
+    "description": "Primary CTA on the Keep which trail chooser screen while 'This account' is selected. Authored as the symmetric counterpart to accountKeepDeviceButton - the canonical design only shows the 'This device' selected state."
+  },
+  "accountApplyingLoading": "Applying...",
+  "@accountApplyingLoading": {
+    "description": "Label shown on the Keep which trail chooser screen's primary CTA while keepThisDevice/useAccount is in flight, replacing accountKeepDeviceButton/accountKeepAccountButton and paired with a spinner."
+  },
+
+  "accountSignedInTitle": "Signed in",
+  "@accountSignedInTitle": {
+    "description": "Title of the Profile screen's signed-in account row (Cairn Account.dc.html Frame 6), replacing the anonymous 'Climbing anonymously' row once an account upgrade completes."
+  },
+  "accountTrailBackedUpLabel": "Your trail is backed up.",
+  "@accountTrailBackedUpLabel": {
+    "description": "Sage reassurance line under the email on the Profile screen's signed-in account row."
+  },
+  "accountSignOutButton": "Sign out",
+  "@accountSignOutButton": {
+    "description": "Clay pill button on the Profile screen's signed-in account row; opens the sign-out confirmation dialog. Also reused as that dialog's own confirm action label."
+  },
+  "accountSignOutConfirmTitle": "Sign out?",
+  "@accountSignOutConfirmTitle": {
+    "description": "Title of the confirmation dialog shown when tapping accountSignOutButton."
+  },
+  "accountSignOutConfirmBody": "Your trail is backed up and stays on this device.",
+  "@accountSignOutConfirmBody": {
+    "description": "Body copy of the sign-out confirmation dialog, reassuring the user that signing out does not delete local data."
+  },
+
+  "accountEmailInUseError": "That email is already in use.",
+  "@accountEmailInUseError": {
+    "description": "Inline error under the Create account screen's email field when AccountError.emailInUse is returned. Immediately followed by the tappable accountSignInInsteadLink in the same line."
+  },
+  "accountSignInInsteadLink": "Sign in instead?",
+  "@accountSignInInsteadLink": {
+    "description": "Tappable link following accountEmailInUseError; navigates to the Sign in screen with the email pre-filled."
+  },
+  "accountPasswordTooShortError": "Password needs at least {min} characters.",
+  "@accountPasswordTooShortError": {
+    "description": "Inline error under a password field: shown client-side on the Create account screen when the typed password is shorter than kMinPasswordLength, and also used to surface a server-side AccountError.weakPassword rejection (using the same kMinPasswordLength figure, the best local approximation of Supabase's own password policy).",
+    "placeholders": {
+      "min": { "type": "int", "example": "6" }
+    }
+  },
+  "accountInvalidCodeError": "That code didn't match. Check it and try again.",
+  "@accountInvalidCodeError": {
+    "description": "Inline error on the Enter Code screen when AccountError.invalidCode is returned."
+  },
+  "accountInvalidCredentialsError": "Incorrect email or password.",
+  "@accountInvalidCredentialsError": {
+    "description": "Inline error on the Sign in screen when AccountError.invalidCredentials is returned."
+  },
+  "accountRateLimitedError": "Too many attempts. Wait a moment and try again.",
+  "@accountRateLimitedError": {
+    "description": "Inline/banner error shown across the account-flow screens when AccountError.rateLimited is returned. Authored copy - no canonical design variant covers this state."
+  },
+  "accountUnknownError": "Something went wrong. Please try again.",
+  "@accountUnknownError": {
+    "description": "Inline/banner error shown across the account-flow screens for any AccountError.unknown or unmapped failure. Authored copy - no canonical design variant covers this state."
+  },
+  "accountOfflineBannerCreate": "You're offline. Connect to create your account.",
+  "@accountOfflineBannerCreate": {
+    "description": "Offline banner copy on the Create account screen when AccountError.offline is returned (Cairn Account.dc.html's own offline-banner variant)."
+  },
+  "accountOfflineBannerGeneric": "You're offline. Try again once you're connected.",
+  "@accountOfflineBannerGeneric": {
+    "description": "Offline banner copy on every other account-flow screen (Sign in, Enter Code, Set new password, Keep which trail) when AccountError.offline is returned. Authored copy adapting the canonical design's Create-account-specific offline banner (accountOfflineBannerCreate) to a screen-neutral wording."
   }
 }

@@ -862,4 +862,236 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onboardingPrivacyComingSoonSnackbar =>
       'A privacy details page is coming soon.';
+
+  @override
+  String get accountEyebrowLabel => 'ACCOUNT';
+
+  @override
+  String get accountCreateTitle => 'Keep your trail safe';
+
+  @override
+  String get accountCreateBody =>
+      'Create an account and your stones, cairns, and rank move with you to any device. Nothing you\'ve climbed is lost.';
+
+  @override
+  String get accountFreeTrailChip => 'Free. Your trail stays exactly as it is.';
+
+  @override
+  String get accountEmailLabel => 'Email';
+
+  @override
+  String get accountEmailHint => 'you@example.com';
+
+  @override
+  String get accountPasswordLabel => 'Password';
+
+  @override
+  String accountPasswordHintCreate(int min) {
+    return 'At least $min characters';
+  }
+
+  @override
+  String get accountPasswordHintSignIn => 'Your password';
+
+  @override
+  String get accountCreateButton => 'Create account';
+
+  @override
+  String get accountCreatingAccountLoading => 'Creating account...';
+
+  @override
+  String get accountAlreadyHaveAccountLead => 'Already have an account?';
+
+  @override
+  String get accountSignInLink => 'Sign in';
+
+  @override
+  String get accountSignInTitle => 'Welcome back';
+
+  @override
+  String get accountSignInBody =>
+      'Sign in to pick up your trail on this device.';
+
+  @override
+  String get accountForgotPasswordLink => 'Forgot password?';
+
+  @override
+  String get accountSigningInLoading => 'Signing in...';
+
+  @override
+  String get accountNewHereLead => 'New here?';
+
+  @override
+  String get accountCreateAccountLink => 'Create an account';
+
+  @override
+  String get accountEnterCodeEyebrow => 'Verify';
+
+  @override
+  String get accountEnterCodeTitle => 'Enter the code';
+
+  @override
+  String accountEnterCodeBodyVerify(String email) {
+    return 'We sent a 6-digit code to $email. Your trail is safe on this device in the meantime.';
+  }
+
+  @override
+  String accountEnterCodeBodyReset(String email) {
+    return 'We sent a 6-digit code to $email to reset your password.';
+  }
+
+  @override
+  String get accountVerifyButton => 'Verify';
+
+  @override
+  String get accountVerifyingLoading => 'Verifying...';
+
+  @override
+  String accountResendCodeCountdown(String time) {
+    return 'Resend code in $time';
+  }
+
+  @override
+  String get accountResendCodeButton => 'Resend code';
+
+  @override
+  String get accountSetNewPasswordEyebrow => 'Reset password';
+
+  @override
+  String get accountSetNewPasswordTitle => 'Set a new password';
+
+  @override
+  String accountSetNewPasswordBody(String email) {
+    return 'Choose a new password for $email and you\'re back on your trail.';
+  }
+
+  @override
+  String get accountNewPasswordLabel => 'New password';
+
+  @override
+  String get accountSavePasswordButton => 'Save password';
+
+  @override
+  String get accountSavingPasswordLoading => 'Saving...';
+
+  @override
+  String get accountKeepWhichTrailEyebrow => 'One last step';
+
+  @override
+  String get accountKeepWhichTrailTitle => 'Keep which trail?';
+
+  @override
+  String get accountKeepWhichTrailBody =>
+      'This device and this account both have a trail. Keep one, the other is replaced. Nothing merges.';
+
+  @override
+  String get accountThisDeviceLabel => 'This device';
+
+  @override
+  String get accountThisAccountLabel => 'This account';
+
+  @override
+  String accountStonesLastClimbToday(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count stones',
+      one: '1 stone',
+    );
+    return '$_temp0 · last climb today';
+  }
+
+  @override
+  String accountStonesLastClimbDate(num count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count stones',
+      one: '1 stone',
+    );
+    return '$_temp0 · last climb $date';
+  }
+
+  @override
+  String get accountNoActivityYet => 'No activity yet';
+
+  @override
+  String accountConsequenceKeepDevice(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count stones',
+      one: '1 stone',
+    );
+    return 'Keeping this device replaces the account\'s $_temp0 everywhere. This can\'t be undone.';
+  }
+
+  @override
+  String accountConsequenceKeepAccount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count stones',
+      one: '1 stone',
+    );
+    return 'Using this account replaces this device\'s $_temp0. This can\'t be undone.';
+  }
+
+  @override
+  String get accountKeepDeviceButton => 'Keep this device\'s trail';
+
+  @override
+  String get accountKeepAccountButton => 'Keep this account\'s trail';
+
+  @override
+  String get accountApplyingLoading => 'Applying...';
+
+  @override
+  String get accountSignedInTitle => 'Signed in';
+
+  @override
+  String get accountTrailBackedUpLabel => 'Your trail is backed up.';
+
+  @override
+  String get accountSignOutButton => 'Sign out';
+
+  @override
+  String get accountSignOutConfirmTitle => 'Sign out?';
+
+  @override
+  String get accountSignOutConfirmBody =>
+      'Your trail is backed up and stays on this device.';
+
+  @override
+  String get accountEmailInUseError => 'That email is already in use.';
+
+  @override
+  String get accountSignInInsteadLink => 'Sign in instead?';
+
+  @override
+  String accountPasswordTooShortError(int min) {
+    return 'Password needs at least $min characters.';
+  }
+
+  @override
+  String get accountInvalidCodeError =>
+      'That code didn\'t match. Check it and try again.';
+
+  @override
+  String get accountInvalidCredentialsError => 'Incorrect email or password.';
+
+  @override
+  String get accountRateLimitedError =>
+      'Too many attempts. Wait a moment and try again.';
+
+  @override
+  String get accountUnknownError => 'Something went wrong. Please try again.';
+
+  @override
+  String get accountOfflineBannerCreate =>
+      'You\'re offline. Connect to create your account.';
+
+  @override
+  String get accountOfflineBannerGeneric =>
+      'You\'re offline. Try again once you\'re connected.';
 }

@@ -11,6 +11,7 @@ import 'models/proof_verdict.dart';
 import 'repo/completion_repository.dart';
 import 'repo/settings_repository.dart';
 import 'repo/task_repository.dart';
+import 'services/account_service.dart';
 import 'services/app_settings_opener.dart';
 import 'services/auth_service.dart';
 import 'services/camera_permission_requester.dart';
@@ -389,4 +390,37 @@ final syncTriggerProvider = Provider<SyncTrigger>((ref) {
   trigger.start();
   ref.onDispose(trigger.dispose);
   return trigger;
+});
+
+/// Whether the Phase 4b account-upgrade feature (create account / sign in /
+/// reset password / sign out) is available at all: false when no live
+/// Supabase project is configured. WO-B uses this to hide every entry point
+/// (the Profile row's affordances) rather than showing a feature with
+/// nothing to talk to.
+final accountFeatureAvailableProvider =
+    Provider<bool>((ref) => AppConfig.isConfigured);
+
+/// Orchestrates the account-upgrade flows (see [AccountService]'s doc
+/// comment) on top of the existing auth/sync/completions providers.
+final accountServiceProvider = Provider<AccountService>((ref) {
+  return AccountService(
+    auth: ref.watch(authServiceProvider),
+    sync: ref.watch(syncServiceProvider),
+    completions: ref.watch(completionRepositoryProvider),
+    tasks: ref.watch(taskRepositoryProvider),
+  );
+});
+
+/// Reactive anonymous-vs-signed-in state for the Profile row. A plain,
+/// invalidate-on-demand `FutureProvider` - the same pattern
+/// [onboardingCompleteProvider] already uses - rather than a stream off the
+/// SDK's own auth-state-change: WO-B's screens are expected to
+/// `ref.invalidate(accountStateProvider)` immediately after any
+/// [AccountService] call that can change it (sign in, create-account
+/// completion, sign-out), the same way `OnboardingFlow` already invalidates
+/// [onboardingCompleteProvider] after its own side effect rather than this
+/// provider watching a stream to catch up on its own.
+final accountStateProvider = FutureProvider<AccountState>((ref) async {
+  final auth = ref.watch(authServiceProvider);
+  return AccountState(isAnonymous: auth.isAnonymous, email: auth.email);
 });

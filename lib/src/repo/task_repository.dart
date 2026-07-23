@@ -272,6 +272,23 @@ class TaskRepository {
         .get();
   }
 
+  /// Whether this device has any live (non-tombstoned) task at all -
+  /// archived or not. Used by `AccountService.signIn` (Phase 4b account
+  /// upgrade) alongside `CompletionRepository.localTrailSummary` to decide
+  /// whether a sign-in can silently adopt the account's cloud data: a user
+  /// who created a habit locally but hasn't completed it yet still has real
+  /// data (`local.stones == 0` alone would miss it), so that habit must
+  /// never be silently wiped by a same-device sign-in. A single `LIMIT 1`
+  /// existence check rather than counting every row, since only "any at
+  /// all" matters here.
+  Future<bool> hasAnyLiveTasks() async {
+    final row = await (_db.select(_db.tasks)
+          ..where((t) => t.deletedAt.isNull())
+          ..limit(1))
+        .getSingleOrNull();
+    return row != null;
+  }
+
   /// Each task's stable creation-order ordinal, 1-based among every
   /// non-tombstoned task (archived tasks included, so archiving one never
   /// renumbers another task's position). This is purely a task-*ordering*

@@ -16,16 +16,25 @@ import '../theme/app_text_styles.dart';
 /// [large], including its drop shadow).
 enum PrimaryButtonSize { large, medium, small }
 
-/// The terracotta gradient primary action button. One widget, three sizes
-/// (see [PrimaryButtonSize]); [icon], when given, is laid out before
-/// [label] the way every gradient button in the designs pairs a small
-/// glyph with its text.
+/// Which gradient fill [PrimaryButton] paints. Terracotta is the app's
+/// default primary-action colour everywhere; sage is the Phase 4b
+/// account-flow screens' own CTA colour (Create account / Sign in / Verify
+/// / Save password / Keep this device's trail), added as an opt-in variant
+/// on this one shared widget rather than a forked button class, per this
+/// run's spec ("consistent styles, minimal repeated code").
+enum PrimaryButtonColor { terracotta, sage }
+
+/// The gradient primary action button. One widget, three sizes (see
+/// [PrimaryButtonSize]) and two colours (see [PrimaryButtonColor]); [icon],
+/// when given, is laid out before [label] the way every gradient button in
+/// the designs pairs a small glyph with its text.
 class PrimaryButton extends StatelessWidget {
   const PrimaryButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.size = PrimaryButtonSize.large,
+    this.color = PrimaryButtonColor.terracotta,
     this.icon,
     this.expand = true,
   });
@@ -33,6 +42,7 @@ class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final PrimaryButtonSize size;
+  final PrimaryButtonColor color;
   final Widget? icon;
 
   /// Whether the button fills the available width (the large footer CTAs
@@ -44,13 +54,11 @@ class PrimaryButton extends StatelessWidget {
     final double radius;
     final TextStyle textStyle;
     final EdgeInsetsGeometry padding;
-    final List<BoxShadow> shadows;
     switch (size) {
       case PrimaryButtonSize.large:
         radius = AppRadii.buttonLarge;
         textStyle = AppTextStyles.buttonLabelLarge;
         padding = const EdgeInsetsDirectional.symmetric(vertical: 17);
-        shadows = AppShadows.buttonLarge;
       case PrimaryButtonSize.medium:
         radius = AppRadii.buttonMedium;
         textStyle = AppTextStyles.buttonLabelMedium;
@@ -58,7 +66,6 @@ class PrimaryButton extends StatelessWidget {
           horizontal: 22,
           vertical: 14,
         );
-        shadows = AppShadows.buttonLarge;
       case PrimaryButtonSize.small:
         radius = AppRadii.buttonSmall;
         textStyle = AppTextStyles.buttonLabelSmall;
@@ -66,8 +73,15 @@ class PrimaryButton extends StatelessWidget {
           horizontal: 18,
           vertical: 11,
         );
-        shadows = AppShadows.buttonSmall;
     }
+
+    final isSmall = size == PrimaryButtonSize.small;
+    final shadows = color == PrimaryButtonColor.sage
+        ? (isSmall ? AppShadows.sageButtonSmall : AppShadows.sageButtonLarge)
+        : (isSmall ? AppShadows.buttonSmall : AppShadows.buttonLarge);
+    final gradient = color == PrimaryButtonColor.sage
+        ? AppGradients.sageButton
+        : AppGradients.terracottaButton;
 
     final content = Row(
       mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
@@ -84,7 +98,7 @@ class PrimaryButton extends StatelessWidget {
         width: expand ? double.infinity : null,
         padding: padding,
         decoration: BoxDecoration(
-          gradient: AppGradients.terracottaButton,
+          gradient: gradient,
           borderRadius: BorderRadius.circular(radius),
           boxShadow: shadows,
           border: Border.all(

@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 
+import '../clock.dart';
 import '../db/database.dart';
+import '../models/trail_summary.dart';
 import 'sync_transport.dart';
 
 /// Outcome of one [SyncService.syncOnce] call. `pulled`/`pushed` report
@@ -66,10 +68,18 @@ class SyncResult {
 class SyncService {
   final AppDatabase _db;
   final SyncTransport _transport;
+  final Clock _clock;
 
   static const _cursorKey = 'sync_pull_cursor';
 
-  SyncService(this._db, this._transport);
+  /// [clock] defaults to [SystemClock]: only the two Phase 4b account-upgrade
+  /// "replace" operations below ([replaceCloudWithLocal]) need "now" (to
+  /// stamp fresh tombstones/dirty bumps so they win any LWW race); the core
+  /// pull-then-push cycle in [syncOnce] never touches it, so every existing
+  /// call site (which passes only a db and a transport) keeps working
+  /// unchanged.
+  SyncService(this._db, this._transport, {Clock clock = const SystemClock()})
+      : _clock = clock;
 
   Future<SyncResult> syncOnce() async {
     final cursor = await _readCursor();
@@ -106,6 +116,214 @@ class SyncService {
 
     await _clearDirtyForPushed(batch);
     return const SyncResult(pulled: true, pushed: true);
+  }
+
+  // ---- account-upgrade "replace" operations (Phase 4b WO-A) ------------
+  //
+  // Both are invoked from `AccountService.signIn`'s trail-choice step: the
+  // user is asked which trail to keep when signing into an existing account
+  // on a device that already has local (anonymous) data. Neither merges -
+  // one side's data always wins outright.
+
+  /// User picked "use the account": discards every local syncable row and
+  /// adopts the signed-in account's cloud data in its place.
+  ///
+  /// HARD-deletes (never tombstones - a tombstone would push *up* and
+  /// delete the account's real rows) every row across
+  /// `tasks`/`completions`/`verification_attempts` and resets the pull
+  /// cursor to 0, all in one local transaction (children before the
+  /// `tasks` parent, respecting the `taskId` foreign key), then runs a full
+  /// [syncOnce]: with the cursor at 0 and the tables empty, its pull fetches
+  /// every row the account owns and applies each one directly (written
+  /// `dirty = false` by the existing pull-apply path), and its push phase
+  /// then finds nothing dirty to send. Postcondition on success: local ==
+  /// the account's cloud data.
+  ///
+  /// This is only ever called immediately after a network round trip has
+  /// already succeeded (the password sign-in that precedes it in
+  /// `AccountService.signIn`), so the following pull is not expected to
+  /// fail for lack of connectivity - but if it does (a device going briefly
+  /// offline in between, say), the local data has already been discarded
+  /// and the returned [SyncResult] will report `pulled: false`; callers
+  /// must check it rather than assume success. There is no way to make the
+  /// delete conditional on the pull succeeding: the delete is purely local
+  /// and the pull is over the network, so they cannot be one atomic step.
+  /// This ordering is a deliberate, documented tradeoff, not an oversight.
+  Future<SyncResult> replaceLocalWithCloud() async {
+    await _db.transaction(() async {
+      await _db.delete(_db.completions).go();
+      await _db.delete(_db.verificationAttempts).go();
+      await _db.delete(_db.tasks).go();
+      await _writeCursor(0);
+    });
+    return syncOnce();
+  }
+
+  /// User picked "keep this device": makes the signed-in account (cloud)
+  /// equal this device's current local live rows only, discarding whatever
+  /// the account had - propagating to every other device on that account.
+  /// The RLS tables have no DELETE policy, so removal is done by tombstone
+  /// (`deleted_at`), which the LWW engine already models.
+  ///
+  /// Sequence: (1) pull the account's entire row set (`cursor: 0`, not the
+  /// stored cursor - this needs to see everything the account has, not just
+  /// what changed recently); (2) for every remote row whose id is not
+  /// present locally at all (regardless of that local row's own live/
+  /// tombstoned status), insert a local tombstone for it, stamped with
+  /// [Clock.nowEpochMillis] and `dirty = true`, so it gets pushed - a remote
+  /// row whose id *is* already known locally needs no separate tombstone
+  /// here: a still-live local row is handled by step 3 below, and an
+  /// already-tombstoned local row implies (since `tombstoneDelete` always
+  /// sets `dirty = true`, cleared only on a successful push) that either the
+  /// tombstone has already reached the server, or it's still dirty and
+  /// [_collectDirtyBatch] will sweep it up regardless of step 3's own,
+  /// narrower live-rows-only scope; (3) mark every local *live* row dirty,
+  /// bumping `updatedAt` to now so it wins any same-id LWW race against the
+  /// account's version of that row ("local wins everything"); (4) push
+  /// every row now dirty (both the new tombstones and the bumped live rows)
+  /// in one batch. The empty-cloud case falls out with no special-casing:
+  /// nothing to tombstone, so only this device's local rows are pushed.
+  ///
+  /// Deliberately does not delegate the push step to a plain [syncOnce]
+  /// call: [syncOnce] would run its *own* pull first, from the stored
+  /// (possibly much older) cursor rather than 0, racing in a confusing way
+  /// against the tombstone/dirty-bump work just done in this same method.
+  /// Reusing [_collectDirtyBatch]/[_clearDirtyForPushed] directly (the same
+  /// private helpers [syncOnce]'s own push phase uses) gets the identical
+  /// push-and-clear-dirty behaviour without that interaction. On success,
+  /// the stored cursor is advanced to `now` (only if that's actually newer)
+  /// as a pure optimisation: every row that mattered here is now accounted
+  /// for as of `now`, so a later [syncOnce] has no reason to re-walk the
+  /// account's pre-replace history; this is not required for correctness
+  /// (LWW-by-timestamp protects convergence regardless of the stored
+  /// cursor's exact value).
+  Future<SyncResult> replaceCloudWithLocal() async {
+    final SyncPullResult pullResult;
+    try {
+      pullResult = await _transport.pull(cursor: 0);
+    } catch (e) {
+      return SyncResult(pulled: false, pushed: false, error: e.toString());
+    }
+
+    final now = _clock.nowEpochMillis();
+
+    await _db.transaction(() async {
+      // Parents before children: a freshly-inserted tombstoned task must
+      // exist before a completion/attempt referencing it can be inserted
+      // (the `taskId` foreign key).
+      await _tombstoneRemoteOnlyTasks(pullResult.tasks, now);
+      await _tombstoneRemoteOnlyCompletions(pullResult.completions, now);
+      await _tombstoneRemoteOnlyVerificationAttempts(
+        pullResult.verificationAttempts,
+        now,
+      );
+      await _bumpAllLiveRowsDirty(now);
+    });
+
+    final batch = await _collectDirtyBatch();
+    if (batch.isEmpty) {
+      return const SyncResult(pulled: true, pushed: true);
+    }
+
+    try {
+      await _transport.push(batch);
+    } catch (e) {
+      return SyncResult(pulled: true, pushed: false, error: e.toString());
+    }
+
+    await _clearDirtyForPushed(batch);
+
+    final storedCursor = await _readCursor();
+    if (now > storedCursor) {
+      await _writeCursor(now);
+    }
+
+    return const SyncResult(pulled: true, pushed: true);
+  }
+
+  Future<void> _tombstoneRemoteOnlyTasks(List<Task> remoteRows, int now) async {
+    if (remoteRows.isEmpty) return;
+    final localIds = (await _db.select(_db.tasks).get()).map((t) => t.id).toSet();
+    for (final remote in remoteRows) {
+      if (localIds.contains(remote.id)) continue;
+      await _db.into(_db.tasks).insert(
+            remote.toCompanion(false).copyWith(
+                  deletedAt: Value(now),
+                  updatedAt: Value(now),
+                  dirty: const Value(true),
+                ),
+          );
+    }
+  }
+
+  Future<void> _tombstoneRemoteOnlyCompletions(
+    List<Completion> remoteRows,
+    int now,
+  ) async {
+    if (remoteRows.isEmpty) return;
+    final localIds =
+        (await _db.select(_db.completions).get()).map((c) => c.id).toSet();
+    for (final remote in remoteRows) {
+      if (localIds.contains(remote.id)) continue;
+      await _db.into(_db.completions).insert(
+            remote.toCompanion(false).copyWith(
+                  deletedAt: Value(now),
+                  updatedAt: Value(now),
+                  dirty: const Value(true),
+                ),
+          );
+    }
+  }
+
+  Future<void> _tombstoneRemoteOnlyVerificationAttempts(
+    List<VerificationAttempt> remoteRows,
+    int now,
+  ) async {
+    if (remoteRows.isEmpty) return;
+    final localIds = (await _db.select(_db.verificationAttempts).get())
+        .map((a) => a.id)
+        .toSet();
+    for (final remote in remoteRows) {
+      if (localIds.contains(remote.id)) continue;
+      await _db.into(_db.verificationAttempts).insert(
+            remote.toCompanion(false).copyWith(
+                  deletedAt: Value(now),
+                  updatedAt: Value(now),
+                  dirty: const Value(true),
+                ),
+          );
+    }
+  }
+
+  Future<void> _bumpAllLiveRowsDirty(int now) async {
+    await (_db.update(_db.tasks)..where((t) => t.deletedAt.isNull())).write(
+      TasksCompanion(updatedAt: Value(now), dirty: const Value(true)),
+    );
+    await (_db.update(_db.completions)..where((c) => c.deletedAt.isNull()))
+        .write(
+      CompletionsCompanion(updatedAt: Value(now), dirty: const Value(true)),
+    );
+    await (_db.update(_db.verificationAttempts)
+          ..where((a) => a.deletedAt.isNull()))
+        .write(
+      VerificationAttemptsCompanion(
+        updatedAt: Value(now),
+        dirty: const Value(true),
+      ),
+    );
+  }
+
+  /// REMOTE trail summary for the account-upgrade sign-in chooser
+  /// (`AccountService.signIn`): pulls the signed-in account's entire live
+  /// row set (`cursor: 0`, RLS-scoped server-side to that account) and
+  /// reduces its completions via [trailSummaryFromCompletions] - the same
+  /// reduction `CompletionRepository.localTrailSummary` applies locally, so
+  /// the two sides of the chooser are computed identically. Reuses the pull
+  /// path rather than adding a new transport verb.
+  Future<TrailSummary> remoteTrailSummary() async {
+    final pullResult = await _transport.pull(cursor: 0);
+    final live = pullResult.completions.where((c) => c.deletedAt == null);
+    return trailSummaryFromCompletions(live);
   }
 
   // ---- pull-apply ----------------------------------------------------

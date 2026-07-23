@@ -28,14 +28,23 @@ class OnboardingWelcomeScreen extends StatelessWidget {
     super.key,
     required this.onStartClimbing,
     required this.onAlreadyHaveAccount,
+    this.showAlreadyHaveAccount = true,
   });
 
   /// Pushes the How It Works screen (step 2) on [OnboardingFlow]'s nested
   /// Navigator.
   final VoidCallback onStartClimbing;
 
-  /// Shows the "coming soon" snackbar (Phase 4 accounts are out of scope).
+  /// Pushes the Phase 4b account flow (Sign in first) on
+  /// [OnboardingFlow]'s nested Navigator.
   final VoidCallback onAlreadyHaveAccount;
+
+  /// Whether the "I already have an account" ghost button renders at all:
+  /// false when no live Supabase project is configured
+  /// (`accountFeatureAvailableProvider`), per the Phase 4b account-upgrade
+  /// spec's config gate - a feature with nothing to talk to is hidden
+  /// entirely rather than shown disabled.
+  final bool showAlreadyHaveAccount;
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +129,7 @@ class OnboardingWelcomeScreen extends StatelessWidget {
             l10n: l10n,
             onStartClimbing: onStartClimbing,
             onAlreadyHaveAccount: onAlreadyHaveAccount,
+            showAlreadyHaveAccount: showAlreadyHaveAccount,
           ),
         ],
       ),
@@ -167,11 +177,13 @@ class _Footer extends StatelessWidget {
     required this.l10n,
     required this.onStartClimbing,
     required this.onAlreadyHaveAccount,
+    required this.showAlreadyHaveAccount,
   });
 
   final AppLocalizations l10n;
   final VoidCallback onStartClimbing;
   final VoidCallback onAlreadyHaveAccount;
+  final bool showAlreadyHaveAccount;
 
   @override
   Widget build(BuildContext context) {
@@ -185,13 +197,15 @@ class _Footer extends StatelessWidget {
             label: l10n.onboardingStartClimbingButton,
             onPressed: onStartClimbing,
           ),
-          const SizedBox(height: 10),
-          Center(
-            child: TextGhostButton(
-              label: l10n.onboardingAlreadyHaveAccountButton,
-              onPressed: onAlreadyHaveAccount,
+          if (showAlreadyHaveAccount) ...[
+            const SizedBox(height: 10),
+            Center(
+              child: TextGhostButton(
+                label: l10n.onboardingAlreadyHaveAccountButton,
+                onPressed: onAlreadyHaveAccount,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

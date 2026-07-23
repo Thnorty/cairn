@@ -623,4 +623,61 @@ abstract final class AppColors {
   /// `#b7a98f` - the outer two bars of Verify Pending's "held metres" mini
   /// cairn glyph (its own middle bar, `#c8bba1`, stays a single-use literal).
   static const Color heldMetresGlyphLight = Color(0xFFB7A98F);
+
+  // ---- Account screens (Cairn Account.dc.html) -------------------------
+
+  /// `#7a8d60` / `#5f7a45` - the account-flow sage CTA gradient (155deg):
+  /// "Create account" / "Sign in" / "Verify" / "Save password" / "Keep this
+  /// device's trail". Distinct from [sage]/[sageLight] (the cairn-stack sage
+  /// pair): a close but different literal pair in the source file, kept as
+  /// its own token per this file's own precedent of preserving literal
+  /// per-source distinctions (see [trailWhereYouStartedText]).
+  static const Color accountSageButtonLight = Color(0xFF7A8D60);
+  static const Color accountSageButtonDark = Color(0xFF5F7A45);
+
+  /// rgba(70,88,50,.55) - the account-flow sage CTA's drop shadow.
+  static const Color accountSageButtonShadow = Color(0x8C465832);
+
+  /// `#a89e8c` - the account-flow text-field placeholder colour
+  /// (`input::placeholder`).
+  static const Color accountPlaceholderText = Color(0xFFA89E8C);
+
+  /// rgba(179,84,58,.6) - an errored account-flow field's border.
+  static const Color accountFieldErrorBorder = Color(0x99B3543A);
+
+  /// `#b3543a` - an errored account-flow field's inline warning-icon stroke.
+  /// Distinct from [terracotta] (`#a6603d`), which the error's own text/link
+  /// colour uses instead - both appear side by side in the source file.
+  static const Color accountFieldErrorIcon = Color(0xFFB3543A);
+
+  /// rgba(178,124,92,.12) / rgba(178,124,92,.24) - the account-flow offline
+  /// banner's background/border.
+  static const Color accountOfflineBannerBg = Color(0x1FB27C5C);
+  static const Color accountOfflineBannerBorder = Color(0x3DB27C5C);
+
+  /// rgba(178,124,92,.22) - the "Keep which trail" chooser's consequence
+  /// warning banner border. Its background reuses [accountStatusBg] (an
+  /// exact-match rgba(178,124,92,.1) already in this file); its icon reuses
+  /// [terracotta] (`#a6603d`) - only the border alpha differs from
+  /// [accountStatusBorder]'s own .2, so it is kept as its own token per this
+  /// file's precedent (see [trailWhereYouStartedText]).
+  static const Color accountWarningBannerBorder = Color(0x38B27C5C);
+
+  /// `#7a4a30` - the "Keep which trail" chooser's consequence warning
+  /// banner body text.
+  static const Color accountWarningText = Color(0xFF7A4A30);
+
+  /// rgba(122,141,96,.16) - the Enter Code screen's active OTP box's focus
+  /// ring. Numerically identical to [sageChipBg] (same source rgba) but kept
+  /// as its own token since the two mark unrelated things, per this file's
+  /// own precedent (see [achievedTierIconBg]).
+  static const Color accountOtpActiveRing = Color(0x297A8D60);
+
+  /// `#41502f` - the "Keep which trail" chooser's selected "This device"
+  /// option card's device-icon stroke.
+  static const Color accountDeviceIconStroke = Color(0xFF41502F);
+
+  /// rgba(166,96,61,.42) - the Profile screen's signed-in account row's
+  /// clay "Sign out" pill border.
+  static const Color accountSignOutBorder = Color(0x6BA6603D);
 }

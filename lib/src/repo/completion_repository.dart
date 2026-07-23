@@ -8,6 +8,7 @@ import '../clock.dart';
 import '../db/database.dart';
 import '../models/local_date.dart';
 import '../models/proof_verdict.dart';
+import '../models/trail_summary.dart';
 import '../services/cairn_grouping.dart';
 import '../services/occurrence_generator.dart';
 import '../services/points_service.dart';
@@ -823,6 +824,19 @@ class CompletionRepository {
               c.occurrenceDate.isSmallerOrEqualValue(weekEnd.toIso())))
         .get();
     return rows.length;
+  }
+
+  /// LOCAL trail summary for the account-upgrade sign-in chooser
+  /// (`AccountService.signIn`, WO-A of the Phase 4b account upgrade): every
+  /// live (non-tombstoned) completion on this device, verified or pending
+  /// alike, reduced via [trailSummaryFromCompletions] - the same reduction
+  /// [SyncService.remoteTrailSummary] applies to the signed-in account's
+  /// cloud data, so the two sides of the chooser are computed identically.
+  Future<TrailSummary> localTrailSummary() async {
+    final rows =
+        await (_db.select(_db.completions)..where((c) => c.deletedAt.isNull()))
+            .get();
+    return trailSummaryFromCompletions(rows);
   }
 
   /// One-time backfill for rows created before the first successful

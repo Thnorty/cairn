@@ -114,6 +114,26 @@ void main() {
         expect(style.color, AppTextStyles.buttonLabelLarge.color);
       },
     );
+
+    testWidgets(
+      'the sage colour variant (Phase 4b account screens) renders and fires '
+      'its callback the same as the default terracotta variant',
+      (tester) async {
+        var tapped = false;
+        await pump(
+          tester,
+          PrimaryButton(
+            label: 'Create account',
+            onPressed: () => tapped = true,
+            color: PrimaryButtonColor.sage,
+          ),
+        );
+
+        expect(find.text('Create account'), findsOneWidget);
+        await tester.tap(find.text('Create account'));
+        expect(tapped, isTrue);
+      },
+    );
   });
 
   group('TintedPillButton', () {
