@@ -17,12 +17,15 @@
 // additionally calls `auth.getUser()` itself, both as defense in depth and
 // to recover the caller's user id for rate limiting below.
 //
-// Rate limiting: best-effort, in-memory, per Supabase Function *instance*.
-// This is NOT durable - it resets on cold start, is not shared across
-// concurrently warm instances, and is lost entirely on a redeploy. It is a
-// soft speed bump against a single client hammering this endpoint, not a
-// real limit. Phase 4 replaces it with a table-backed limiter once Postgres
-// tables exist (Phase 2b deliberately creates none).
+// Rate limiting: two-tier architecture.
+// 1. An in-memory per-instance burst limiter (VERIFY_BURST_PER_MIN, default 20/min)
+//    serves as a cheap first line of defense against rapid requests.
+// 2. A durable, table-backed per-user-per-UTC-day quota (VERIFY_USER_DAILY_CAP, default 30)
+//    plus a global per-UTC-day ceiling (VERIFY_GLOBAL_DAILY_CAP, default 10000) enforced
+//    by the SECURITY DEFINER function `check_and_bump_verify_quota`.
+// The function is invoked with the caller's JWT so the Edge Function still holds no
+// service-role access. If a DB or RPC error occurs, the check fails open (logging the
+// error) and falls back to the in-memory burst limiter. All limits are environment-configurable.
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
@@ -39,8 +42,18 @@ const GEMINI_ENDPOINT =
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 
-// --- best-effort, per-instance rate limit (see file header) ---------------
-const RATE_LIMIT_MAX_PER_WINDOW = 20;
+function parseEnvInt(key: string, defaultValue: number): number {
+  const raw = Deno.env.get(key);
+  if (!raw) return defaultValue;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isNaN(parsed) ? defaultValue : parsed;
+}
+
+const VERIFY_USER_DAILY_CAP = parseEnvInt('VERIFY_USER_DAILY_CAP', 30);
+const VERIFY_GLOBAL_DAILY_CAP = parseEnvInt('VERIFY_GLOBAL_DAILY_CAP', 10000);
+const VERIFY_BURST_PER_MIN = parseEnvInt('VERIFY_BURST_PER_MIN', 20);
+
+// --- in-memory per-instance burst limiter (see file header) ----------------
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const rateLimitState = new Map<string, number[]>();
 
@@ -49,7 +62,7 @@ function isRateLimited(userId: string): boolean {
   const recent = (rateLimitState.get(userId) ?? []).filter(
     (t) => now - t < RATE_LIMIT_WINDOW_MS,
   );
-  if (recent.length >= RATE_LIMIT_MAX_PER_WINDOW) {
+  if (recent.length >= VERIFY_BURST_PER_MIN) {
     rateLimitState.set(userId, recent);
     return true;
   }
@@ -348,6 +361,23 @@ Deno.serve(async (req: Request) => {
 
   if (isRateLimited(userId)) {
     return jsonResponse({ error: 'rate limit exceeded, try again shortly' }, 429);
+  }
+
+  const { data: allowed, error: quotaError } = await supabase.rpc(
+    'check_and_bump_verify_quota',
+    {
+      p_user_cap: VERIFY_USER_DAILY_CAP,
+      p_global_cap: VERIFY_GLOBAL_DAILY_CAP,
+    },
+  );
+
+  if (quotaError) {
+    console.error(
+      'verify-proof: check_and_bump_verify_quota failed:',
+      quotaError,
+    );
+  } else if (allowed === false) {
+    return jsonResponse({ error: 'rate limit exceeded, try again later' }, 429);
   }
 
   if (!GEMINI_API_KEY) {
