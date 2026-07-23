@@ -53,7 +53,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Sign out?'), findsOneWidget);
-    expect(find.text('Your trail is backed up and stays on this device.'), findsOneWidget);
+    expect(
+      find.text('Your trail stays on this device. Sign back in anytime to sync it to your account again.'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();

@@ -64,6 +64,10 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(
+      find.text("Can't find it? Check your spam folder."),
+      findsOneWidget,
+    );
   });
 
   testWidgets('password-reset purpose renders the reset body copy',

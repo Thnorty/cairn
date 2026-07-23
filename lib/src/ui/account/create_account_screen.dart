@@ -75,9 +75,9 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
       _offlineMessage = null;
     });
 
-    if (password.length < kMinPasswordLength) {
+    if (!meetsPasswordPolicy(password)) {
       setState(() {
-        _passwordError = l10n.accountPasswordTooShortError(kMinPasswordLength);
+        _passwordError = l10n.accountPasswordRequirements;
       });
       return;
     }
@@ -96,8 +96,7 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
           case AccountError.emailInUse:
             _emailError = l10n.accountEmailInUseError;
           case AccountError.weakPassword:
-            _passwordError =
-                l10n.accountPasswordTooShortError(kMinPasswordLength);
+            _passwordError = l10n.accountPasswordRequirements;
           case AccountError.offline:
             _offlineMessage = l10n.accountOfflineBannerCreate;
           case AccountError.rateLimited:
@@ -155,6 +154,7 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                             message: _emailError!,
                             action: AccountInlineLink(
                               label: l10n.accountSignInInsteadLink,
+                              style: AccountInlineLinkStyle.error,
                               onTap: () => widget
                                   .onSignInInstead(_emailController.text.trim()),
                             ),
@@ -171,6 +171,16 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                         ? null
                         : AccountFieldErrorRow(message: _passwordError!),
                   ),
+                  if (_passwordError == null)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(top: 8),
+                      child: Text(
+                        l10n.accountPasswordRequirements,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.labelGrey,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 26),
                   AccountSubmitButton(
                     label: l10n.accountCreateButton,

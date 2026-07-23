@@ -65,7 +65,7 @@ void main() {
 
     expect(find.text('Keep your trail safe'), findsOneWidget);
     await tester.enterText(find.byType(TextField).first, 'new@example.com');
-    await tester.enterText(find.byType(TextField).last, 'hunter22');
+    await tester.enterText(find.byType(TextField).last, 'Abcdefg1');
     await tester.tap(find.text('Create account'));
     await tester.pumpAndSettle();
 
@@ -80,7 +80,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(harness.auth.verifyEmailCodeCalls, ['123456']);
-    expect(harness.auth.setPasswordCalls, ['hunter22']);
+    expect(harness.auth.setPasswordCalls, ['Abcdefg1']);
     // The flow closed: back to the placeholder screen underneath.
     expect(find.text('placeholder-home'), findsOneWidget);
     expect(find.byType(AccountFlow), findsNothing);
@@ -120,6 +120,8 @@ void main() {
 
     expect(find.text('Keep which trail?'), findsOneWidget);
 
+    await tester.tap(find.text('This device'));
+    await tester.pump();
     await tester.tap(find.text("Keep this device's trail"));
     await tester.pumpAndSettle();
 
@@ -182,11 +184,11 @@ void main() {
     expect(harness.auth.verifyPasswordResetCodeCalls.single.code, '654321');
     expect(find.text('Set a new password'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField), 'brand-new-secret');
+    await tester.enterText(find.byType(TextField), 'BrandNew1');
     await tester.tap(find.text('Save password'));
     await tester.pumpAndSettle();
 
-    expect(harness.auth.setPasswordCalls, ['brand-new-secret']);
+    expect(harness.auth.setPasswordCalls, ['BrandNew1']);
     expect(find.text('placeholder-home'), findsOneWidget);
     expect(find.byType(AccountFlow), findsNothing);
   });

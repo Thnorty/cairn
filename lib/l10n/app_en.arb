@@ -736,14 +736,14 @@
     "description": "Title of the Profile screen's account-status row, shown while there is no upgraded account (Phase 4)."
   },
 
-  "profileCreateAccountBody": "Create an account so your trail is never lost.",
+  "profileCreateAccountBody": "Tap to create an account and back up your trail to any device.",
   "@profileCreateAccountBody": {
     "description": "Subtitle of the Profile screen's account-status row."
   },
 
   "profileCreateButton": "Create",
   "@profileCreateButton": {
-    "description": "Action label on the Profile screen's account-status row. Phase 4 wires this to the real email/password upgrade flow; for now it is a no-op-for-now (see profileComingSoonSnackbar)."
+    "description": "Accessibility action label for the Profile screen's account-status row."
   },
 
   "profilePremiumTitle": "Cairn Premium",
@@ -1313,6 +1313,10 @@
   "@accountForgotPasswordLink": {
     "description": "Link under the Sign in screen's password field; starts the password-reset flow."
   },
+  "accountForgotPasswordNeedsEmailError": "Enter your email above first, then tap Forgot password.",
+  "@accountForgotPasswordNeedsEmailError": {
+    "description": "Inline error shown under the email field on the Sign in screen when Forgot password? is tapped without a valid email entered."
+  },
   "accountSigningInLoading": "Signing in...",
   "@accountSigningInLoading": {
     "description": "Label shown on the Sign in screen's primary CTA while signIn is in flight, replacing accountSignInLink and paired with a spinner."
@@ -1367,6 +1371,10 @@
   "@accountResendCodeButton": {
     "description": "Enabled resend-code button label on the Enter Code screen once the cooldown has elapsed."
   },
+  "accountEnterCodeSpamHint": "Can't find it? Check your spam folder.",
+  "@accountEnterCodeSpamHint": {
+    "description": "Small muted hint below the resend button on the Enter Code screen reminding the user to check their spam folder."
+  },
 
   "accountSetNewPasswordEyebrow": "Reset password",
   "@accountSetNewPasswordEyebrow": {
@@ -1416,19 +1424,12 @@
   "@accountThisAccountLabel": {
     "description": "Title of the 'keep this account's trail' option card on the Keep which trail chooser screen."
   },
-  "accountStonesLastClimbToday": "{count, plural, one{1 stone} other{{count} stones}} · last climb today",
-  "@accountStonesLastClimbToday": {
-    "description": "Subtitle of a Keep which trail option card whose last climb was today, e.g. '12 stones · last climb today'.",
-    "placeholders": {
-      "count": { "type": "num", "example": "12" }
-    }
-  },
-  "accountStonesLastClimbDate": "{count, plural, one{1 stone} other{{count} stones}} · last climb {date}",
-  "@accountStonesLastClimbDate": {
-    "description": "Subtitle of a Keep which trail option card whose last climb was on an earlier date, e.g. '48 stones · last climb Jul 2'. date is pre-formatted by the caller via formatShortMonthDay.",
+  "accountStonesLastClimbDateTime": "{count, plural, one{1 stone} other{{count} stones}} · last climb {dateTime}",
+  "@accountStonesLastClimbDateTime": {
+    "description": "Subtitle of a Keep which trail option card, e.g. '48 stones · last climb Jul 2, 2026 3:14 PM'. dateTime is pre-formatted by the caller via formatDateTimeWithYear.",
     "placeholders": {
       "count": { "type": "num", "example": "48" },
-      "date": { "type": "String", "example": "Jul 2" }
+      "dateTime": { "type": "String", "example": "Jul 2, 2026 3:14 PM" }
     }
   },
   "accountNoActivityYet": "No activity yet",
@@ -1478,7 +1479,7 @@
   "@accountSignOutConfirmTitle": {
     "description": "Title of the confirmation dialog shown when tapping accountSignOutButton."
   },
-  "accountSignOutConfirmBody": "Your trail is backed up and stays on this device.",
+  "accountSignOutConfirmBody": "Your trail stays on this device. Sign back in anytime to sync it to your account again.",
   "@accountSignOutConfirmBody": {
     "description": "Body copy of the sign-out confirmation dialog, reassuring the user that signing out does not delete local data."
   },
@@ -1491,12 +1492,9 @@
   "@accountSignInInsteadLink": {
     "description": "Tappable link following accountEmailInUseError; navigates to the Sign in screen with the email pre-filled."
   },
-  "accountPasswordTooShortError": "Password needs at least {min} characters.",
-  "@accountPasswordTooShortError": {
-    "description": "Inline error under a password field: shown client-side on the Create account screen when the typed password is shorter than kMinPasswordLength, and also used to surface a server-side AccountError.weakPassword rejection (using the same kMinPasswordLength figure, the best local approximation of Supabase's own password policy).",
-    "placeholders": {
-      "min": { "type": "int", "example": "6" }
-    }
+  "accountPasswordRequirements": "Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.",
+  "@accountPasswordRequirements": {
+    "description": "Visible password policy requirements hint and inline error message, stating the full password policy (min 8 chars + upper + lower + digit)."
   },
   "accountInvalidCodeError": "That code didn't match. Check it and try again.",
   "@accountInvalidCodeError": {

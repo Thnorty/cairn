@@ -835,11 +835,11 @@ void main() {
       final summary = await completionRepo.localTrailSummary();
 
       expect(summary.stones, 0);
-      expect(summary.lastClimb, isNull);
+      expect(summary.lastClimbAt, isNull);
     });
 
     test('counts live completions (verified and pending alike) and reports '
-        'the latest occurrence_date', () async {
+        'the latest timestamp', () async {
       final taskRepo = TaskRepository(db, FixedClock(d(2026, 7, 1)));
       final task = await taskRepo.createTask(
         title: 'Push-ups',
@@ -847,9 +847,10 @@ void main() {
         startDate: d(2026, 7, 1),
       );
 
+      final clockDay8 = FixedClock(d(2026, 7, 8));
       final verifiedRepo = CompletionRepository(
         db,
-        FixedClock(d(2026, 7, 8)),
+        clockDay8,
         verifier: FakeProofVerifier(),
       );
       await verifiedRepo.completeOccurrence(
@@ -857,9 +858,10 @@ void main() {
         occurrenceDate: d(2026, 7, 8),
       );
 
+      final clockDay10 = FixedClock(d(2026, 7, 10));
       final pendingRepo = CompletionRepository(
         db,
-        FixedClock(d(2026, 7, 10)),
+        clockDay10,
         verifier: FakeProofVerifier(
           (_) => const VerifierUnavailable('offline'),
         ),
@@ -872,7 +874,10 @@ void main() {
 
       final summary = await verifiedRepo.localTrailSummary();
       expect(summary.stones, 2);
-      expect(summary.lastClimb, d(2026, 7, 10));
+      expect(
+        summary.lastClimbAt,
+        DateTime.fromMillisecondsSinceEpoch(clockDay10.nowEpochMillis()),
+      );
     });
 
     test('a tombstoned completion is excluded from both the count and the '
@@ -884,9 +889,10 @@ void main() {
         startDate: d(2026, 7, 1),
       );
 
+      final clockDay8 = FixedClock(d(2026, 7, 8));
       final repoDay8 = CompletionRepository(
         db,
-        FixedClock(d(2026, 7, 8)),
+        clockDay8,
         verifier: FakeProofVerifier(),
       );
       await repoDay8.completeOccurrence(
@@ -908,7 +914,10 @@ void main() {
 
       final summary = await repoDay10.localTrailSummary();
       expect(summary.stones, 1);
-      expect(summary.lastClimb, d(2026, 7, 8));
+      expect(
+        summary.lastClimbAt,
+        DateTime.fromMillisecondsSinceEpoch(clockDay8.nowEpochMillis()),
+      );
     });
   });
 }

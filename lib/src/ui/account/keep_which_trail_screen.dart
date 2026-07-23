@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
 import '../../l10n/date_number_formatting.dart';
-import '../../models/local_date.dart';
 import '../../models/trail_summary.dart';
 import '../../providers.dart';
 import '../theme/app_colors.dart';
@@ -44,7 +43,7 @@ class KeepWhichTrailScreen extends ConsumerStatefulWidget {
 }
 
 class _KeepWhichTrailScreenState extends ConsumerState<KeepWhichTrailScreen> {
-  _TrailSide _selected = _TrailSide.device;
+  _TrailSide _selected = _TrailSide.account;
   bool _isApplying = false;
 
   Future<void> _apply() async {
@@ -70,7 +69,6 @@ class _KeepWhichTrailScreenState extends ConsumerState<KeepWhichTrailScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final today = ref.read(clockProvider).today();
 
     final keepingDevice = _selected == _TrailSide.device;
     final consequence = keepingDevice
@@ -104,21 +102,19 @@ class _KeepWhichTrailScreenState extends ConsumerState<KeepWhichTrailScreen> {
                   ),
                   const SizedBox(height: 22),
                   _TrailOptionCard(
-                    icon: const _DeviceGlyph(),
-                    title: l10n.accountThisDeviceLabel,
-                    summary: widget.local,
-                    today: today,
-                    selected: keepingDevice,
-                    onTap: () => setState(() => _selected = _TrailSide.device),
-                  ),
-                  const SizedBox(height: 12),
-                  _TrailOptionCard(
                     icon: const _CloudGlyph(),
                     title: l10n.accountThisAccountLabel,
                     summary: widget.remote,
-                    today: today,
                     selected: !keepingDevice,
                     onTap: () => setState(() => _selected = _TrailSide.account),
+                  ),
+                  const SizedBox(height: 12),
+                  _TrailOptionCard(
+                    icon: const _DeviceGlyph(),
+                    title: l10n.accountThisDeviceLabel,
+                    summary: widget.local,
+                    selected: keepingDevice,
+                    onTap: () => setState(() => _selected = _TrailSide.device),
                   ),
                   const SizedBox(height: 16),
                   _ConsequenceBanner(text: consequence),
@@ -151,7 +147,6 @@ class _TrailOptionCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.summary,
-    required this.today,
     required this.selected,
     required this.onTap,
   });
@@ -159,7 +154,6 @@ class _TrailOptionCard extends StatelessWidget {
   final Widget icon;
   final String title;
   final TrailSummary summary;
-  final LocalDate today;
   final bool selected;
   final VoidCallback onTap;
 
@@ -176,13 +170,10 @@ class _TrailOptionCard extends StatelessWidget {
         color: AppColors.labelGrey,
         fontStyle: FontStyle.italic,
       );
-    } else if (summary.lastClimb == today) {
-      subtitle = l10n.accountStonesLastClimbToday(summary.stones);
-      subtitleStyle = AppTextStyles.accountTrailOptionSubtitle;
     } else {
-      subtitle = l10n.accountStonesLastClimbDate(
+      subtitle = l10n.accountStonesLastClimbDateTime(
         summary.stones,
-        formatShortMonthDay(summary.lastClimb!, locale),
+        formatDateTimeWithYear(summary.lastClimbAt!, locale),
       );
       subtitleStyle = AppTextStyles.accountTrailOptionSubtitle;
     }

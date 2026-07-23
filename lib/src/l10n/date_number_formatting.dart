@@ -120,6 +120,13 @@ String formatTimeOfDay(DateTime dateTime, Locale locale) {
   return DateFormat.jm(locale.toLanguageTag()).format(dateTime);
 }
 
+/// Formats [dateTime] as a localized date-with-year-plus-time string (e.g.
+/// "Jul 2, 2026 3:14 PM" for `en`), used by the account "Keep which trail"
+/// chooser's last-climb line (`KeepWhichTrailScreen`).
+String formatDateTimeWithYear(DateTime dateTime, Locale locale) {
+  return DateFormat.yMMMd(locale.toLanguageTag()).add_jm().format(dateTime);
+}
+
 /// Formats [metres] with the locale's thousands separator, e.g. "1,100" for
 /// `en`. Never build this by hand (manual comma insertion breaks for locales
 /// that group or separate digits differently). The result is a bare number;

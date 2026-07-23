@@ -251,7 +251,7 @@ void main() {
 
   group('account status, premium, and settings rows', () {
     testProfileWidgets(
-        'renders the anonymous-account row and tapping Create opens the '
+        'renders the anonymous-account row and tapping it opens the '
         'Phase 4b account flow at the Create account screen', (tester) async {
       final db = await pumpProfile(
         tester,
@@ -261,16 +261,19 @@ void main() {
       addTearDown(db.close);
 
       expect(find.text('Climbing anonymously'), findsOneWidget);
-      expect(find.text('Create an account so your trail is never lost.'), findsOneWidget);
+      expect(
+        find.text('Tap to create an account and back up your trail to any device.'),
+        findsOneWidget,
+      );
 
       // The account-status row sits below the fold in the default test
       // viewport (Profile's body is a real scrollable, unlike Home's mostly
       // fixed layout), so this must scroll it into view first - otherwise
       // the tap's derived offset falls outside the render tree entirely and
       // silently misses.
-      await tester.ensureVisible(find.text('Create'));
+      await tester.ensureVisible(find.text('Climbing anonymously'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Create'));
+      await tester.tap(find.text('Climbing anonymously'));
       await tester.pumpAndSettle();
 
       expect(find.text('Keep your trail safe'), findsOneWidget);

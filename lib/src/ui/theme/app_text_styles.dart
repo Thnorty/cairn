@@ -910,4 +910,13 @@ abstract final class AppTextStyles {
     fontSize: 12.5,
     color: AppColors.terracotta,
   );
+
+  /// 22px Zilla Slab 700 - reusable Cairn dialog title.
+  static const TextStyle dialogTitle = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w700,
+    fontSize: 22,
+    color: AppColors.inkPrimary,
+  );
 }
+

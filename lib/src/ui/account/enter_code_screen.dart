@@ -258,6 +258,14 @@ class _EnterCodeScreenState extends ConsumerState<EnterCodeScreen> {
                   onResend: _resend,
                   formatCooldown: _formatCooldown,
                 ),
+                const SizedBox(height: 10),
+                Text(
+                  l10n.accountEnterCodeSpamHint,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.labelGrey,
+                  ),
+                ),
               ],
             ),
           ),

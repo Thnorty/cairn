@@ -5,6 +5,8 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../services/account_error.dart';
 import '../../services/account_policy.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/screen_header.dart';
 import 'account_chrome.dart';
@@ -55,9 +57,9 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
       _offlineMessage = null;
     });
 
-    if (password.length < kMinPasswordLength) {
+    if (!meetsPasswordPolicy(password)) {
       setState(() {
-        _passwordError = l10n.accountPasswordTooShortError(kMinPasswordLength);
+        _passwordError = l10n.accountPasswordRequirements;
       });
       return;
     }
@@ -72,8 +74,7 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
       setState(() {
         switch (e.error) {
           case AccountError.weakPassword:
-            _passwordError =
-                l10n.accountPasswordTooShortError(kMinPasswordLength);
+            _passwordError = l10n.accountPasswordRequirements;
           case AccountError.offline:
             _offlineMessage = l10n.accountOfflineBannerGeneric;
           case AccountError.rateLimited:
@@ -129,6 +130,16 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                         ? null
                         : AccountFieldErrorRow(message: _passwordError!),
                   ),
+                  if (_passwordError == null)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(top: 8),
+                      child: Text(
+                        l10n.accountPasswordRequirements,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.labelGrey,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 26),
                   AccountSubmitButton(
                     label: l10n.accountSavePasswordButton,

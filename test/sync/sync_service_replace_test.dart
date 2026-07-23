@@ -261,7 +261,10 @@ void main() {
 
       final summary = await SyncService(dbCloud, transport).remoteTrailSummary();
       expect(summary.stones, 1);
-      expect(summary.lastClimb, d(2026, 7, 10));
+      expect(
+        summary.lastClimbAt,
+        DateTime.fromMillisecondsSinceEpoch(1000),
+      );
 
       await dbCloud.close();
     });
@@ -272,7 +275,7 @@ void main() {
 
       final summary = await SyncService(db, transport).remoteTrailSummary();
       expect(summary.stones, 0);
-      expect(summary.lastClimb, isNull);
+      expect(summary.lastClimbAt, isNull);
 
       await db.close();
     });

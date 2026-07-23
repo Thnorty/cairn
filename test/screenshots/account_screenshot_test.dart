@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:cairn/l10n/generated/app_localizations.dart';
-import 'package:cairn/src/models/local_date.dart';
 import 'package:cairn/src/models/trail_summary.dart';
 import 'package:cairn/src/ui/account/create_account_screen.dart';
 import 'package:cairn/src/ui/account/enter_code_screen.dart';
@@ -145,10 +144,10 @@ void main() {
     addTearDown(harness.db.close);
     await tester.pumpWidget(shell(
       harness,
-      const KeepWhichTrailScreen(
+      KeepWhichTrailScreen(
         onClose: _noop,
-        local: TrailSummary(stones: 12, lastClimb: LocalDate(2026, 7, 10)),
-        remote: TrailSummary(stones: 48, lastClimb: LocalDate(2026, 7, 2)),
+        local: TrailSummary(stones: 12, lastClimbAt: DateTime(2026, 7, 10, 15, 14)),
+        remote: TrailSummary(stones: 48, lastClimbAt: DateTime(2026, 7, 2, 9, 30)),
         onDone: _noop,
       ),
     ));
@@ -160,10 +159,10 @@ void main() {
     addTearDown(harness.db.close);
     await tester.pumpWidget(shell(
       harness,
-      const KeepWhichTrailScreen(
+      KeepWhichTrailScreen(
         onClose: _noop,
-        local: TrailSummary(stones: 12, lastClimb: LocalDate(2026, 7, 10)),
-        remote: TrailSummary(stones: 0),
+        local: TrailSummary(stones: 12, lastClimbAt: DateTime(2026, 7, 10, 15, 14)),
+        remote: const TrailSummary(stones: 0),
         onDone: _noop,
       ),
     ));

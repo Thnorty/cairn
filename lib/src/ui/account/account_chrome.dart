@@ -212,16 +212,53 @@ class AccountFieldErrorRow extends StatelessWidget {
   }
 }
 
-/// A tappable text link styled like the Create account screen's "Sign in
-/// instead?" affordance: bold, underlined, terracotta.
+/// The visual style variants supported by [AccountInlineLink].
+enum AccountInlineLinkStyle {
+  /// Sage green, no underline, weight 600, 14px default - standard navigation links.
+  navigation,
+
+  /// Terracotta, underlined, weight 600, 12.5px default - inline field-error links.
+  error,
+}
+
+/// A tappable text link supporting two visual variants:
+/// [AccountInlineLinkStyle.navigation] (sage green, no underline, 14px w600 default)
+/// and [AccountInlineLinkStyle.error] (terracotta, underlined, 12.5px w600 default).
 class AccountInlineLink extends StatelessWidget {
-  const AccountInlineLink({super.key, required this.label, required this.onTap});
+  const AccountInlineLink({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.style = AccountInlineLinkStyle.navigation,
+    this.fontWeight,
+    this.fontSize,
+  });
 
   final String label;
   final VoidCallback onTap;
+  final AccountInlineLinkStyle style;
+  final FontWeight? fontWeight;
+  final double? fontSize;
 
   @override
   Widget build(BuildContext context) {
+    final TextStyle baseStyle;
+    switch (style) {
+      case AccountInlineLinkStyle.navigation:
+        baseStyle = const TextStyle(
+          fontFamily: AppFontFamilies.workSans,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.sage,
+          decoration: TextDecoration.none,
+        );
+      case AccountInlineLinkStyle.error:
+        baseStyle = AppTextStyles.accountInlineError.copyWith(
+          fontWeight: FontWeight.w600,
+          decoration: TextDecoration.underline,
+        );
+    }
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -230,15 +267,16 @@ class AccountInlineLink extends StatelessWidget {
         label: label,
         child: Text(
           label,
-          style: AppTextStyles.accountInlineError.copyWith(
-            fontWeight: FontWeight.w600,
-            decoration: TextDecoration.underline,
+          style: baseStyle.copyWith(
+            fontWeight: fontWeight,
+            fontSize: fontSize,
           ),
         ),
       ),
     );
   }
 }
+
 
 class _WarningGlyphPainter extends CustomPainter {
   const _WarningGlyphPainter();

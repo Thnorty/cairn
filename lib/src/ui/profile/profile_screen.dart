@@ -635,70 +635,59 @@ class _PanelSurface extends StatelessWidget {
 class _AccountStatusRow extends StatelessWidget {
   const _AccountStatusRow({required this.onCreate});
 
-  /// Phase 4 wires this to the real email/password upgrade flow (see
-  /// CLAUDE.md's phase plan); for now it is a no-op-for-now that shows a
-  /// "coming soon" snackbar rather than any invented account-creation UI.
+  /// Callback invoked to open the account-upgrade / create-account flow.
   final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsetsDirectional.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.accountStatusBg,
-        border: Border.all(color: AppColors.accountStatusBorder),
-        borderRadius: BorderRadius.circular(AppRadii.rowCard),
-      ),
-      // The subtitle is long enough that it wraps to two lines at this
-      // card's width; `crossAxisAlignment.start` (rather than the design's
-      // literal `align-items:center`, written for a rendering where the
-      // browser happened to keep it on one line) keeps the avatar and the
-      // "Create" action pinned to the top of the row instead of centering
-      // them against a two-line-tall paragraph, which otherwise made
-      // "Create" visually collide with the wrapped second line.
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: AppGradients.accountAvatar,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: const TabBarIcon(
-              shape: TabIconShape.you,
-              color: AppColors.accountIconStroke,
-              size: 20,
-            ),
+    return GestureDetector(
+      onTap: onCreate,
+      behavior: HitTestBehavior.opaque,
+      child: Semantics(
+        button: true,
+        label: l10n.profileCreateButton,
+        child: Container(
+          padding: const EdgeInsetsDirectional.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.accountStatusBg,
+            border: Border.all(color: AppColors.accountStatusBorder),
+            borderRadius: BorderRadius.circular(AppRadii.rowCard),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.profileClimbingAnonymouslyTitle, style: AppTextStyles.accountStatusTitle),
-                const SizedBox(height: 1),
-                Text(
-                  l10n.profileCreateAccountBody,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.clayText),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: AppGradients.accountAvatar,
+                  shape: BoxShape.circle,
                 ),
-              ],
-            ),
+                alignment: Alignment.center,
+                child: const TabBarIcon(
+                  shape: TabIconShape.you,
+                  color: AppColors.accountIconStroke,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.profileClimbingAnonymouslyTitle, style: AppTextStyles.accountStatusTitle),
+                    const SizedBox(height: 1),
+                    Text(
+                      l10n.profileCreateAccountBody,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.clayText),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: onCreate,
-            behavior: HitTestBehavior.opaque,
-            child: Semantics(
-              button: true,
-              label: l10n.profileCreateButton,
-              child: Text(l10n.profileCreateButton, style: AppTextStyles.accountCreateLabel),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

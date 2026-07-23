@@ -197,7 +197,10 @@ void main() {
       expect(outcome, isA<SignInNeedsTrailChoice>());
       final choice = outcome as SignInNeedsTrailChoice;
       expect(choice.local.stones, 1);
-      expect(choice.local.lastClimb, d(2026, 7, 10));
+      expect(
+        choice.local.lastClimbAt,
+        DateTime.fromMillisecondsSinceEpoch(500),
+      );
       expect(choice.remote.stones, 0); // cloud is empty in this scenario
 
       // Nothing applied yet: the local task must still be exactly what it

@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart'
-    show AlertDialog, TextButton, showDialog;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/cairn_dialog.dart';
 import '../widgets/tab_icons.dart';
 
 /// Frame 6 of `Cairn Account.dc.html`: the Profile screen's signed-in
@@ -27,24 +26,20 @@ class SignedInAccountRow extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     Future<void> confirmSignOut() async {
-      final confirmed = await showDialog<bool>(
+      final confirmed = await showCairnDialog(
         context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(l10n.accountSignOutConfirmTitle),
-          content: Text(l10n.accountSignOutConfirmBody),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(l10n.cancelButton),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(l10n.accountSignOutButton),
-            ),
-          ],
+        tone: CairnDialogTone.clay,
+        icon: const SizedBox(
+          width: 22,
+          height: 22,
+          child: CustomPaint(painter: _LogoutGlyphPainter()),
         ),
+        title: l10n.accountSignOutConfirmTitle,
+        body: l10n.accountSignOutConfirmBody,
+        cancelLabel: l10n.cancelButton,
+        confirmLabel: l10n.accountSignOutButton,
       );
-      if (confirmed != true) return;
+      if (!confirmed) return;
       await ref.read(accountServiceProvider).signOut();
       ref.invalidate(accountStateProvider);
     }
@@ -178,3 +173,51 @@ class _CheckPainter extends CustomPainter {
   @override
   bool shouldRepaint(_CheckPainter oldDelegate) => false;
 }
+
+class _LogoutGlyphPainter extends CustomPainter {
+  const _LogoutGlyphPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width / 24;
+    final h = size.height / 24;
+    final paint = Paint()
+      ..color = AppColors.accountFieldErrorIcon
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2 * w
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final doorPath = Path()
+      ..moveTo(9 * w, 21 * h)
+      ..lineTo(5 * w, 21 * h)
+      ..arcToPoint(
+        Offset(3 * w, 19 * h),
+        radius: Radius.circular(2 * w),
+        clockwise: true,
+      )
+      ..lineTo(3 * w, 5 * h)
+      ..arcToPoint(
+        Offset(5 * w, 3 * h),
+        radius: Radius.circular(2 * w),
+        clockwise: true,
+      )
+      ..lineTo(9 * w, 3 * h);
+    canvas.drawPath(doorPath, paint);
+
+    final arrowHeadPath = Path()
+      ..moveTo(16 * w, 17 * h)
+      ..lineTo(21 * w, 12 * h)
+      ..lineTo(16 * w, 7 * h);
+    canvas.drawPath(arrowHeadPath, paint);
+
+    final arrowLinePath = Path()
+      ..moveTo(21 * w, 12 * h)
+      ..lineTo(9 * w, 12 * h);
+    canvas.drawPath(arrowLinePath, paint);
+  }
+
+  @override
+  bool shouldRepaint(_LogoutGlyphPainter oldDelegate) => false;
+}
+

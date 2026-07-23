@@ -1,30 +1,31 @@
 import '../db/database.dart';
-import 'local_date.dart';
 
-/// A stone count and last-climb date for one side of the account-upgrade
+/// A stone count and last-climb timestamp for one side of the account-upgrade
 /// sign-in chooser (`AccountService.signIn`, WO-A of the Phase 4b account
 /// upgrade): "this device's local trail" vs. "the signed-in account's cloud
 /// trail". "Stones" matches the app's existing vocabulary: live
 /// (non-tombstoned) completions, verified or pending alike.
 ///
-/// [lastClimb] is null iff [stones] is 0.
+/// [lastClimbAt] is the local time the most recent stone was recorded (its
+/// completion's `completed_at`), null iff [stones] is 0.
 class TrailSummary {
   final int stones;
-  final LocalDate? lastClimb;
+  final DateTime? lastClimbAt;
 
-  const TrailSummary({required this.stones, this.lastClimb});
+  const TrailSummary({required this.stones, this.lastClimbAt});
 
   @override
-  String toString() => 'TrailSummary(stones: $stones, lastClimb: $lastClimb)';
+  String toString() =>
+      'TrailSummary(stones: $stones, lastClimbAt: $lastClimbAt)';
 
   @override
   bool operator ==(Object other) =>
       other is TrailSummary &&
       other.stones == stones &&
-      other.lastClimb == lastClimb;
+      other.lastClimbAt == lastClimbAt;
 
   @override
-  int get hashCode => Object.hash(stones, lastClimb);
+  int get hashCode => Object.hash(stones, lastClimbAt);
 }
 
 /// Reduces a set of live completions to a [TrailSummary]: shared by
@@ -37,6 +38,10 @@ class TrailSummary {
 TrailSummary trailSummaryFromCompletions(Iterable<Completion> liveCompletions) {
   final list = liveCompletions.toList();
   if (list.isEmpty) return const TrailSummary(stones: 0);
-  final last = list.map((c) => c.occurrenceDate).reduce(LocalDate.max);
-  return TrailSummary(stones: list.length, lastClimb: last);
+  final maxCompletedAt =
+      list.map((c) => c.completedAt).reduce((a, b) => a > b ? a : b);
+  return TrailSummary(
+    stones: list.length,
+    lastClimbAt: DateTime.fromMillisecondsSinceEpoch(maxCompletedAt),
+  );
 }

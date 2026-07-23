@@ -48,4 +48,24 @@ void main() {
 
     expect(codes.last, '42');
   });
+
+  testWidgets(
+      'pasting a 6-digit code fills all boxes and moves focus to last box',
+      (tester) async {
+    final codes = <String>[];
+    await tester.pumpWidget(wrap(OtpCodeInput(onChanged: codes.add)));
+
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(0), '123456');
+    await tester.pump();
+
+    expect(codes.last, '123456');
+    final lastField = tester.widget<TextField>(fields.at(5));
+    expect(lastField.focusNode!.hasFocus, isTrue);
+
+    for (var i = 0; i < 6; i++) {
+      final field = tester.widget<TextField>(fields.at(i));
+      expect(field.controller!.text, '${i + 1}');
+    }
+  });
 }

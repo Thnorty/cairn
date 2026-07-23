@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+</style>
+</helmet>
+<div style="min-height:100vh;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 80% at 50% -10%, rgba(140,120,95,.14), transparent 55%), repeating-radial-gradient(circle at 76% 8%, transparent 0 30px, rgba(90,78,58,.045) 30px 31px);padding:64px 56px;">
+
+  <div style="max-width:1720px;margin:0 auto;">
+    <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:40px;color:#2c2924;letter-spacing:-.5px;">Cairn · Dialog</div>
+    <div style="font-size:15px;color:#6a6153;margin-top:8px;max-width:760px;line-height:1.5;">One reusable confirm dialog for the whole app, replacing Flutter's Material AlertDialog. A dimmed backdrop, a parchment card, an optional round icon, a title (Zilla Slab), a muted body line, and two actions: a secondary "Cancel" and a primary confirm. The confirm has two tones: <b>sage</b> for ordinary/affirmative confirms (Sign out), <b>clay</b> for destructive ones (Delete). Tapping the backdrop or Cancel dismisses it; only the confirm runs the action.</div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:56px;margin-top:52px;align-items:flex-start;">
+
+      <!-- ============ FRAME 1: SIGN OUT (sage confirm) ============ -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="font-family:'Work Sans',monospace;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#9c917e;">1 · Sign out (clay confirm)</div>
+        <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+          <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;background:#e9e1d3;background-image:radial-gradient(135% 46% at 50% -6%, rgba(150,166,120,.22), transparent 62%);">
+
+            <!-- dimmed Profile behind (hint) -->
+            <div style="position:absolute;inset:0;opacity:.5;">
+              <div style="padding:64px 30px 0;">
+                <div style="font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#9c917e;">Profile</div>
+                <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:30px;color:#2c2924;margin-top:5px;">You</div>
+                <div style="margin-top:22px;height:96px;border-radius:20px;background:linear-gradient(165deg,#f4efe4,#e6decb);border:1px solid rgba(120,108,88,.18);"></div>
+                <div style="margin-top:14px;height:120px;border-radius:20px;background:linear-gradient(165deg,#f4efe4,#e6decb);border:1px solid rgba(120,108,88,.18);"></div>
+              </div>
+            </div>
+
+            <!-- scrim -->
+            <div style="position:absolute;inset:0;background:rgba(30,25,18,.52);"></div>
+
+            <!-- dialog -->
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 26px;">
+              <div style="width:100%;max-width:310px;background:linear-gradient(165deg,#f4efe4,#e6decb);border:1px solid rgba(120,108,88,.22);border-radius:24px;padding:26px 22px 20px;box-shadow:0 30px 60px -20px rgba(45,38,26,.6), inset 0 1px 0 rgba(255,255,255,.6);text-align:center;">
+                <div style="width:48px;height:48px;border-radius:50%;margin:0 auto;background:rgba(179,84,58,.13);border:1px solid rgba(179,84,58,.3);display:flex;align-items:center;justify-content:center;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b3543a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+                </div>
+                <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:22px;color:#2c2924;margin-top:14px;">Sign out?</div>
+                <div style="font-size:14px;color:#6a6153;line-height:1.5;margin-top:8px;text-wrap:pretty;">Your trail stays on this device. Sign back in anytime to sync it to your account again.</div>
+                <div style="display:flex;gap:10px;margin-top:22px;">
+                  <button style="flex:1;padding:14px;border-radius:14px;background:rgba(120,108,88,.08);border:1px solid rgba(120,108,88,.3);color:#6a6153;font-family:'Work Sans',sans-serif;font-weight:600;font-size:15px;cursor:pointer;">Cancel</button>
+                  <button style="flex:1;padding:14px;border-radius:14px;background:linear-gradient(155deg,#bf6a4a,#a4472b);color:#f5ece5;border:none;font-family:'Work Sans',sans-serif;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 8px 16px -8px rgba(150,60,40,.5),inset 0 1px 0 rgba(255,255,255,.22);">Sign out</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ FRAME 2: DESTRUCTIVE (clay confirm) ============ -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="font-family:'Work Sans',monospace;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#9c917e;">2 · Destructive variant (clay confirm)</div>
+        <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+          <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;background:#e9e1d3;background-image:radial-gradient(135% 46% at 50% -6%, rgba(150,166,120,.22), transparent 62%);">
+
+            <div style="position:absolute;inset:0;opacity:.5;">
+              <div style="padding:64px 30px 0;">
+                <div style="font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#9c917e;">Trail</div>
+                <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:30px;color:#2c2924;margin-top:5px;">Morning walk</div>
+                <div style="margin-top:22px;height:150px;border-radius:20px;background:linear-gradient(165deg,#f4efe4,#e6decb);border:1px solid rgba(120,108,88,.18);"></div>
+              </div>
+            </div>
+
+            <div style="position:absolute;inset:0;background:rgba(30,25,18,.52);"></div>
+
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 26px;">
+              <div style="width:100%;max-width:310px;background:linear-gradient(165deg,#f4efe4,#e6decb);border:1px solid rgba(120,108,88,.22);border-radius:24px;padding:26px 22px 20px;box-shadow:0 30px 60px -20px rgba(45,38,26,.6), inset 0 1px 0 rgba(255,255,255,.6);text-align:center;">
+                <div style="width:48px;height:48px;border-radius:50%;margin:0 auto;background:rgba(179,84,58,.13);border:1px solid rgba(179,84,58,.3);display:flex;align-items:center;justify-content:center;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b3543a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>
+                </div>
+                <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:22px;color:#2c2924;margin-top:14px;">Delete this habit?</div>
+                <div style="font-size:14px;color:#6a6153;line-height:1.5;margin-top:8px;text-wrap:pretty;">Its cairns and stones stay on your trail history, but you will stop climbing it. This can't be undone.</div>
+                <div style="display:flex;gap:10px;margin-top:22px;">
+                  <button style="flex:1;padding:14px;border-radius:14px;background:rgba(120,108,88,.08);border:1px solid rgba(120,108,88,.3);color:#6a6153;font-family:'Work Sans',sans-serif;font-weight:600;font-size:15px;cursor:pointer;">Cancel</button>
+                  <button style="flex:1;padding:14px;border-radius:14px;background:linear-gradient(155deg,#bf6a4a,#a4472b);color:#f5ece5;border:none;font-family:'Work Sans',sans-serif;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 8px 16px -8px rgba(150,60,40,.5),inset 0 1px 0 rgba(255,255,255,.22);">Delete</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SPEC NOTE ============ -->
+      <div style="width:360px;background:#efe7d8;border:1px solid rgba(120,108,88,.22);border-radius:22px;padding:24px;">
+        <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:19px;color:#2c2924;">Reusable API</div>
+        <div style="font-size:13.5px;color:#6a6153;line-height:1.6;margin-top:10px;">
+          <b>showCairnDialog</b> takes: an optional round <b>icon</b>, a <b>title</b>, a <b>body</b>, a <b>cancel</b> label (default "Cancel"), a <b>confirm</b> label, and a confirm <b>tone</b> (<b>sage</b> default, or <b>clay</b> for destructive). Returns whether the user confirmed. Dismiss on backdrop tap, Cancel, or system back = not confirmed.
+        </div>
+        <div style="font-size:13.5px;color:#6a6153;line-height:1.6;margin-top:14px;">
+          <b>First use:</b> the Profile "Sign out" confirmation (Frame 1), using the <b>clay</b> (evident) tone so the action stands out even though it is not destructive. Frame 2 shows the same clay tone on a genuinely destructive confirm; it is not wired to anything yet. The <b>sage</b> tone stays available for gentle/affirmative confirms.
+        </div>
+        <div style="font-size:12.5px;color:#8a8069;line-height:1.55;margin-top:14px;">
+          Card: parchment gradient #f4efe4 to #e6decb, 24px radius, top-bevel highlight, deep soft shadow. Scrim: rgba(30,25,18,.52). Title 22px Zilla Slab 700 #2c2924. Body 14px #6a6153. Buttons 14px pad, 14px radius; Cancel is bordered parchment, confirm is a filled sage or clay gradient.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

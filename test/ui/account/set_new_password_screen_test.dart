@@ -31,7 +31,7 @@ void main() {
     );
   }
 
-  testWidgets('renders the title, body with the email, and the field',
+  testWidgets('renders the title, body with the email, field, and requirements hint',
       (tester) async {
     final harness = buildAccountTestHarness();
     addTearDown(harness.db.close);
@@ -42,9 +42,13 @@ void main() {
       find.text("Choose a new password for me@example.com and you're back on your trail."),
       findsOneWidget,
     );
+    expect(
+      find.text('Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.'),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('a too-short password is rejected client-side', (tester) async {
+  testWidgets('an invalid password (violating policy) is rejected client-side', (tester) async {
     final harness = buildAccountTestHarness();
     addTearDown(harness.db.close);
     await pump(tester, harness);
@@ -53,7 +57,10 @@ void main() {
     await tester.tap(find.text('Save password'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Password needs at least 6 characters.'), findsOneWidget);
+    expect(
+      find.text('Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.'),
+      findsOneWidget,
+    );
     expect(harness.auth.setPasswordCalls, isEmpty);
   });
 
@@ -64,11 +71,11 @@ void main() {
     var saved = false;
     await pump(tester, harness, onSaved: () => saved = true);
 
-    await tester.enterText(find.byType(TextField), 'new-secret');
+    await tester.enterText(find.byType(TextField), 'Abcdefg1');
     await tester.tap(find.text('Save password'));
     await tester.pumpAndSettle();
 
-    expect(harness.auth.setPasswordCalls, ['new-secret']);
+    expect(harness.auth.setPasswordCalls, ['Abcdefg1']);
     expect(saved, isTrue);
   });
 
@@ -78,7 +85,7 @@ void main() {
     addTearDown(harness.db.close);
     await pump(tester, harness);
 
-    await tester.enterText(find.byType(TextField), 'new-secret');
+    await tester.enterText(find.byType(TextField), 'Abcdefg1');
     await tester.tap(find.text('Save password'));
     await tester.pumpAndSettle();
 

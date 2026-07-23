@@ -797,10 +797,10 @@ abstract class AppLocalizations {
   /// Subtitle of the Profile screen's account-status row.
   ///
   /// In en, this message translates to:
-  /// **'Create an account so your trail is never lost.'**
+  /// **'Tap to create an account and back up your trail to any device.'**
   String get profileCreateAccountBody;
 
-  /// Action label on the Profile screen's account-status row. Phase 4 wires this to the real email/password upgrade flow; for now it is a no-op-for-now (see profileComingSoonSnackbar).
+  /// Accessibility action label for the Profile screen's account-status row.
   ///
   /// In en, this message translates to:
   /// **'Create'**
@@ -1490,6 +1490,12 @@ abstract class AppLocalizations {
   /// **'Forgot password?'**
   String get accountForgotPasswordLink;
 
+  /// Inline error shown under the email field on the Sign in screen when Forgot password? is tapped without a valid email entered.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email above first, then tap Forgot password.'**
+  String get accountForgotPasswordNeedsEmailError;
+
   /// Label shown on the Sign in screen's primary CTA while signIn is in flight, replacing accountSignInLink and paired with a spinner.
   ///
   /// In en, this message translates to:
@@ -1555,6 +1561,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Resend code'**
   String get accountResendCodeButton;
+
+  /// Small muted hint below the resend button on the Enter Code screen reminding the user to check their spam folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t find it? Check your spam folder.'**
+  String get accountEnterCodeSpamHint;
 
   /// Small eyebrow label above the title on the Set a new password screen.
   ///
@@ -1622,17 +1634,11 @@ abstract class AppLocalizations {
   /// **'This account'**
   String get accountThisAccountLabel;
 
-  /// Subtitle of a Keep which trail option card whose last climb was today, e.g. '12 stones · last climb today'.
+  /// Subtitle of a Keep which trail option card, e.g. '48 stones · last climb Jul 2, 2026 3:14 PM'. dateTime is pre-formatted by the caller via formatDateTimeWithYear.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, one{1 stone} other{{count} stones}} · last climb today'**
-  String accountStonesLastClimbToday(num count);
-
-  /// Subtitle of a Keep which trail option card whose last climb was on an earlier date, e.g. '48 stones · last climb Jul 2'. date is pre-formatted by the caller via formatShortMonthDay.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, one{1 stone} other{{count} stones}} · last climb {date}'**
-  String accountStonesLastClimbDate(num count, String date);
+  /// **'{count, plural, one{1 stone} other{{count} stones}} · last climb {dateTime}'**
+  String accountStonesLastClimbDateTime(num count, String dateTime);
 
   /// Italic subtitle of a Keep which trail option card whose side has zero stones (the empty-state variant shown in Cairn Account.dc.html's variants column).
   ///
@@ -1697,7 +1703,7 @@ abstract class AppLocalizations {
   /// Body copy of the sign-out confirmation dialog, reassuring the user that signing out does not delete local data.
   ///
   /// In en, this message translates to:
-  /// **'Your trail is backed up and stays on this device.'**
+  /// **'Your trail stays on this device. Sign back in anytime to sync it to your account again.'**
   String get accountSignOutConfirmBody;
 
   /// Inline error under the Create account screen's email field when AccountError.emailInUse is returned. Immediately followed by the tappable accountSignInInsteadLink in the same line.
@@ -1712,11 +1718,11 @@ abstract class AppLocalizations {
   /// **'Sign in instead?'**
   String get accountSignInInsteadLink;
 
-  /// Inline error under a password field: shown client-side on the Create account screen when the typed password is shorter than kMinPasswordLength, and also used to surface a server-side AccountError.weakPassword rejection (using the same kMinPasswordLength figure, the best local approximation of Supabase's own password policy).
+  /// Visible password policy requirements hint and inline error message, stating the full password policy (min 8 chars + upper + lower + digit).
   ///
   /// In en, this message translates to:
-  /// **'Password needs at least {min} characters.'**
-  String accountPasswordTooShortError(int min);
+  /// **'Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.'**
+  String get accountPasswordRequirements;
 
   /// Inline error on the Enter Code screen when AccountError.invalidCode is returned.
   ///

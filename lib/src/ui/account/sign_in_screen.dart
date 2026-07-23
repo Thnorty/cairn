@@ -58,6 +58,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   bool _isLoading = false;
   bool _isSendingReset = false;
+  String? _emailError;
   String? _passwordError;
   String? _offlineMessage;
 
@@ -74,6 +75,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     final password = _passwordController.text;
 
     setState(() {
+      _emailError = null;
       _passwordError = null;
       _offlineMessage = null;
       _isLoading = true;
@@ -113,11 +115,25 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   }
 
   Future<void> _forgotPassword() async {
+    if (_isSendingReset) return;
+
     final l10n = AppLocalizations.of(context)!;
     final email = _emailController.text.trim();
-    if (email.isEmpty || _isSendingReset) return;
+    final atIndex = email.indexOf('@');
+    final isWellFormed = email.isNotEmpty &&
+        atIndex > 0 &&
+        atIndex == email.lastIndexOf('@') &&
+        atIndex < email.length - 1;
+
+    if (!isWellFormed) {
+      setState(() {
+        _emailError = l10n.accountForgotPasswordNeedsEmailError;
+      });
+      return;
+    }
 
     setState(() {
+      _emailError = null;
       _offlineMessage = null;
       _isSendingReset = true;
     });
@@ -172,6 +188,16 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     controller: _emailController,
                     hintText: l10n.accountEmailHint,
                     enabled: !busy,
+                    error: _emailError == null
+                        ? null
+                        : AccountFieldErrorRow(message: _emailError!),
+                    onChanged: _emailError == null
+                        ? null
+                        : (_) {
+                            if (_emailError != null) {
+                              setState(() => _emailError = null);
+                            }
+                          },
                   ),
                   const SizedBox(height: 15),
                   PasswordField(
@@ -189,6 +215,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       alignment: AlignmentDirectional.centerEnd,
                       child: AccountInlineLink(
                         label: l10n.accountForgotPasswordLink,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
                         onTap: busy ? () {} : _forgotPassword,
                       ),
                     ),

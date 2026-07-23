@@ -36,75 +36,38 @@ void main() {
   }
 
   testWidgets('renders both option cards with stone counts, defaults to '
-      '"This device" selected, and shows the account-side empty state', (tester) async {
+      '"This account" selected, and shows the account-side empty state', (tester) async {
     final harness = buildAccountTestHarness();
     addTearDown(harness.db.close);
     await pump(
       tester,
       harness,
-      local: const TrailSummary(stones: 12, lastClimb: LocalDate(2026, 7, 10)),
+      local: TrailSummary(stones: 12, lastClimbAt: DateTime(2026, 7, 10, 15, 14)),
       remote: const TrailSummary(stones: 0),
     );
 
     expect(find.text('This device'), findsOneWidget);
     expect(find.text('This account'), findsOneWidget);
-    expect(find.text('12 stones · last climb today'), findsOneWidget);
+    expect(find.text('12 stones · last climb Jul 10, 2026 3:14 PM'), findsOneWidget);
     expect(find.text('No activity yet'), findsOneWidget);
-    expect(find.text("Keep this device's trail"), findsOneWidget);
-  });
-
-  testWidgets('shows a past last-climb date when it is not today', (tester) async {
-    final harness = buildAccountTestHarness();
-    addTearDown(harness.db.close);
-    await pump(
-      tester,
-      harness,
-      local: const TrailSummary(stones: 1, lastClimb: LocalDate(2026, 7, 10)),
-      remote: const TrailSummary(stones: 48, lastClimb: LocalDate(2026, 7, 2)),
-    );
-
-    expect(find.text('48 stones · last climb Jul 2'), findsOneWidget);
-  });
-
-  testWidgets('selecting "This account" swaps the consequence line and CTA '
-      'label, and tapping it calls AccountService.useAccount', (tester) async {
-    final harness = buildAccountTestHarness();
-    addTearDown(harness.db.close);
-    var done = false;
-    await pump(
-      tester,
-      harness,
-      local: const TrailSummary(stones: 12, lastClimb: LocalDate(2026, 7, 10)),
-      remote: const TrailSummary(stones: 48, lastClimb: LocalDate(2026, 7, 2)),
-      onDone: () => done = true,
-    );
-
-    expect(
-      find.text("Keeping this device replaces the account's 48 stones "
-          "everywhere. This can't be undone."),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.text('This account'));
-    await tester.pump();
-
-    expect(
-      find.text("Using this account replaces this device's 12 stones. "
-          "This can't be undone."),
-      findsOneWidget,
-    );
     expect(find.text("Keep this account's trail"), findsOneWidget);
-
-    await tester.tap(find.text("Keep this account's trail"));
-    await tester.pumpAndSettle();
-
-    expect(done, isTrue);
-    final localTasks = await harness.db.select(harness.db.tasks).get();
-    expect(localTasks, isEmpty); // replaced by the (empty) cloud data
   });
 
-  testWidgets('keeping "This device" calls AccountService.keepThisDevice',
-      (tester) async {
+  testWidgets('shows last-climb timestamp with year and time', (tester) async {
+    final harness = buildAccountTestHarness();
+    addTearDown(harness.db.close);
+    await pump(
+      tester,
+      harness,
+      local: TrailSummary(stones: 1, lastClimbAt: DateTime(2026, 7, 10, 9, 30)),
+      remote: TrailSummary(stones: 48, lastClimbAt: DateTime(2026, 7, 2, 15, 14)),
+    );
+
+    expect(find.text('48 stones · last climb Jul 2, 2026 3:14 PM'), findsOneWidget);
+  });
+
+  testWidgets('selecting "This device" swaps the consequence line and CTA '
+      'label, and tapping it calls AccountService.keepThisDevice', (tester) async {
     final harness = buildAccountTestHarness();
     addTearDown(harness.db.close);
     await harness.taskRepository.createTask(
@@ -116,10 +79,27 @@ void main() {
     await pump(
       tester,
       harness,
-      local: const TrailSummary(stones: 1, lastClimb: LocalDate(2026, 7, 10)),
-      remote: const TrailSummary(stones: 0),
+      local: TrailSummary(stones: 12, lastClimbAt: DateTime(2026, 7, 10, 15, 14)),
+      remote: TrailSummary(stones: 48, lastClimbAt: DateTime(2026, 7, 2, 9, 30)),
       onDone: () => done = true,
     );
+
+    expect(
+      find.text("Using this account replaces this device's 12 stones. "
+          "This can't be undone."),
+      findsOneWidget,
+    );
+    expect(find.text("Keep this account's trail"), findsOneWidget);
+
+    await tester.tap(find.text('This device'));
+    await tester.pump();
+
+    expect(
+      find.text("Keeping this device replaces the account's 48 stones "
+          "everywhere. This can't be undone."),
+      findsOneWidget,
+    );
+    expect(find.text("Keep this device's trail"), findsOneWidget);
 
     await tester.tap(find.text("Keep this device's trail"));
     await tester.pumpAndSettle();
@@ -127,5 +107,26 @@ void main() {
     expect(done, isTrue);
     final localTasks = await harness.db.select(harness.db.tasks).get();
     expect(localTasks, hasLength(1)); // kept, not replaced
+  });
+
+  testWidgets('keeping "This account" (the default) calls AccountService.useAccount',
+      (tester) async {
+    final harness = buildAccountTestHarness();
+    addTearDown(harness.db.close);
+    var done = false;
+    await pump(
+      tester,
+      harness,
+      local: TrailSummary(stones: 12, lastClimbAt: DateTime(2026, 7, 10, 15, 14)),
+      remote: TrailSummary(stones: 48, lastClimbAt: DateTime(2026, 7, 2, 9, 30)),
+      onDone: () => done = true,
+    );
+
+    await tester.tap(find.text("Keep this account's trail"));
+    await tester.pumpAndSettle();
+
+    expect(done, isTrue);
+    final localTasks = await harness.db.select(harness.db.tasks).get();
+    expect(localTasks, isEmpty); // replaced by the (empty) cloud data
   });
 }

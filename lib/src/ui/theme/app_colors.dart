@@ -680,4 +680,24 @@ abstract final class AppColors {
   /// rgba(166,96,61,.42) - the Profile screen's signed-in account row's
   /// clay "Sign out" pill border.
   static const Color accountSignOutBorder = Color(0x6BA6603D);
+
+  // ---- Dialogs (Cairn Dialog.dc.html) ----------------------------------
+
+  /// rgba(30,25,18,.52) - dialog scrim overlay background.
+  static const Color dialogScrim = Color(0x851E1912);
+
+  /// rgba(120,108,88,.08) - secondary dialog button background.
+  static const Color dialogCancelBg = Color(0x14786C58);
+
+  /// rgba(120,108,88,.3) - secondary dialog button border.
+  static const Color dialogCancelBorder = Color(0x4D786C58);
+
+  /// rgba(122,141,96,.13) / rgba(122,141,96,.3) - sage dialog icon circle tint.
+  static const Color dialogSageIconBg = Color(0x217A8D60);
+  static const Color dialogSageIconBorder = Color(0x4D7A8D60);
+
+  /// rgba(179,84,58,.13) / rgba(179,84,58,.3) - clay dialog icon circle tint.
+  static const Color dialogClayIconBg = Color(0x21B3543A);
+  static const Color dialogClayIconBorder = Color(0x4DB3543A);
 }
+

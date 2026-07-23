@@ -31,7 +31,7 @@ void main() {
     );
   }
 
-  testWidgets('renders the title, body, free-trail chip, and both fields',
+  testWidgets('renders the title, body, free-trail chip, fields, and requirements hint',
       (tester) async {
     final harness = buildAccountTestHarness();
     addTearDown(harness.db.close);
@@ -41,11 +41,15 @@ void main() {
     expect(find.text('Free. Your trail stays exactly as it is.'), findsOneWidget);
     expect(find.text('Email'), findsOneWidget);
     expect(find.text('Password'), findsOneWidget);
+    expect(
+      find.text('Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.'),
+      findsOneWidget,
+    );
     expect(find.text('Create account'), findsOneWidget);
   });
 
-  testWidgets('a too-short password is rejected client-side without ever '
-      'calling AccountService', (tester) async {
+  testWidgets('an invalid password (violating policy) is rejected client-side '
+      'without calling AccountService', (tester) async {
     final harness = buildAccountTestHarness();
     addTearDown(harness.db.close);
     await pump(tester, harness);
@@ -55,7 +59,10 @@ void main() {
     await tester.tap(find.text('Create account'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Password needs at least 6 characters.'), findsOneWidget);
+    expect(
+      find.text('Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.'),
+      findsOneWidget,
+    );
     expect(harness.auth.startEmailUpgradeCalls, isEmpty);
   });
 
@@ -75,12 +82,12 @@ void main() {
     );
 
     await tester.enterText(find.byType(TextField).first, 'new@example.com');
-    await tester.enterText(find.byType(TextField).last, 'hunter22');
+    await tester.enterText(find.byType(TextField).last, 'Abcdefg1');
     await tester.tap(find.text('Create account'));
     await tester.pumpAndSettle();
 
     expect(createdEmail, 'new@example.com');
-    expect(createdPassword, 'hunter22');
+    expect(createdPassword, 'Abcdefg1');
     expect(harness.auth.startEmailUpgradeCalls, ['new@example.com']);
   });
 
@@ -94,7 +101,7 @@ void main() {
     await pump(tester, harness, onSignInInstead: (email) => signInEmail = email);
 
     await tester.enterText(find.byType(TextField).first, 'taken@example.com');
-    await tester.enterText(find.byType(TextField).last, 'hunter22');
+    await tester.enterText(find.byType(TextField).last, 'Abcdefg1');
     await tester.tap(find.text('Create account'));
     await tester.pumpAndSettle();
 
@@ -112,7 +119,7 @@ void main() {
     await pump(tester, harness);
 
     await tester.enterText(find.byType(TextField).first, 'new@example.com');
-    await tester.enterText(find.byType(TextField).last, 'hunter22');
+    await tester.enterText(find.byType(TextField).last, 'Abcdefg1');
     await tester.tap(find.text('Create account'));
     await tester.pumpAndSettle();
 
@@ -127,6 +134,7 @@ void main() {
     await pump(tester, harness, onSignInInstead: (email) => signInEmail = email);
 
     await tester.enterText(find.byType(TextField).first, 'me@example.com');
+    await tester.ensureVisible(find.text('Sign in'));
     await tester.tap(find.text('Sign in'));
     await tester.pumpAndSettle();
 

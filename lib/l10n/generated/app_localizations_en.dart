@@ -501,7 +501,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileCreateAccountBody =>
-      'Create an account so your trail is never lost.';
+      'Tap to create an account and back up your trail to any device.';
 
   @override
   String get profileCreateButton => 'Create';
@@ -916,6 +916,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountForgotPasswordLink => 'Forgot password?';
 
   @override
+  String get accountForgotPasswordNeedsEmailError =>
+      'Enter your email above first, then tap Forgot password.';
+
+  @override
   String get accountSigningInLoading => 'Signing in...';
 
   @override
@@ -955,6 +959,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountResendCodeButton => 'Resend code';
 
   @override
+  String get accountEnterCodeSpamHint =>
+      'Can\'t find it? Check your spam folder.';
+
+  @override
   String get accountSetNewPasswordEyebrow => 'Reset password';
 
   @override
@@ -991,25 +999,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountThisAccountLabel => 'This account';
 
   @override
-  String accountStonesLastClimbToday(num count) {
+  String accountStonesLastClimbDateTime(num count, String dateTime) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
       other: '$count stones',
       one: '1 stone',
     );
-    return '$_temp0 · last climb today';
-  }
-
-  @override
-  String accountStonesLastClimbDate(num count, String date) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count stones',
-      one: '1 stone',
-    );
-    return '$_temp0 · last climb $date';
+    return '$_temp0 · last climb $dateTime';
   }
 
   @override
@@ -1060,7 +1057,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountSignOutConfirmBody =>
-      'Your trail is backed up and stays on this device.';
+      'Your trail stays on this device. Sign back in anytime to sync it to your account again.';
 
   @override
   String get accountEmailInUseError => 'That email is already in use.';
@@ -1069,9 +1066,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSignInInsteadLink => 'Sign in instead?';
 
   @override
-  String accountPasswordTooShortError(int min) {
-    return 'Password needs at least $min characters.';
-  }
+  String get accountPasswordRequirements =>
+      'Use at least 8 characters, with an uppercase letter, a lowercase letter, and a number.';
 
   @override
   String get accountInvalidCodeError =>

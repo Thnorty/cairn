@@ -196,4 +196,16 @@ abstract final class AppShadows {
       spreadRadius: -4,
     ),
   ];
+
+  /// Reusable Cairn dialog parchment card drop shadow:
+  /// `0 30px 60px -20px rgba(45,38,26,.6)`.
+  static const List<BoxShadow> dialogCard = [
+    BoxShadow(
+      color: Color(0x992D261A),
+      offset: Offset(0, 30),
+      blurRadius: 60,
+      spreadRadius: -20,
+    ),
+  ];
 }
+
