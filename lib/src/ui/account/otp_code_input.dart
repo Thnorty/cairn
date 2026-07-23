@@ -162,6 +162,13 @@ class _OtpBoxState extends State<_OtpBox> {
           controller: widget.controller,
           focusNode: widget.focusNode,
           autofocus: widget.autofocus,
+          // The box's active border/ring already shows which digit is
+          // focused, so the in-box blinking caret is redundant. Hiding it
+          // also removes the optical off-center it causes: with
+          // textAlign.center the centered digit is drawn with the caret just
+          // to its right, and the eye reads that digit+caret pair as centered,
+          // making the digit itself look shifted slightly left.
+          showCursor: false,
           textAlign: TextAlign.center,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
