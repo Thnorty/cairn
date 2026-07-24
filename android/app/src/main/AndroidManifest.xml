@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Network access for Supabase (auth + record sync) and the verify-proof
+         Edge Function. Declared in the MAIN manifest so RELEASE builds get it:
+         Flutter only auto-adds INTERNET to the debug/profile manifests, so a
+         release build without this line would ship with no network. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- photo_manager gallery access on Android 13+ (API 33+). -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <!-- Cairn Camera Capture.dc.html's custom in-app camera (camera package). -->
@@ -9,7 +14,7 @@
          graceful degradation when CameraSession.initialize() fails). -->
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
-        android:label="cairn"
+        android:label="Cairn"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Parchment field behind the adaptive-icon foreground (see
+     design/Cairn App Icon.dc.html). -->
+<resources>
+    <color name="ic_launcher_background">#DDD4C3</color>
+</resources>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  svg { display:block; }
+</style>
+</helmet>
+<div style="min-height:100vh;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 80% at 50% -10%, rgba(140,120,95,.14), transparent 55%);padding:56px;">
+
+  <!-- Reusable cairn glyph as an SVG symbol (4 stacked river stones). -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <g id="cairn">
+        <ellipse cx="50" cy="76" rx="25" ry="11.5"></ellipse>
+        <ellipse cx="52.5" cy="58.5" rx="19.5" ry="10"></ellipse>
+        <ellipse cx="47.5" cy="43" rx="14.5" ry="8.5"></ellipse>
+        <ellipse cx="51" cy="29.5" rx="9.5" ry="7.2"></ellipse>
+      </g>
+      <linearGradient id="sage" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ddd4c3"></stop>
+        <stop offset="1" stop-color="#ddd4c3"></stop>
+      </linearGradient>
+      <linearGradient id="stone" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#33302b"></stop>
+        <stop offset="1" stop-color="#33302b"></stop>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:38px;color:#2c2924;letter-spacing:-.5px;">Cairn - app icon</div>
+    <div style="font-size:15px;color:#6a6153;margin-top:8px;max-width:720px;line-height:1.5;">A stacked-river-stones cairn: charcoal stones on a warm parchment field. Built as an adaptive icon (foreground + background) with a <b>monochrome layer</b>, so on Android 13+ it themes to the user's wallpaper (Material You). Same silhouette everywhere, so it stays recognizable full-color, masked, or themed.</div>
+
+    <!-- ===== Row 1: full colour, masked ===== -->
+    <div style="font-family:'Work Sans',monospace;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#9c917e;margin-top:44px;margin-bottom:18px;">Full colour</div>
+    <div style="display:flex;gap:40px;flex-wrap:wrap;align-items:flex-end;">
+
+      <!-- squircle (Play / most launchers) -->
+      <div style="text-align:center;">
+        <svg width="180" height="180" viewBox="0 0 108 108" style="filter:drop-shadow(0 14px 24px rgba(45,38,26,.35));">
+          <defs><clipPath id="sq"><rect x="4" y="4" width="100" height="100" rx="26"></rect></clipPath></defs>
+          <g clip-path="url(#sq)">
+            <rect x="4" y="4" width="100" height="100" fill="url(#sage)"></rect>
+            <rect x="4" y="4" width="100" height="100" fill="url(#sage)" opacity="0"></rect>
+            <use href="#cairn" x="4" y="3" fill="url(#stone)"></use>
+          </g>
+        </svg>
+        <div style="font-size:12px;color:#8a8069;margin-top:10px;">Squircle</div>
+      </div>
+
+      <!-- circle -->
+      <div style="text-align:center;">
+        <svg width="180" height="180" viewBox="0 0 108 108" style="filter:drop-shadow(0 14px 24px rgba(45,38,26,.35));">
+          <defs><clipPath id="ci"><circle cx="54" cy="54" r="50"></circle></clipPath></defs>
+          <g clip-path="url(#ci)">
+            <rect x="4" y="4" width="100" height="100" fill="url(#sage)"></rect>
+            <use href="#cairn" x="4" y="3" fill="url(#stone)"></use>
+          </g>
+        </svg>
+        <div style="font-size:12px;color:#8a8069;margin-top:10px;">Circle mask</div>
+      </div>
+
+      <!-- rounded square -->
+      <div style="text-align:center;">
+        <svg width="180" height="180" viewBox="0 0 108 108" style="filter:drop-shadow(0 14px 24px rgba(45,38,26,.35));">
+          <defs><clipPath id="rs"><rect x="4" y="4" width="100" height="100" rx="14"></rect></clipPath></defs>
+          <g clip-path="url(#rs)">
+            <rect x="4" y="4" width="100" height="100" fill="url(#sage)"></rect>
+            <use href="#cairn" x="4" y="3" fill="url(#stone)"></use>
+          </g>
+        </svg>
+        <div style="font-size:12px;color:#8a8069;margin-top:10px;">Rounded square</div>
+      </div>
+
+      <!-- small size legibility -->
+      <div style="text-align:center;">
+        <svg width="64" height="64" viewBox="0 0 108 108" style="filter:drop-shadow(0 6px 10px rgba(45,38,26,.35));">
+          <defs><clipPath id="sm"><rect x="4" y="4" width="100" height="100" rx="26"></rect></clipPath></defs>
+          <g clip-path="url(#sm)">
+            <rect x="4" y="4" width="100" height="100" fill="url(#sage)"></rect>
+            <use href="#cairn" x="4" y="3" fill="url(#stone)"></use>
+          </g>
+        </svg>
+        <div style="font-size:12px;color:#8a8069;margin-top:10px;">At 64px</div>
+      </div>
+    </div>
+
+    <!-- ===== Row 2: Material You themed (monochrome) ===== -->
+    <div style="font-family:'Work Sans',monospace;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#9c917e;margin-top:52px;margin-bottom:6px;">Material You - themed (monochrome layer, tinted to the wallpaper)</div>
+    <div style="font-size:13px;color:#6a6153;margin-bottom:18px;max-width:640px;line-height:1.5;">Android 13+ recolours the monochrome silhouette to match the user's theme. Three example wallpaper tints:</div>
+    <div style="display:flex;gap:40px;flex-wrap:wrap;align-items:flex-end;">
+
+      <!-- tint: sage-ish -->
+      <div style="text-align:center;">
+        <svg width="150" height="150" viewBox="0 0 108 108">
+          <defs><clipPath id="t1"><rect x="4" y="4" width="100" height="100" rx="26"></rect></clipPath></defs>
+          <g clip-path="url(#t1)">
+            <rect x="4" y="4" width="100" height="100" fill="#dfe6d2"></rect>
+            <use href="#cairn" x="4" y="3" fill="#3f5230"></use>
+          </g>
+        </svg>
+        <div style="font-size:12px;color:#8a8069;margin-top:10px;">Green theme</div>
+      </div>
+
+      <!-- tint: blue-ish -->
+      <div style="text-align:center;">
+        <svg width="150" height="150" viewBox="0 0 108 108">
+          <defs><clipPath id="t2"><rect x="4" y="4" width="100" height="100" rx="26"></rect></clipPath></defs>
+          <g clip-path="url(#t2)">
+            <rect x="4" y="4" width="100" height="100" fill="#dbe2ef"></rect>
+            <use href="#cairn" x="4" y="3" fill="#2f4258"></use>
+          </g>
+        </svg>
+        <div style="font-size:12px;color:#8a8069;margin-top:10px;">Blue theme</div>
+      </div>
+
+      <!-- tint: dark mode -->
+      <div style="text-align:center;">
+        <svg width="150" height="150" viewBox="0 0 108 108">
+          <defs><clipPath id="t3"><rect x="4" y="4" width="100" height="100" rx="26"></rect></clipPath></defs>
+          <g clip-path="url(#t3)">
+            <rect x="4" y="4" width="100" height="100" fill="#2a2f26"></rect>
+            <use href="#cairn" x="4" y="3" fill="#c9d6b3"></use>
+          </g>
+        </svg>
+        <div style="font-size:12px;color:#8a8069;margin-top:10px;">Dark theme</div>
+      </div>
+
+      <!-- the raw silhouette -->
+      <div style="text-align:center;">
+        <svg width="150" height="150" viewBox="0 0 108 108" style="border:1px dashed rgba(120,108,88,.4);border-radius:26px;">
+          <use href="#cairn" x="4" y="3" fill="#2c2924"></use>
+        </svg>
+        <div style="font-size:12px;color:#8a8069;margin-top:10px;">Monochrome asset</div>
+      </div>
+    </div>
+
+    <div style="margin-top:44px;font-size:13px;color:#8a8069;line-height:1.6;max-width:720px;">
+      Colours: parchment field <b>#DDD4C3</b>, stones <b>#33302B</b> (a warm near-black). Implementation: Android vector drawables (foreground, background, monochrome) wired through <b>mipmap-anydpi-v26/ic_launcher.xml</b> - no raster PNGs, fully theme-able. Tell me to tweak stone count/shape/colours, or approve and I'll wire it in.
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

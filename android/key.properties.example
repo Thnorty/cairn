@@ -1,0 +1,17 @@
+# Release signing config for the Android app (see android/app/build.gradle.kts).
+#
+# Copy this file to android/key.properties and fill in the real values. The
+# real key.properties and the .jks keystore are gitignored and must NEVER be
+# committed - losing them means you can no longer update the published app.
+#
+# Generate the upload keystore once with:
+#   keytool -genkey -v -keystore upload-keystore.jks -storetype JKS \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+# (On Windows, keytool ships with the JDK; run it from a JDK bin dir if it is
+# not on PATH.) Keep upload-keystore.jks OUTSIDE the repo and point storeFile
+# at its absolute path.
+
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+keyAlias=upload
+storeFile=C:/absolute/path/to/upload-keystore.jks
