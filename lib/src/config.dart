@@ -42,5 +42,8 @@ class AppConfig {
 
   /// Whether a RevenueCat API key is configured for subscriptions.
   static bool get isPremiumConfigured => revenueCatApiKey.isNotEmpty;
+
+  static const String termsUrl = String.fromEnvironment('TERMS_URL', defaultValue: '');
+  static const String privacyUrl = String.fromEnvironment('PRIVACY_URL', defaultValue: '');
 }
 

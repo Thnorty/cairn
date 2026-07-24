@@ -1226,6 +1226,60 @@ abstract class AppLocalizations {
   /// **'Coming soon'**
   String get premiumComingSoonSnackbar;
 
+  /// Sage status tag on the 'Unlimited AI proofs' row in the Premium value list.
+  ///
+  /// In en, this message translates to:
+  /// **'Available now'**
+  String get premiumTagAvailableNow;
+
+  /// Muted status tag on the unbuilt feature rows in the Premium value list.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get premiumTagComingSoon;
+
+  /// In-flight label on the Premium screen primary CTA while a purchase is processing.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting your trial...'**
+  String get premiumPurchasingButtonLabel;
+
+  /// Success-tone snackbar shown when a purchase completes successfully.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re on Cairn Premium. Climb on.'**
+  String get premiumSuccessSnackbar;
+
+  /// Success-tone snackbar shown when restoring purchases recovers an active entitlement.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases restored.'**
+  String get premiumRestoreSuccessSnackbar;
+
+  /// Muted-tone snackbar shown when restoring purchases finds no active entitlement.
+  ///
+  /// In en, this message translates to:
+  /// **'No purchases to restore.'**
+  String get premiumRestoreNoneSnackbar;
+
+  /// Title on the entitlement panel when the user is already subscribed.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re on Cairn Premium'**
+  String get premiumAlreadySubscribedTitle;
+
+  /// Subtitle on the entitlement panel when the user is already subscribed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited AI proofs active.'**
+  String get premiumAlreadySubscribedSubtitle;
+
+  /// Button label on the Premium screen footer when the user is already subscribed, opening OS store subscriptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage subscription'**
+  String get premiumManageSubscriptionButton;
+
   /// First line of the two-line headline on the first-launch onboarding welcome screen (Cairn Onboarding.dc.html).
   ///
   /// In en, this message translates to:

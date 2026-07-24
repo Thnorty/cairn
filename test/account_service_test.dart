@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers.dart';
 import 'support/fake_auth_service.dart';
+import 'support/fake_premium_service.dart';
 import 'support/fake_sync_transport.dart';
 
 void main() {
@@ -352,8 +353,9 @@ void main() {
   });
 
   group('sign-out', () {
-    test('forwards to AuthService.signOut', () async {
+    test('forwards to AuthService.signOut and calls PremiumService.logOut', () async {
       final auth = FakeAuthService(userId: 'real-user', isAnonymousUser: false);
+      final fakePremium = FakePremiumService();
       final db = inMemoryDatabase();
       final transport = FakeSyncTransport();
       final clock = FixedClock(d(2026, 7, 10));
@@ -366,9 +368,11 @@ void main() {
           verifier: FakeProofVerifier(),
         ),
         tasks: TaskRepository(db, clock),
+        premium: fakePremium,
       );
 
       await service.signOut();
+      expect(fakePremium.logOutCount, 1);
       expect(auth.signOutCallCount, 1);
       expect(service.isAnonymous, isTrue);
 

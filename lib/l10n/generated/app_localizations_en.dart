@@ -771,6 +771,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumComingSoonSnackbar => 'Coming soon';
 
   @override
+  String get premiumTagAvailableNow => 'Available now';
+
+  @override
+  String get premiumTagComingSoon => 'Coming soon';
+
+  @override
+  String get premiumPurchasingButtonLabel => 'Starting your trial...';
+
+  @override
+  String get premiumSuccessSnackbar => 'You\'re on Cairn Premium. Climb on.';
+
+  @override
+  String get premiumRestoreSuccessSnackbar => 'Purchases restored.';
+
+  @override
+  String get premiumRestoreNoneSnackbar => 'No purchases to restore.';
+
+  @override
+  String get premiumAlreadySubscribedTitle => 'You\'re on Cairn Premium';
+
+  @override
+  String get premiumAlreadySubscribedSubtitle => 'Unlimited AI proofs active.';
+
+  @override
+  String get premiumManageSubscriptionButton => 'Manage subscription';
+
+  @override
   String get onboardingWelcomeHeadlineLine1 => 'Don\'t just check it off.';
 
   @override

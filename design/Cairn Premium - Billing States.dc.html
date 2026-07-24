@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+</style>
+</helmet>
+<div style="min-height:100vh;padding:44px 32px 64px;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 60% at 50% -10%, rgba(140,120,95,.14), transparent 55%), repeating-radial-gradient(circle at 76% 8%, transparent 0 30px, rgba(90,78,58,.045) 30px 31px);">
+
+  <div style="max-width:1120px;margin:0 auto;">
+    <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:30px;color:#2c2924;">Cairn Premium &middot; billing states</div>
+    <div style="font-size:14px;color:#6a6153;margin-top:6px;max-width:780px;line-height:1.5;">Companion to <b>Cairn Premium.dc.html</b>: the states the paywall enters once real billing is wired. Every element reuses the existing palette (sage #6d8056, clay #c07a54, parchment #e9e1d3), Zilla Slab + Work Sans, and the app's existing button / snackbar / panel shapes. Approved 2026-07-24.</div>
+
+    <div style="display:flex;gap:40px;margin-top:36px;align-items:flex-start;flex-wrap:wrap;">
+
+      <!-- ===== transient states column ===== -->
+      <div style="width:360px;">
+
+        <div style="margin-bottom:30px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a7f6b;margin-bottom:12px;">1 &nbsp;Trial button &middot; purchasing</div>
+          <div style="width:100%;background:linear-gradient(155deg,#c07a54,#a6603d);color:#f6efe6;padding:17px;border-radius:26px;font-weight:600;font-size:16px;box-shadow:0 10px 20px -8px rgba(140,74,42,.6),inset 0 1px 0 rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;gap:10px;opacity:.85;">
+            <span style="width:18px;height:18px;border-radius:50%;border:2.4px solid rgba(246,239,230,.35);border-top-color:#f6efe6;display:inline-block;"></span>
+            Starting your trial&hellip;
+          </div>
+          <div style="font-size:12.5px;color:#6a6153;margin-top:10px;line-height:1.5;">While the store sheet is up and the purchase resolves: spinner + disabled, in place. No new screen, no route change. Plan cards are non-interactive for the duration.</div>
+        </div>
+
+        <div style="margin-bottom:30px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a7f6b;margin-bottom:12px;">2 &nbsp;Success</div>
+          <div style="display:flex;align-items:center;gap:11px;padding:14px 16px;border-radius:18px;font-size:13.5px;font-weight:500;background:linear-gradient(160deg,#6d8056,#5c6f46);color:#f2f0e4;box-shadow:0 14px 26px -14px rgba(45,38,26,.5), inset 0 1px 0 rgba(255,255,255,.25);">
+            <span style="width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.18);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f2f0e4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"></path></svg></span>
+            <div>You're on Cairn Premium. Climb on.</div>
+          </div>
+          <div style="font-size:12.5px;color:#6a6153;margin-top:10px;line-height:1.5;">On success the paywall closes and the daily-cap gate lifts reactively (Unlimited AI proofs is active immediately). A sage confirmation snackbar, deliberately not a celebration screen: a purchase is a transaction, not a milestone. Cairn Complete stays the only celebration.</div>
+        </div>
+
+        <div style="margin-bottom:30px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a7f6b;margin-bottom:12px;">3 &nbsp;Purchase error</div>
+          <div style="display:flex;align-items:center;gap:11px;padding:14px 16px;border-radius:18px;font-size:13.5px;font-weight:500;background:linear-gradient(160deg,#3a3630,#2c2924);color:#efe7da;box-shadow:0 14px 26px -14px rgba(45,38,26,.5), inset 0 1px 0 rgba(255,255,255,.12);">
+            <span style="width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#efe7da" stroke-width="2.4" stroke-linecap="round"><path d="M12 7v6M12 16.5v.5"></path></svg></span>
+            <div>Purchase couldn't be completed. Please try again.</div>
+          </div>
+          <div style="font-size:12.5px;color:#6a6153;margin-top:10px;line-height:1.5;">The app's existing dark message snackbar. A user <b>cancel</b> is silent: no snackbar, button returns to idle. Cancelling is not an error.</div>
+        </div>
+
+        <div style="margin-bottom:30px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a7f6b;margin-bottom:12px;">4 &nbsp;Restore &middot; two outcomes</div>
+          <div style="display:flex;align-items:center;gap:11px;padding:14px 16px;border-radius:18px;font-size:13.5px;font-weight:500;background:linear-gradient(160deg,#6d8056,#5c6f46);color:#f2f0e4;box-shadow:0 14px 26px -14px rgba(45,38,26,.5), inset 0 1px 0 rgba(255,255,255,.25);margin-bottom:9px;">
+            <span style="width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.18);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f2f0e4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"></path></svg></span>
+            <div>Purchases restored.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:11px;padding:14px 16px;border-radius:18px;font-size:13.5px;font-weight:500;background:linear-gradient(160deg,#efe8da,#e4dcc9);color:#453f35;border:1px solid rgba(120,108,88,.18);box-shadow:0 14px 26px -14px rgba(45,38,26,.35), inset 0 1px 0 rgba(255,255,255,.5);">
+            <span style="width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(120,108,88,.14);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6a6153" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5M12 16v.5"></path></svg></span>
+            <div>No purchases to restore.</div>
+          </div>
+          <div style="font-size:12.5px;color:#6a6153;margin-top:10px;line-height:1.5;">Restore reports either outcome plainly. "Restore purchase" in the footer shows the same in-place spinner treatment as the trial button while it runs.</div>
+        </div>
+
+      </div>
+
+      <!-- ===== already-premium state, in the phone ===== -->
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a7f6b;margin-bottom:12px;">5 &nbsp;Already premium &middot; paywall opened while subscribed</div>
+        <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+          <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;background-image:radial-gradient(140% 45% at 50% -6%, rgba(150,166,120,.22), transparent 60%),radial-gradient(90% 30% at 100% 4%, rgba(178,124,92,.14), transparent 60%);">
+
+            <div style="position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:repeating-radial-gradient(circle at 50% -6%, transparent 0 28px, rgba(90,100,72,.05) 28px 29px);"></div>
+
+            <div style="position:relative;z-index:5;background:linear-gradient(180deg,#e9e6d5 82%,rgba(233,230,213,0));padding-bottom:6px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 30px 4px;color:#33302b;font-weight:600;font-size:15px;letter-spacing:.3px;">
+                <span>7:24</span>
+                <div style="display:flex;align-items:center;gap:7px;">
+                  <div style="display:flex;align-items:flex-end;gap:2px;height:11px;">
+                    <div style="width:3px;height:5px;background:#33302b;border-radius:1px;"></div>
+                    <div style="width:3px;height:7px;background:#33302b;border-radius:1px;"></div>
+                    <div style="width:3px;height:9px;background:#33302b;border-radius:1px;"></div>
+                    <div style="width:3px;height:11px;background:#33302b;border-radius:1px;"></div>
+                  </div>
+                  <div style="width:16px;height:11px;border:1.5px solid #33302b;border-radius:3px;position:relative;padding:1.5px;"><div style="width:70%;height:100%;background:#33302b;border-radius:1px;"></div><div style="position:absolute;right:-3px;top:3px;width:2px;height:4px;background:#33302b;border-radius:0 1px 1px 0;"></div></div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:flex-start;padding:6px 22px 0;">
+                <div style="width:38px;height:38px;border-radius:50%;background:rgba(120,108,88,.14);display:flex;align-items:center;justify-content:center;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a453c" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+                </div>
+              </div>
+            </div>
+
+            <div style="position:relative;flex:1;overflow:hidden;padding:2px 26px 12px;">
+
+              <div style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
+                  <div style="width:14px;height:8px;border-radius:48% 52% 45% 55%/62% 58% 42% 38%;background:linear-gradient(158deg,#96a776,#6d8056);box-shadow:0 0 0 3px rgba(122,141,96,.18),inset 0 1px 0 rgba(255,255,255,.4);transform:rotate(-3deg);margin-bottom:-1px;"></div>
+                  <div style="width:22px;height:9px;border-radius:50% 50% 45% 55%/60% 58% 42% 40%;background:linear-gradient(158deg,#dcd5c7,#b6ad9c);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(2deg);margin-bottom:-1px;"></div>
+                  <div style="width:29px;height:10px;border-radius:47% 53% 46% 54%/60% 55% 45% 40%;background:linear-gradient(158deg,#d6cfc0,#b1a796);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(-2deg);"></div>
+                </div>
+                <span style="font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#5f7a45;margin-top:12px;">Cairn Premium</span>
+                <div style="font-family:'Zilla Slab',serif;font-weight:600;font-size:28px;color:#2c2924;margin-top:8px;line-height:1.12;">Keep every stone,<br>on every peak</div>
+              </div>
+
+              <!-- entitlement panel replaces the plan cards -->
+              <div style="margin-top:24px;background:#f2ede2;border-radius:24px;padding:20px;box-shadow:0 1px 0 rgba(255,255,255,.6) inset, 0 10px 22px -14px rgba(45,38,26,.35);">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <span style="width:36px;height:36px;border-radius:50%;background:#6d8056;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.3);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f4f0e6" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"></path></svg></span>
+                  <div>
+                    <div style="font-family:'Zilla Slab',serif;font-weight:600;font-size:18px;color:#2c2924;">You're on Cairn Premium</div>
+                    <div style="font-size:12.5px;color:#6a6153;margin-top:1px;">Unlimited AI proofs active.</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- value list stays visible, unchanged (tags per Cairn Premium.dc.html) -->
+              <div style="margin-top:18px;display:flex;flex-direction:column;gap:2px;">
+                <div style="display:flex;align-items:center;gap:13px;padding:10px 4px;">
+                  <span style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.16);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5f7a45" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"></path></svg></span>
+                  <div style="flex:1;"><div style="font-size:15px;font-weight:600;color:#2c2924;">Unlimited AI proofs</div><div style="font-size:12.5px;color:#6a6153;margin-top:1px;">No daily cap. Prove as many habits as you keep.</div></div>
+                  <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#5f7444;background:rgba(122,141,96,.18);padding:3px 8px;border-radius:8px;">Available now</span>
+                </div>
+                <div style="height:1px;background:rgba(120,108,88,.14);margin:0 4px;"></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:10px 4px;">
+                  <span style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.16);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a9c6c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 9.2 3.8 3.8 0 0 1 16.5 17"></path><path d="M12 12v6M12 12l-2.5 2.5M12 12l2.5 2.5"></path></svg></span>
+                  <div style="flex:1;"><div style="font-size:15px;font-weight:600;color:#5f584c;">Cloud photo backup</div><div style="font-size:12.5px;color:#8a8072;margin-top:1px;">Every proof photo saved and restorable on any phone.</div></div>
+                  <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#a08a6d;background:rgba(150,128,96,.14);padding:3px 8px;border-radius:8px;">Coming soon</span>
+                </div>
+                <div style="height:1px;background:rgba(120,108,88,.14);margin:0 4px;"></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:10px 4px;">
+                  <span style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.16);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a9c6c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19c3-6 5-8 8-8s3 2 3 4-2 3-3 3M4 19h10M18 5l1.5 3 3 .5-2 2 .5 3L18 15"></path></svg></span>
+                  <div style="flex:1;"><div style="font-size:15px;font-weight:600;color:#5f584c;">Deeper insights</div><div style="font-size:12.5px;color:#8a8072;margin-top:1px;">Consistency curves, best times of day, rank projections.</div></div>
+                  <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#a08a6d;background:rgba(150,128,96,.14);padding:3px 8px;border-radius:8px;">Coming soon</span>
+                </div>
+              </div>
+
+            </div>
+
+            <div style="position:relative;z-index:5;flex-shrink:0;padding:12px 26px 26px;background:linear-gradient(0deg,#e9e1d3 66%,rgba(233,225,211,0));">
+              <button style="width:100%;background:linear-gradient(165deg,#f2ede2,#e5ddcc);color:#453f35;border:1.5px solid rgba(120,108,88,.22);padding:17px;border-radius:26px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">Manage subscription</button>
+              <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:12px;font-size:11.5px;color:#9c917e;">
+                <span>Restore purchase</span>
+                <span style="width:3px;height:3px;border-radius:50%;background:#c4bbaa;"></span>
+                <span>Terms</span>
+                <span style="width:3px;height:3px;border-radius:50%;background:#c4bbaa;"></span>
+                <span>Privacy</span>
+              </div>
+            </div>
+
+            <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);z-index:6;"></div>
+
+          </div>
+        </div>
+        <div style="font-size:12.5px;color:#6a6153;margin-top:12px;line-height:1.5;max-width:392px;">When the entitlement is already active the plan cards and the trial CTA are replaced by the sage entitlement panel plus a quiet <b>Manage subscription</b> button (opens the OS store-subscriptions page). The crest, value list and footer links are unchanged. This is a fallback: entry points elsewhere already reflect entitlement, so a subscriber rarely lands here.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:1000}}"></script>
+</body>
+</html>

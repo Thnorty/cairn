@@ -1,4 +1,5 @@
 import '../models/trail_summary.dart';
+import '../premium/premium_service.dart';
 import '../repo/completion_repository.dart';
 import '../repo/task_repository.dart';
 import '../sync/sync_service.dart';
@@ -53,6 +54,7 @@ class AccountService {
   final SyncService _sync;
   final CompletionRepository _completions;
   final TaskRepository _tasks;
+  final PremiumService? _premium;
 
   /// Held between [startCreateAccount] and [confirmCreateAccount] (never
   /// exposed back to the caller): the create-account flow collects
@@ -67,10 +69,12 @@ class AccountService {
     required SyncService sync,
     required CompletionRepository completions,
     required TaskRepository tasks,
+    PremiumService? premium,
   })  : _auth = auth,
         _sync = sync,
         _completions = completions,
-        _tasks = tasks;
+        _tasks = tasks,
+        _premium = premium;
 
   bool get isAnonymous => _auth.isAnonymous;
   String? get email => _auth.email;
@@ -166,7 +170,19 @@ class AccountService {
 
   // ---- sign-out -----------------------------------------------------------
 
-  /// See [AuthService.signOut]'s doc comment: keeps all local data, reverts
-  /// to a fresh anonymous session.
-  Future<void> signOut() => _auth.signOut();
+  /// See [AuthService.signOut]'s doc comment: releases billing identity then
+  /// reverts to a fresh anonymous session.
+  ///
+  /// The billing log-out runs first, while the user id is still known, but is
+  /// deliberately best-effort: a failure there must never strand the user in a
+  /// session they asked to leave, so it is swallowed and the auth sign-out
+  /// always proceeds.
+  Future<void> signOut() async {
+    try {
+      await _premium?.logOut();
+    } catch (_) {
+      // Best-effort: see above.
+    }
+    await _auth.signOut();
+  }
 }

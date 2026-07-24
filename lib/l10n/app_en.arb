@@ -1118,6 +1118,43 @@
     "description": "Snackbar shown when tapping the Premium screen's 'Start 7-day free trial' button, which is out of scope for this phase (no billing/IAP integration - Premium is presentational only) and is a deliberate no-op-for-now rather than a fake/invented purchase flow - same pattern as profileComingSoonSnackbar/statsComingSoonSnackbar for their own screens' Premium affordances."
   },
 
+  "premiumTagAvailableNow": "Available now",
+  "@premiumTagAvailableNow": {
+    "description": "Sage status tag on the 'Unlimited AI proofs' row in the Premium value list."
+  },
+  "premiumTagComingSoon": "Coming soon",
+  "@premiumTagComingSoon": {
+    "description": "Muted status tag on the unbuilt feature rows in the Premium value list."
+  },
+  "premiumPurchasingButtonLabel": "Starting your trial...",
+  "@premiumPurchasingButtonLabel": {
+    "description": "In-flight label on the Premium screen primary CTA while a purchase is processing."
+  },
+  "premiumSuccessSnackbar": "You're on Cairn Premium. Climb on.",
+  "@premiumSuccessSnackbar": {
+    "description": "Success-tone snackbar shown when a purchase completes successfully."
+  },
+  "premiumRestoreSuccessSnackbar": "Purchases restored.",
+  "@premiumRestoreSuccessSnackbar": {
+    "description": "Success-tone snackbar shown when restoring purchases recovers an active entitlement."
+  },
+  "premiumRestoreNoneSnackbar": "No purchases to restore.",
+  "@premiumRestoreNoneSnackbar": {
+    "description": "Muted-tone snackbar shown when restoring purchases finds no active entitlement."
+  },
+  "premiumAlreadySubscribedTitle": "You're on Cairn Premium",
+  "@premiumAlreadySubscribedTitle": {
+    "description": "Title on the entitlement panel when the user is already subscribed."
+  },
+  "premiumAlreadySubscribedSubtitle": "Unlimited AI proofs active.",
+  "@premiumAlreadySubscribedSubtitle": {
+    "description": "Subtitle on the entitlement panel when the user is already subscribed."
+  },
+  "premiumManageSubscriptionButton": "Manage subscription",
+  "@premiumManageSubscriptionButton": {
+    "description": "Button label on the Premium screen footer when the user is already subscribed, opening OS store subscriptions."
+  },
+
   "onboardingWelcomeHeadlineLine1": "Don't just check it off.",
   "@onboardingWelcomeHeadlineLine1": {
     "description": "First line of the two-line headline on the first-launch onboarding welcome screen (Cairn Onboarding.dc.html)."

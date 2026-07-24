@@ -417,6 +417,7 @@ final accountServiceProvider = Provider<AccountService>((ref) {
     sync: ref.watch(syncServiceProvider),
     completions: ref.watch(completionRepositoryProvider),
     tasks: ref.watch(taskRepositoryProvider),
+    premium: ref.watch(premiumServiceProvider),
   );
 });
 
@@ -446,6 +447,12 @@ final accountStateProvider = FutureProvider<AccountState>((ref) async {
 final premiumServiceProvider = Provider<PremiumService>((ref) {
   if (!AppConfig.isPremiumConfigured) return const UnconfiguredPremiumService();
   return RevenueCatPremiumService();
+});
+
+/// Drives the paywall's real store prices; null when offerings are unavailable
+/// or billing is unconfigured.
+final premiumOfferingProvider = FutureProvider<PremiumOffering?>((ref) async {
+  return ref.watch(premiumServiceProvider).loadOfferings();
 });
 
 /// Internal stream provider tracking entitlement updates from [premiumServiceProvider].

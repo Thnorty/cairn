@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
 import '../../l10n/date_number_formatting.dart';
+import '../../premium/premium_service.dart';
 import '../../providers.dart';
 import '../../services/account_service.dart';
 import '../../services/points_service.dart';
@@ -20,6 +21,7 @@ import '../theme/app_text_styles.dart';
 import '../trail/how_cairns_work_screen.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/glyphs.dart';
+import '../widgets/message_snack_bar.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/tab_icons.dart';
 
@@ -697,18 +699,18 @@ class _AccountStatusRow extends StatelessWidget {
 // Cairn Premium upsell row
 // ---------------------------------------------------------------------------
 
-class _PremiumRow extends StatelessWidget {
+class _PremiumRow extends ConsumerWidget {
   const _PremiumRow({required this.onTap});
 
-  /// Opens [PremiumScreen] (see `openPremiumScreen`). Premium itself is
-  /// post-MVP and purely presentational (no billing/IAP integration yet -
-  /// see CLAUDE.md's phase plan), but the navigation here is real.
+  /// Opens [PremiumScreen] (see `openPremiumScreen`).
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final isPremium = ref.watch(premiumStatusProvider);
     final radius = BorderRadius.circular(AppRadii.rowCard);
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -746,7 +748,12 @@ class _PremiumRow extends StatelessWidget {
                           children: [
                             Text(l10n.profilePremiumTitle, style: AppTextStyles.smallCardTitle),
                             const SizedBox(height: 1),
-                            Text(l10n.profilePremiumSubtitle, style: AppTextStyles.caption),
+                            Text(
+                              isPremium
+                                  ? l10n.premiumAlreadySubscribedSubtitle
+                                  : l10n.profilePremiumSubtitle,
+                              style: AppTextStyles.caption,
+                            ),
                           ],
                         ),
                       ),
@@ -803,16 +810,40 @@ class _PremiumMountainBars extends StatelessWidget {
 // Settings list
 // ---------------------------------------------------------------------------
 
-class _SettingsSection extends StatelessWidget {
+class _SettingsSection extends ConsumerWidget {
   const _SettingsSection();
 
-  // Every row below is a navigational placeholder: later phases wire a real
-  // destination (Notifications/Privacy settings screens, and the Restore
-  // purchase flow alongside Phase 4's account work); none is invented here.
   static void _noOp() {}
 
+  Future<void> _handleRestore(BuildContext context, WidgetRef ref) async {
+    final outcome = await ref.read(premiumServiceProvider).restore();
+    if (!context.mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    switch (outcome) {
+      case PremiumPurchaseSucceeded(:final isPremium):
+        if (isPremium) {
+          context.showMessageSnackBar(
+            l10n.premiumRestoreSuccessSnackbar,
+            tone: MessageTone.success,
+          );
+        } else {
+          context.showMessageSnackBar(
+            l10n.premiumRestoreNoneSnackbar,
+            tone: MessageTone.muted,
+          );
+        }
+      case PremiumPurchaseCancelled():
+        break;
+      case PremiumPurchaseFailed(:final message):
+        context.showMessageSnackBar(
+          message,
+          tone: MessageTone.neutral,
+        );
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -837,7 +868,7 @@ class _SettingsSection extends StatelessWidget {
               _SettingsRow(
                 glyph: _GlyphShape.restore,
                 label: l10n.profileRestorePurchaseRow,
-                onTap: _noOp,
+                onTap: () => _handleRestore(context, ref),
               ),
               const _HairlineDivider(),
               // Moved here from the Trail screen header's "?" info button

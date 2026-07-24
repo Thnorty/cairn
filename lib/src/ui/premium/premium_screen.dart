@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart'
-    show Material, MaterialPageRoute, MaterialType, Text;
+    show CircularProgressIndicator, Material, MaterialPageRoute, MaterialType, Text;
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
-import '../proof/verification_chrome.dart' show CloseCircleButton, percentPositionToAlignment;
+import '../../config.dart';
+import '../../premium/premium_service.dart';
+import '../../providers.dart';
+import '../proof/verification_chrome.dart'
+    show CloseCircleButton, percentPositionToAlignment;
 import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
 import '../theme/app_radii.dart';
@@ -17,14 +23,7 @@ import '../widgets/message_snack_bar.dart';
 /// Pushes [PremiumScreen] on top of the current route. Shared by every
 /// Premium affordance in the app that navigates via a live [BuildContext]
 /// (Profile's "Cairn Premium" row, Stats' "Go unlimited" link and "Deeper
-/// insights" card) so they all navigate identically - the same idea as
-/// Home's own `_openNewHabitScreen`, exported here since three separate
-/// screens share this one destination rather than just one. The Daily Limit
-/// screen's own "Go unlimited" is wired at its call site in
-/// `proof_outcome_routing.dart` instead, via that function's own captured
-/// `NavigatorState` (its callbacks can fire long after the calling screen's
-/// `BuildContext` is gone - see that file's doc comment), rather than this
-/// helper.
+/// insights" card) so they all navigate identically.
 void openPremiumScreen(BuildContext context) {
   Navigator.of(context).push(MaterialPageRoute<void>(
     builder: (_) => const PremiumScreen(),
@@ -33,35 +32,115 @@ void openPremiumScreen(BuildContext context) {
 
 enum _PremiumPlan { yearly, monthly }
 
-/// `Cairn Premium.dc.html`: the Premium upsell screen, pushed (not a tab)
-/// from every Premium affordance elsewhere in the app. Purely presentational
-/// - Premium is post-MVP and there is no billing/IAP integration yet, so the
-/// trial button and the plan cards' "selection" never purchase anything;
-/// see [openPremiumScreen]'s call sites for the affordances that reach here.
-class PremiumScreen extends StatefulWidget {
+/// `Cairn Premium.dc.html` & `Cairn Premium - Billing States.dc.html`:
+/// the Premium paywall screen.
+class PremiumScreen extends ConsumerStatefulWidget {
   const PremiumScreen({super.key});
 
   @override
-  State<PremiumScreen> createState() => _PremiumScreenState();
+  ConsumerState<PremiumScreen> createState() => _PremiumScreenState();
 }
 
-class _PremiumScreenState extends State<PremiumScreen> {
+class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   // Yearly is selected by default, matching the canonical design.
   _PremiumPlan _selectedPlan = _PremiumPlan.yearly;
+  bool _inFlight = false;
 
-  void _showComingSoon(AppLocalizations l10n) {
-    context.showMessageSnackBar(l10n.premiumComingSoonSnackbar);
+  Future<void> _launchUrl(String urlString) async {
+    if (urlString.isEmpty) return;
+    try {
+      final uri = Uri.parse(urlString);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+  }
+
+  void _handleManageSubscription() {
+    _launchUrl('https://play.google.com/store/account/subscriptions');
+  }
+
+  Future<void> _handlePurchase(PremiumOffering offering) async {
+    final plan =
+        _selectedPlan == _PremiumPlan.yearly ? offering.annual : offering.monthly;
+    if (plan == null) return;
+    setState(() => _inFlight = true);
+    try {
+      final outcome = await ref.read(premiumServiceProvider).purchase(plan);
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      switch (outcome) {
+        case PremiumPurchaseSucceeded():
+          context.showMessageSnackBar(
+            l10n.premiumSuccessSnackbar,
+            tone: MessageTone.success,
+          );
+          Navigator.of(context).pop();
+        case PremiumPurchaseCancelled():
+          break;
+        case PremiumPurchaseFailed(:final message):
+          context.showMessageSnackBar(
+            message,
+            tone: MessageTone.neutral,
+          );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _inFlight = false);
+      }
+    }
+  }
+
+  Future<void> _handleRestore() async {
+    setState(() => _inFlight = true);
+    try {
+      final outcome = await ref.read(premiumServiceProvider).restore();
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      switch (outcome) {
+        case PremiumPurchaseSucceeded(:final isPremium):
+          if (isPremium) {
+            context.showMessageSnackBar(
+              l10n.premiumRestoreSuccessSnackbar,
+              tone: MessageTone.success,
+            );
+            Navigator.of(context).pop();
+          } else {
+            context.showMessageSnackBar(
+              l10n.premiumRestoreNoneSnackbar,
+              tone: MessageTone.muted,
+            );
+          }
+        case PremiumPurchaseCancelled():
+          break;
+        case PremiumPurchaseFailed(:final message):
+          context.showMessageSnackBar(
+            message,
+            tone: MessageTone.neutral,
+          );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _inFlight = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final offeringAsync = ref.watch(premiumOfferingProvider);
+    final offering = offeringAsync.asData?.value;
+    final isPremium = ref.watch(premiumStatusProvider);
+
+    final yearlyPrice = offering?.annual?.priceString ?? l10n.premiumYearlyPlanPrice;
+    final monthlyPrice = offering?.monthly?.priceString ?? l10n.premiumMonthlyPlanPrice;
+
+    final VoidCallback? onStartTrial = (!isPremium && offering != null && !_inFlight)
+        ? () => _handlePurchase(offering)
+        : null;
+
+    final VoidCallback? onRestore = !_inFlight ? _handleRestore : null;
 
     return ModalScaffold(
-      // This screen's own sage + terracotta washes (Cairn Premium.dc.html
-      // is one of the few screens with two differently-tinted washes,
-      // like Verify Result's own sage-forward pair) - distinct from the
-      // washless treatment Trail/Stats use, per this run's spec.
       washes: const [
         RadialGradient(
           center: Alignment(0, -1.12),
@@ -80,11 +159,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
         children: [
           Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 0),
-            // Symmetric top-left corner (16/16, the same inset and distance
-            // from top and left as VerificationHeader's own close button):
-            // an authorized deviation from Cairn Premium.dc.html's own
-            // top-right close-X, for cross-screen consistency (every
-            // close/dismiss control in this app now sits top-left).
             child: Align(
               alignment: AlignmentDirectional.centerStart,
               child: CloseCircleButton(onTap: () => Navigator.of(context).pop()),
@@ -98,18 +172,39 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 children: [
                   _Crest(l10n: l10n),
                   const SizedBox(height: 22),
+                  if (isPremium) ...[
+                    _EntitlementPanel(l10n: l10n),
+                    const SizedBox(height: 18),
+                  ],
                   _ValueList(l10n: l10n),
-                  const SizedBox(height: 20),
-                  _PlanCards(
-                    l10n: l10n,
-                    selected: _selectedPlan,
-                    onSelect: (plan) => setState(() => _selectedPlan = plan),
-                  ),
+                  if (!isPremium) ...[
+                    const SizedBox(height: 20),
+                    _PlanCards(
+                      l10n: l10n,
+                      selected: _selectedPlan,
+                      yearlyPrice: yearlyPrice,
+                      monthlyPrice: monthlyPrice,
+                      enabled: !_inFlight,
+                      onSelect: (plan) => setState(() => _selectedPlan = plan),
+                    ),
+                  ],
                 ],
               ),
             ),
           ),
-          _Footer(l10n: l10n, onStartTrial: () => _showComingSoon(l10n)),
+          if (isPremium)
+            _AlreadyPremiumFooter(
+              l10n: l10n,
+              onManageSubscription: _handleManageSubscription,
+              onRestore: onRestore,
+            )
+          else
+            _Footer(
+              l10n: l10n,
+              inFlight: _inFlight,
+              onStartTrial: onStartTrial,
+              onRestore: onRestore,
+            ),
         ],
       ),
     );
@@ -131,11 +226,6 @@ class _Crest extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // The canonical design's crest has no ground shadow under its
-        // 3-stone cairn (unlike every other CairnStack use in this app);
-        // reusing this shared widget as-is (rather than hand-rolling a
-        // shadow-less one-off) introduces one that isn't in the source
-        // file - a deliberate, minor deviation noted in this run's report.
         const CairnStack(stoneCount: 3, highlightTop: true, scale: 0.6),
         const SizedBox(height: 12),
         Text(l10n.premiumEyebrow, style: AppTextStyles.premiumEyebrow),
@@ -146,6 +236,77 @@ class _Crest extends StatelessWidget {
           style: AppTextStyles.premiumHeadline,
         ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Entitlement panel (already premium)
+// ---------------------------------------------------------------------------
+
+class _EntitlementPanel extends StatelessWidget {
+  const _EntitlementPanel({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF2EDE2),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.cardBorder),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x593C3223),
+            blurRadius: 22,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(
+              color: AppColors.sage,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: const SizedBox(
+              width: 18,
+              height: 18,
+              child: CustomPaint(
+                painter: _RadioCheckPainter(
+                  color: Color(0xFFF4F0E6),
+                  strokeWidth: 2.8,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.premiumAlreadySubscribedTitle,
+                  style: AppTextStyles.premiumPlanTitle,
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  l10n.premiumAlreadySubscribedSubtitle,
+                  style: AppTextStyles.caption,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -165,32 +326,39 @@ class _ValueList extends StatelessWidget {
   Widget build(BuildContext context) {
     final rows = [
       _ValueRow(
-        icon: const _ValueGlyph(shape: _ValueGlyphShape.check),
+        icon: const _ValueGlyph(shape: _ValueGlyphShape.check, isLive: true),
         title: l10n.premiumValueUnlimitedProofsTitle,
         subtitle: l10n.premiumValueUnlimitedProofsSubtitle,
+        tag: l10n.premiumTagAvailableNow,
+        isLive: true,
       ),
       _ValueRow(
-        icon: const _ValueGlyph(shape: _ValueGlyphShape.cloud),
+        icon: const _ValueGlyph(shape: _ValueGlyphShape.cloud, isLive: false),
         title: l10n.premiumValueCloudBackupTitle,
         subtitle: l10n.premiumValueCloudBackupSubtitle,
+        tag: l10n.premiumTagComingSoon,
+        isLive: false,
       ),
       _ValueRow(
-        icon: const _ValueGlyph(shape: _ValueGlyphShape.insights),
-        // Reuses the Stats screen's own "Deeper insights" copy verbatim -
-        // identical literal text/meaning in the canonical design, not a
-        // duplicate key (see the ARB's own doc comment on these two keys).
+        icon: const _ValueGlyph(shape: _ValueGlyphShape.insights, isLive: false),
         title: l10n.statsDeeperInsightsTitle,
         subtitle: l10n.statsDeeperInsightsSubtitle,
+        tag: l10n.premiumTagComingSoon,
+        isLive: false,
       ),
       _ValueRow(
-        icon: const _ValueGlyph(shape: _ValueGlyphShape.widget),
+        icon: const _ValueGlyph(shape: _ValueGlyphShape.widget, isLive: false),
         title: l10n.premiumValueWidgetsTitle,
         subtitle: l10n.premiumValueWidgetsSubtitle,
+        tag: l10n.premiumTagComingSoon,
+        isLive: false,
       ),
       _ValueRow(
-        icon: const _StoneStylesGlyph(),
+        icon: const _StoneStylesGlyph(isLive: false),
         title: l10n.premiumValueStoneStylesTitle,
         subtitle: l10n.premiumValueStoneStylesSubtitle,
+        tag: l10n.premiumTagComingSoon,
+        isLive: false,
       ),
     ];
 
@@ -210,14 +378,27 @@ class _ValueList extends StatelessWidget {
 }
 
 class _ValueRow extends StatelessWidget {
-  const _ValueRow({required this.icon, required this.title, required this.subtitle});
+  const _ValueRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.tag,
+    required this.isLive,
+  });
 
   final Widget icon;
   final String title;
   final String subtitle;
+  final String tag;
+  final bool isLive;
 
   @override
   Widget build(BuildContext context) {
+    final titleColor = isLive ? AppColors.inkPrimary : AppColors.premiumDimmedTitle;
+    final subtitleColor = isLive ? AppColors.textMuted : AppColors.premiumDimmedSubtitle;
+    final tagColor = isLive ? AppColors.premiumTagAvailableNowText : AppColors.premiumTagComingSoonText;
+    final tagBg = isLive ? AppColors.premiumTagAvailableNowBg : AppColors.premiumTagComingSoonBg;
+
     return Padding(
       padding: const EdgeInsetsDirectional.symmetric(vertical: 11, horizontal: 4),
       child: Row(
@@ -236,10 +417,24 @@ class _ValueRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(title, style: AppTextStyles.accountStatusTitle),
+                Text(title, style: AppTextStyles.accountStatusTitle.copyWith(color: titleColor)),
                 const SizedBox(height: 1),
-                Text(subtitle, style: AppTextStyles.caption),
+                Text(subtitle, style: AppTextStyles.caption.copyWith(color: subtitleColor)),
               ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(color: tagBg, borderRadius: BorderRadius.circular(8)),
+            child: Text(
+              tag,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: tagColor,
+              ),
             ),
           ),
         ],
@@ -248,29 +443,26 @@ class _ValueRow extends StatelessWidget {
   }
 }
 
-/// The stacked-bars glyph for the "Stone styles" row: narrow-and-short on
-/// top widening toward the bottom, the same `Column`-of-rounded-bars
-/// silhouette [_StackedPebbleGlyph]-style widgets already use elsewhere
-/// (`stats_screen.dart`, `trail_screen.dart`, `new_habit_screen.dart`'s
-/// `_TitleFieldCairnGlyph`), duplicated privately here per this codebase's
-/// existing precedent rather than shared, with this row's own literal
-/// bar dimensions/colours from `Cairn Premium.dc.html`.
 class _StoneStylesGlyph extends StatelessWidget {
-  const _StoneStylesGlyph();
+  const _StoneStylesGlyph({this.isLive = true});
 
-  static const _bars = [
-    (width: 7.0, height: 3.0, color: AppColors.sageText),
-    (width: 11.0, height: 4.0, color: AppColors.premiumStoneStylesMidBar),
-    (width: 14.0, height: 4.0, color: AppColors.sageText),
-  ];
+  final bool isLive;
 
   @override
   Widget build(BuildContext context) {
+    final topBottomColor = isLive ? AppColors.sageText : AppColors.premiumDimmedIcon;
+    final midColor = isLive ? AppColors.premiumStoneStylesMidBar : AppColors.premiumDimmedIcon;
+    final bars = [
+      (width: 7.0, height: 3.0, color: topBottomColor),
+      (width: 11.0, height: 4.0, color: midColor),
+      (width: 14.0, height: 4.0, color: topBottomColor),
+    ];
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        for (final bar in _bars)
+        for (final bar in bars)
           Padding(
             padding: const EdgeInsetsDirectional.only(bottom: 0.5),
             child: DecoratedBox(
@@ -287,40 +479,40 @@ class _StoneStylesGlyph extends StatelessWidget {
 }
 
 class _ValueGlyph extends StatelessWidget {
-  const _ValueGlyph({required this.shape});
+  const _ValueGlyph({required this.shape, this.isLive = true});
 
   final _ValueGlyphShape shape;
+  final bool isLive;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 16,
       height: 16,
-      child: CustomPaint(painter: _ValueGlyphPainter(shape: shape)),
+      child: CustomPaint(painter: _ValueGlyphPainter(shape: shape, isLive: isLive)),
     );
   }
 }
 
 class _ValueGlyphPainter extends CustomPainter {
-  const _ValueGlyphPainter({required this.shape});
+  const _ValueGlyphPainter({required this.shape, required this.isLive});
 
   final _ValueGlyphShape shape;
+  final bool isLive;
 
   @override
   void paint(Canvas canvas, Size size) {
     final s = size.width / 24;
     Offset p(double x, double y) => Offset(x * s, y * s);
+    final strokeColor = isLive ? AppColors.sageText : AppColors.premiumDimmedIcon;
     final paint = Paint()
-      ..color = AppColors.sageText
+      ..color = strokeColor
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
     switch (shape) {
       case _ValueGlyphShape.check:
-        // `M5 12.5l4.2 4.2L19 7`, stroke-width 2.2 - the same check path
-        // used elsewhere in this app (e.g. profile_screen.dart's own
-        // `_GlyphShape.check`).
         paint.strokeWidth = 2.2 * s;
         canvas.drawPath(
           Path()
@@ -332,11 +524,6 @@ class _ValueGlyphPainter extends CustomPainter {
         break;
 
       case _ValueGlyphShape.cloud:
-        // Faithful silhouette (not an exact bezier reproduction - see this
-        // codebase's existing precedent, e.g. profile_screen.dart's bell/
-        // shield glyphs) of `M7 17a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 9.2 3.8
-        // 3.8 0 0 1 16.5 17` (the cloud outline) plus `M12 12v6M12 12l-2.5
-        // 2.5M12 12l2.5 2.5` (the download arrow inside it).
         paint.strokeWidth = 2 * s;
         final cloud = Path()
           ..moveTo(p(7, 17).dx, p(7, 17).dy)
@@ -354,10 +541,6 @@ class _ValueGlyphPainter extends CustomPainter {
         break;
 
       case _ValueGlyphShape.insights:
-        // A consistency-curve line + baseline (approximated with cubic
-        // curves, not an exact reproduction of the source's smooth-curve
-        // `M4 19c3-6 5-8 8-8s3 2 3 4-2 3-3 3M4 19h10`) plus the exact
-        // straight-line sparkle `M18 5l1.5 3 3 .5-2 2 .5 3L18 15`.
         paint.strokeWidth = 2 * s;
         canvas.drawPath(
           Path()
@@ -380,8 +563,6 @@ class _ValueGlyphPainter extends CustomPainter {
         break;
 
       case _ValueGlyphShape.widget:
-        // `<rect x="4" y="4" width="16" height="16" rx="3">` + `M8 4v4M4 9h4`
-        // - a small widget-grid corner mark.
         paint.strokeWidth = 2 * s;
         canvas.drawRRect(
           RRect.fromRectAndRadius(
@@ -397,7 +578,8 @@ class _ValueGlyphPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_ValueGlyphPainter oldDelegate) => shape != oldDelegate.shape;
+  bool shouldRepaint(_ValueGlyphPainter oldDelegate) =>
+      shape != oldDelegate.shape || isLive != oldDelegate.isLive;
 }
 
 // ---------------------------------------------------------------------------
@@ -405,10 +587,20 @@ class _ValueGlyphPainter extends CustomPainter {
 // ---------------------------------------------------------------------------
 
 class _PlanCards extends StatelessWidget {
-  const _PlanCards({required this.l10n, required this.selected, required this.onSelect});
+  const _PlanCards({
+    required this.l10n,
+    required this.selected,
+    required this.yearlyPrice,
+    required this.monthlyPrice,
+    required this.enabled,
+    required this.onSelect,
+  });
 
   final AppLocalizations l10n;
   final _PremiumPlan selected;
+  final String yearlyPrice;
+  final String monthlyPrice;
+  final bool enabled;
   final ValueChanged<_PremiumPlan> onSelect;
 
   @override
@@ -420,9 +612,9 @@ class _PlanCards extends StatelessWidget {
           selected: selected == _PremiumPlan.yearly,
           title: l10n.premiumYearlyPlanTitle,
           subtitle: l10n.premiumYearlyPlanSubtitle,
-          price: l10n.premiumYearlyPlanPrice,
+          price: yearlyPrice,
           ribbonLabel: l10n.premiumBestValueRibbon,
-          onTap: () => onSelect(_PremiumPlan.yearly),
+          onTap: enabled ? () => onSelect(_PremiumPlan.yearly) : null,
         ),
         const SizedBox(height: 11),
         _PlanCard(
@@ -430,9 +622,9 @@ class _PlanCards extends StatelessWidget {
           selected: selected == _PremiumPlan.monthly,
           title: l10n.premiumMonthlyPlanTitle,
           subtitle: l10n.premiumMonthlyPlanSubtitle,
-          price: l10n.premiumMonthlyPlanPrice,
+          price: monthlyPrice,
           ribbonLabel: null,
-          onTap: () => onSelect(_PremiumPlan.monthly),
+          onTap: enabled ? () => onSelect(_PremiumPlan.monthly) : null,
         ),
       ],
     );
@@ -455,7 +647,7 @@ class _PlanCard extends StatelessWidget {
   final String subtitle;
   final String price;
   final String? ribbonLabel;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -528,6 +720,7 @@ class _PlanCard extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Semantics(
         button: true,
+        enabled: onTap != null,
         selected: selected,
         label: title,
         child: ribbonLabel == null
@@ -566,25 +759,32 @@ class _PlanRadio extends StatelessWidget {
       height: 24,
       decoration: const BoxDecoration(color: AppColors.sage, shape: BoxShape.circle),
       alignment: Alignment.center,
-      child: const SizedBox(width: 13, height: 13, child: CustomPaint(painter: _RadioCheckPainter())),
+      child: const SizedBox(
+        width: 13,
+        height: 13,
+        child: CustomPaint(painter: _RadioCheckPainter()),
+      ),
     );
   }
 }
 
-/// The selected radio's checkmark (`M5 12.5l4.2 4.2L19 7`, stroke-width 3) -
-/// the same check path drawn elsewhere in this app, at a heavier stroke to
-/// match the design's filled-radio treatment.
 class _RadioCheckPainter extends CustomPainter {
-  const _RadioCheckPainter();
+  const _RadioCheckPainter({
+    this.color = AppColors.premiumOnSageText,
+    this.strokeWidth = 3.0,
+  });
+
+  final Color color;
+  final double strokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
     final s = size.width / 24;
     Offset p(double x, double y) => Offset(x * s, y * s);
     final paint = Paint()
-      ..color = AppColors.premiumOnSageText
+      ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3 * s
+      ..strokeWidth = strokeWidth * s
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     canvas.drawPath(
@@ -597,7 +797,8 @@ class _RadioCheckPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_RadioCheckPainter oldDelegate) => false;
+  bool shouldRepaint(_RadioCheckPainter oldDelegate) =>
+      color != oldDelegate.color || strokeWidth != oldDelegate.strokeWidth;
 }
 
 class _RibbonBadge extends StatelessWidget {
@@ -623,14 +824,21 @@ class _RibbonBadge extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Footer
+// Footers
 // ---------------------------------------------------------------------------
 
 class _Footer extends StatelessWidget {
-  const _Footer({required this.l10n, required this.onStartTrial});
+  const _Footer({
+    required this.l10n,
+    required this.inFlight,
+    required this.onStartTrial,
+    required this.onRestore,
+  });
 
   final AppLocalizations l10n;
-  final VoidCallback onStartTrial;
+  final bool inFlight;
+  final VoidCallback? onStartTrial;
+  final VoidCallback? onRestore;
 
   @override
   Widget build(BuildContext context) {
@@ -640,7 +848,22 @@ class _Footer extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          PrimaryButton(label: l10n.premiumStartTrialButton, onPressed: onStartTrial),
+          PrimaryButton(
+            label: inFlight
+                ? l10n.premiumPurchasingButtonLabel
+                : l10n.premiumStartTrialButton,
+            onPressed: onStartTrial,
+            icon: inFlight
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: AppColors.buttonText,
+                    ),
+                  )
+                : null,
+          ),
           const SizedBox(height: 9),
           Text(
             l10n.premiumTrialSubtitle,
@@ -648,34 +871,92 @@ class _Footer extends StatelessWidget {
             style: AppTextStyles.premiumTrialSubtitle,
           ),
           const SizedBox(height: 9),
-          _FooterLinks(l10n: l10n),
+          _FooterLinks(l10n: l10n, onRestore: onRestore),
         ],
       ),
     );
   }
 }
 
-class _FooterLinks extends StatelessWidget {
-  const _FooterLinks({required this.l10n});
+class _AlreadyPremiumFooter extends StatelessWidget {
+  const _AlreadyPremiumFooter({
+    required this.l10n,
+    required this.onManageSubscription,
+    required this.onRestore,
+  });
 
   final AppLocalizations l10n;
-
-  // Restore/Terms/Privacy have no real destination yet: Restore purchase is
-  // a Phase 4/premium-billing concern and Terms/Privacy have no legal
-  // screens in this app at all. Silent no-ops-for-now, same scope decision
-  // as the Profile settings list's own navigational placeholders
-  // (`_SettingsSection._noOp` in profile_screen.dart) - a later phase wires
-  // real destinations.
-  static void _noOp() {}
+  final VoidCallback onManageSubscription;
+  final VoidCallback? onRestore;
 
   @override
   Widget build(BuildContext context) {
-    Widget link(String label) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.fromSTEB(26, 12, 26, 26),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ManageSubscriptionButton(onPressed: onManageSubscription),
+          const SizedBox(height: 12),
+          _FooterLinks(l10n: l10n, onRestore: onRestore),
+        ],
+      ),
+    );
+  }
+}
+
+class _ManageSubscriptionButton extends StatelessWidget {
+  const _ManageSubscriptionButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(17),
+        decoration: BoxDecoration(
+          gradient: AppGradients.chipInactive,
+          borderRadius: BorderRadius.circular(26),
+          border: Border.all(color: AppColors.premiumUnselectedCardBorder, width: 1.5),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          AppLocalizations.of(context)!.premiumManageSubscriptionButton,
+          style: AppTextStyles.buttonLabelLarge.copyWith(color: AppColors.inkDimmed),
+        ),
+      ),
+    );
+  }
+}
+
+class _FooterLinks extends StatelessWidget {
+  const _FooterLinks({required this.l10n, this.onRestore});
+
+  final AppLocalizations l10n;
+  final VoidCallback? onRestore;
+
+  Future<void> _launchUrl(String urlString) async {
+    if (urlString.isEmpty) return;
+    try {
+      final uri = Uri.parse(urlString);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget link(String label, VoidCallback? onTap) {
       return GestureDetector(
-        onTap: _noOp,
+        onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Semantics(
           button: true,
+          enabled: onTap != null,
           label: label,
           child: Text(label, style: AppTextStyles.premiumFooterLinkLabel),
         ),
@@ -693,13 +974,17 @@ class _FooterLinks extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Reuses the Profile settings list's own "Restore purchase" copy
-        // verbatim - identical literal text/meaning, not a duplicate key.
-        link(l10n.profileRestorePurchaseRow),
+        link(l10n.profileRestorePurchaseRow, onRestore),
         dot(),
-        link(l10n.premiumTermsLink),
+        link(
+          l10n.premiumTermsLink,
+          AppConfig.termsUrl.isNotEmpty ? () => _launchUrl(AppConfig.termsUrl) : null,
+        ),
         dot(),
-        link(l10n.premiumPrivacyLink),
+        link(
+          l10n.premiumPrivacyLink,
+          AppConfig.privacyUrl.isNotEmpty ? () => _launchUrl(AppConfig.privacyUrl) : null,
+        ),
       ],
     );
   }

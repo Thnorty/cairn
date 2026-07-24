@@ -461,6 +461,30 @@ abstract final class AppColors {
   /// `#c4bbaa` - the Premium screen's footer link-row dot separators.
   static const Color premiumFooterDotColor = Color(0xFFC4BBAA);
 
+  /// `#5f7444` - "Available now" tag text color.
+  static const Color premiumTagAvailableNowText = Color(0xFF5F7444);
+
+  /// rgba(122,141,96,.18) - "Available now" tag background.
+  static const Color premiumTagAvailableNowBg = Color(0x2E7A8D60);
+
+  /// `#a08a6d` - "Coming soon" tag text color.
+  static const Color premiumTagComingSoonText = Color(0xFFA08A6D);
+
+  /// rgba(150,128,96,.14) - "Coming soon" tag background.
+  static const Color premiumTagComingSoonBg = Color(0x24968060);
+
+  /// `#5f584c` - Dimmed value-row title color for unreleased features.
+  static const Color premiumDimmedTitle = Color(0xFF5F584C);
+
+  /// `#8a8072` - Dimmed value-row subtitle color for unreleased features.
+  static const Color premiumDimmedSubtitle = Color(0xFF8A8072);
+
+  /// `#8a9c6c` - Dimmed value-row icon stroke color for unreleased features.
+  static const Color premiumDimmedIcon = Color(0xFF8A9C6C);
+
+  /// `#efe8da` - Muted snackbar background color.
+  static const Color snackbarMutedBg = Color(0xFFEFE8DA);
+
   // ---- Onboarding screens ---------------------------------------------------
 
   /// rgba(150,166,120,.26) - the onboarding welcome screen's own top sage
