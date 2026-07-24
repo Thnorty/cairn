@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cairn - Privacy Policy</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 48px 20px 96px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    line-height: 1.65; color: #2c2924; background: #e9e1d3;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 0 0 6px; }
+  h2 { font-size: 19px; margin: 38px 0 10px; padding-top: 10px; border-top: 1px solid rgba(120,108,88,.25); }
+  h3 { font-size: 16px; margin: 22px 0 6px; }
+  .meta { color: #6a6153; font-size: 14px; margin-bottom: 28px; }
+  .lede { font-size: 17px; background: #f2ede2; border-left: 3px solid #6d8056;
+          padding: 16px 18px; border-radius: 0 10px 10px 0; margin: 24px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 6px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 15px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid rgba(120,108,88,.25); vertical-align: top; }
+  th { font-weight: 600; }
+  code { background: rgba(120,108,88,.14); padding: 1px 5px; border-radius: 4px; font-size: 14px; }
+  a { color: #5f7444; }
+  .callout { background: #f2ede2; border-radius: 10px; padding: 16px 18px; margin: 18px 0; }
+  footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid rgba(120,108,88,.25);
+           font-size: 14px; color: #6a6153; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #201e1a; color: #e6ded0; }
+    .lede, .callout { background: #2a2722; }
+    .meta, footer { color: #a89e8c; }
+    a { color: #a3b184; }
+    code { background: rgba(255,255,255,.1); }
+    h2 { border-top-color: rgba(255,255,255,.14); }
+    th, td { border-bottom-color: rgba(255,255,255,.14); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Cairn Privacy Policy</h1>
+  <div class="meta">Last updated: 24 July 2026</div>
+
+  <div class="lede">
+    Cairn is a habit tracker where you prove each completed habit with a photo. It is built
+    local-first: your habits and your photos live on your device. This policy explains the
+    few cases where data leaves it, and what you can do about that.
+  </div>
+
+  <h2>Who we are</h2>
+  <p>
+    Cairn ("the app") is an independent app published by the developer listed under
+    <a href="#contact">Contact</a>. In this policy, "we" and "us" mean that developer, and
+    "you" means the person using the app.
+  </p>
+
+  <h2>The short version</h2>
+  <ul>
+    <li>We do <strong>not</strong> show ads.</li>
+    <li>We do <strong>not</strong> use analytics, tracking, advertising, or crash-reporting SDKs. The app contains none.</li>
+    <li>We do <strong>not</strong> sell or share your personal data with third parties for their own marketing.</li>
+    <li>You can use Cairn without giving us an email address or any other identifying detail.</li>
+    <li>Your proof photos are <strong>not</strong> stored on our servers.</li>
+  </ul>
+
+  <h2>What data Cairn handles</h2>
+
+  <h3>Data stored on your device</h3>
+  <p>
+    Your habits, schedules, completions, streaks, progress and your proof photos are stored
+    locally on your device. If you never create an account and never complete a proof, no
+    personal data leaves your device at all.
+  </p>
+
+  <h3>An automatic anonymous ID</h3>
+  <p>
+    On first launch, Cairn creates an anonymous account with our backend provider (Supabase)
+    so the app can talk to our verification service securely. This produces a random user
+    identifier. It is not linked to your name, email, phone number, device advertising ID,
+    or any other identifier, and it is not used for tracking or profiling.
+  </p>
+
+  <h3>If you create an account (optional)</h3>
+  <p>
+    You may optionally upgrade to an account so your records sync across devices. In that
+    case we process your <strong>email address</strong> (to send a verification code and to
+    let you reset your password) and a securely hashed password, handled by our
+    authentication provider. Your habits, completions and verification records then sync to
+    our database, where access is restricted to your own account by row-level security.
+  </p>
+
+  <h3>Proof photos and how verification works</h3>
+  <p>
+    This is the part worth reading closely, because it is the one place your photo leaves
+    your device.
+  </p>
+  <ul>
+    <li>You take a photo with the camera, or choose an existing one from your photo library.</li>
+    <li>Cairn compresses it and saves it <strong>on your device</strong>.</li>
+    <li>To verify it, the app sends the image, together with the title and optional
+        description of the habit it is meant to prove, over an encrypted connection to our
+        verification service, which forwards it to <strong>Google's Gemini API</strong> to
+        judge whether the photo plausibly shows that habit being done.</li>
+    <li>Our verification service does <strong>not store the image</strong>. The image data
+        passes through and is discarded once the check returns. We keep only the resulting
+        verdict (whether it passed, a confidence score, and a short reason).</li>
+    <li>Your photos are <strong>not</strong> uploaded to our storage and are <strong>not</strong>
+        backed up by us. Cloud photo backup is not currently offered.</li>
+    <li>The app reads a photo's capture time (from your photo library or the file's EXIF data)
+        <strong>on your device only</strong>, to check the photo is recent. That timestamp is
+        not transmitted to us.</li>
+  </ul>
+  <p>
+    Google processes the image as our service provider in order to return a verdict. Your
+    use of Cairn's verification therefore also involves Google's handling of that image at
+    the moment of the check. We do not control, and this policy does not cover, Google's own
+    practices; see Google's privacy documentation for its API services.
+  </p>
+
+  <h3>Subscriptions</h3>
+  <p>
+    Cairn Premium is an optional paid subscription. Purchases are processed by
+    <strong>Google Play</strong>, and subscription status is managed for us by
+    <strong>RevenueCat</strong>. RevenueCat receives your anonymous Cairn user identifier and
+    purchase and transaction information so the app knows whether your subscription is active.
+  </p>
+  <p>
+    <strong>We never receive or store your payment card details.</strong> Those are handled
+    entirely by Google Play.
+  </p>
+
+  <h3>Device permissions</h3>
+  <table>
+    <tr><th>Permission</th><th>Why</th></tr>
+    <tr><td>Camera</td><td>To take a proof photo. Only when you open the camera in the app.</td></tr>
+    <tr><td>Photos / media</td><td>To let you pick an existing photo as proof, and to read its capture time on-device.</td></tr>
+    <tr><td>Internet</td><td>To verify proofs, and to sync if you have an account.</td></tr>
+  </table>
+  <p>You can refuse or later revoke these in your device settings. Refusing camera or photo
+     access means you cannot submit proofs, since a proof is a photo.</p>
+
+  <h2>Who we share data with</h2>
+  <p>We use a small number of service providers, and only for the purposes above:</p>
+  <table>
+    <tr><th>Provider</th><th>What it handles</th></tr>
+    <tr><td>Supabase</td><td>Authentication, database and the verification service that fronts Gemini.</td></tr>
+    <tr><td>Google (Gemini API)</td><td>Judges a submitted proof photo at the moment of verification.</td></tr>
+    <tr><td>Google Play</td><td>Processes subscription payments.</td></tr>
+    <tr><td>RevenueCat</td><td>Manages subscription and entitlement status.</td></tr>
+  </table>
+  <p>We do not sell your personal data, and we do not share it with advertisers or data brokers.</p>
+
+  <h2>How long we keep things</h2>
+  <ul>
+    <li><strong>Proof photos:</strong> kept on your device. Cairn deletes the local file when a
+        proof is rejected. Everything local is removed when you uninstall the app.</li>
+    <li><strong>Images sent for verification:</strong> not retained by us.</li>
+    <li><strong>Account and synced records:</strong> kept while your account exists, until you
+        ask us to delete them.</li>
+  </ul>
+
+  <h2 id="deletion">Deleting your data</h2>
+  <div class="callout">
+    <p style="margin-top:0"><strong>To delete your account and the data associated with it</strong>,
+    email us at the address under <a href="#contact">Contact</a> from the email address
+    registered to your Cairn account, with the subject "Delete my account".</p>
+    <p style="margin-bottom:0">We will delete your account and its synced records (habits,
+    completions and verification records) within 30 days. Data stored only on your device is
+    removed by uninstalling the app.</p>
+  </div>
+  <p>
+    If you never created an account, there is no personal data for us to delete: the anonymous
+    identifier is not linked to you, and deleting the app removes your local data.
+  </p>
+
+  <h2>Your rights</h2>
+  <p>
+    Depending on where you live, you may have rights to access, correct, export or delete
+    personal data we hold about you, to object to or restrict certain processing, and to
+    complain to your local data protection authority. To exercise any of these, contact us at
+    the address below. We will not charge you or degrade your use of the app for asking.
+  </p>
+
+  <h2>Security</h2>
+  <p>
+    Data in transit is encrypted (HTTPS/TLS). Access to synced records is restricted per
+    account at the database level. No system is perfectly secure, but we keep the amount of
+    data we hold deliberately small, which is the most reliable protection available.
+  </p>
+
+  <h2>Children</h2>
+  <p>
+    Cairn is not directed to children under 13, and we do not knowingly collect personal data
+    from them. If you believe a child has provided us personal data, contact us and we will
+    delete it.
+  </p>
+
+  <h2>International transfers</h2>
+  <p>
+    Our service providers may process and store data on servers outside your country,
+    including in the United States and the European Union. Where required, such transfers
+    rely on appropriate safeguards offered by those providers.
+  </p>
+
+  <h2>Changes to this policy</h2>
+  <p>
+    If this policy changes materially, we will update the date at the top of this page and,
+    where appropriate, note the change in the app. Continuing to use Cairn after a change
+    means you accept the updated policy.
+  </p>
+
+  <h2 id="contact">Contact</h2>
+  <p>
+    Questions, requests, or deletion requests: <strong>ototatik@gmail.com</strong>
+  </p>
+
+  <footer>
+    Cairn Privacy Policy, last updated 24 July 2026. See also the
+    <a href="./terms.html">Terms of Service</a>.
+  </footer>
+
+</div>
+</body>
+</html>
