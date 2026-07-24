@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'l10n/generated/app_localizations.dart';
@@ -23,6 +24,16 @@ Future<void> main() async {
       );
     } catch (_) {
       // Swallowed: see comment above.
+    }
+  }
+
+  if (AppConfig.isPremiumConfigured) {
+    try {
+      await Purchases.configure(
+        PurchasesConfiguration(AppConfig.revenueCatApiKey),
+      );
+    } catch (_) {
+      // Swallowed: billing init failure must not block app launch.
     }
   }
 

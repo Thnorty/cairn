@@ -60,7 +60,7 @@ class StatsSnapshot {
   final int cairnsBuilt;
 
   final int proofsUsedToday;
-  final int dailyCap;
+  final int? dailyCap;
 
   /// The current Monday..Sunday week containing today, oldest (Monday)
   /// first.

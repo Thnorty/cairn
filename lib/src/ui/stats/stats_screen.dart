@@ -100,8 +100,10 @@ class _StatsBody extends StatelessWidget {
         children: [
           _TopStatTiles(snapshot: snapshot),
           const SizedBox(height: 14),
-          _ProofsUsedCard(snapshot: snapshot, onGoUnlimited: onPremiumTap),
-          const SizedBox(height: 14),
+          if (snapshot.dailyCap != null) ...[
+            _ProofsUsedCard(snapshot: snapshot, onGoUnlimited: onPremiumTap),
+            const SizedBox(height: 14),
+          ],
           _ThisWeekCard(snapshot: snapshot),
           const SizedBox(height: 22),
           Text(l10n.statsCurrentStreaksLabel, style: AppTextStyles.formSectionLabel),
@@ -292,6 +294,7 @@ class _ProofsUsedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final cap = snapshot.dailyCap!;
 
     return _StatsCard(
       radius: AppRadii.rowCard,
@@ -305,7 +308,7 @@ class _ProofsUsedCard extends StatelessWidget {
             children: [
               Text(l10n.statsProofsUsedTodayLabel, style: AppTextStyles.statsCardHeading),
               Text(
-                l10n.statsProofsUsedCount(snapshot.proofsUsedToday, snapshot.dailyCap),
+                l10n.statsProofsUsedCount(snapshot.proofsUsedToday, cap),
                 style: AppTextStyles.statsUsedOfCapLabel,
               ),
             ],
@@ -313,7 +316,7 @@ class _ProofsUsedCard extends StatelessWidget {
           const SizedBox(height: 11),
           Row(
             children: [
-              for (var i = 0; i < snapshot.dailyCap; i++) ...[
+              for (var i = 0; i < cap; i++) ...[
                 if (i != 0) const SizedBox(width: 6),
                 Expanded(
                   child: Container(

@@ -8,6 +8,9 @@ import 'clock.dart';
 import 'config.dart';
 import 'db/database.dart';
 import 'models/proof_verdict.dart';
+import 'premium/premium_service.dart';
+import 'premium/revenuecat_premium_service.dart';
+import 'premium/unconfigured_premium_service.dart';
 import 'repo/completion_repository.dart';
 import 'repo/settings_repository.dart';
 import 'repo/task_repository.dart';
@@ -65,7 +68,12 @@ final streakServiceProvider = Provider<StreakService>(
 final pointsServiceProvider =
     Provider<PointsService>((ref) => const PointsService());
 
-final proofPolicyProvider = Provider<ProofPolicy>((ref) => const ProofPolicy());
+final proofPolicyProvider = Provider<ProofPolicy>((ref) {
+  final isPremium = ref.watch(premiumStatusProvider);
+  // Premium lifts the daily proof cap (the "Unlimited AI proofs" benefit);
+  // free tier keeps the default cap of 5. All other policy knobs unchanged.
+  return isPremium ? const ProofPolicy(dailyCap: null) : const ProofPolicy();
+});
 
 /// Debug affordance: lets the debug screen switch the verifier's behaviour
 /// on a real device. `real` is the actual Supabase-backed verifier
@@ -345,6 +353,7 @@ final authBootstrapProvider = Provider<void>((ref) {
     if (userId == null) return; // still offline/unauthenticated: nothing to backfill yet
     await ref.read(taskRepositoryProvider).backfillUserId(userId);
     await ref.read(completionRepositoryProvider).backfillUserId(userId);
+    await ref.read(premiumServiceProvider).logIn(userId);
   }
 
   unawaited(run());
@@ -424,3 +433,36 @@ final accountStateProvider = FutureProvider<AccountState>((ref) async {
   final auth = ref.watch(authServiceProvider);
   return AccountState(isAnonymous: auth.isAnonymous, email: auth.email);
 });
+
+// -----------------------------------------------------------------------------
+// Premium & Monetization (Phase 5)
+// -----------------------------------------------------------------------------
+
+/// Seam for subscription entitlement and purchasing (Phase 5).
+///
+/// Returns the real RevenueCat-backed service ([RevenueCatPremiumService]) when
+/// [AppConfig.isPremiumConfigured], otherwise [UnconfiguredPremiumService]
+/// (mirroring [syncTransportProvider]).
+final premiumServiceProvider = Provider<PremiumService>((ref) {
+  if (!AppConfig.isPremiumConfigured) return const UnconfiguredPremiumService();
+  return RevenueCatPremiumService();
+});
+
+/// Internal stream provider tracking entitlement updates from [premiumServiceProvider].
+final _premiumStatusStreamProvider = StreamProvider<bool>((ref) {
+  return ref.watch(premiumServiceProvider).isPremiumStream;
+});
+
+/// Debug affordance (mirrors [debugVerifierModeProvider]): when non-null it
+/// forces the premium status regardless of the real service, so entitlement
+/// gates are testable on a real device with no billing backend.
+final debugPremiumOverrideProvider = StateProvider<bool?>((ref) => null);
+
+/// Single reactive source of truth for whether the user is currently entitled to
+/// premium features. Consumed across the rest of the app.
+final premiumStatusProvider = Provider<bool>((ref) {
+  final override = ref.watch(debugPremiumOverrideProvider);
+  if (override != null) return override;
+  return ref.watch(_premiumStatusStreamProvider).asData?.value ?? false;
+});
+

@@ -368,9 +368,9 @@ class CompletionRepository {
   }
 
   /// Live completions today (verified or pending, across all tasks): how
-  /// many of the day's [ProofPolicy.dailyCap] have been used. Read-only
-  /// counter for the UI (the debug screen's "Proofs today: n/5" line; Phase
-  /// 3's Daily Limit screen needs the same number, hence a proper public
+  /// many of the day's [ProofPolicy.dailyCap] (when configured) have been used.
+  /// Read-only counter for the UI (the debug screen's "Proofs today: n/5" line;
+  /// Phase 3's Daily Limit screen needs the same number, hence a proper public
   /// repository method rather than a debug-screen-only query).
   Future<int> successfulProofsToday() {
     return _liveDailyCapCountToday(_clock.today());
@@ -414,9 +414,12 @@ class CompletionRepository {
       return const CompletionRejectedAttemptsExhausted();
     }
 
-    final dailyCountSoFar = await _liveDailyCapCountToday(today);
-    if (dailyCountSoFar >= _policy.dailyCap) {
-      return const CompletionRejectedDailyCapReached();
+    final dailyCap = _policy.dailyCap;
+    if (dailyCap != null) {
+      final dailyCountSoFar = await _liveDailyCapCountToday(today);
+      if (dailyCountSoFar >= dailyCap) {
+        return const CompletionRejectedDailyCapReached();
+      }
     }
 
     return null;
@@ -460,9 +463,12 @@ class CompletionRepository {
       return const CompletionRejectedAttemptsExhausted();
     }
 
-    final dailyCountSoFar = await _liveDailyCapCountToday(today);
-    if (dailyCountSoFar >= _policy.dailyCap) {
-      return const CompletionRejectedDailyCapReached();
+    final dailyCap = _policy.dailyCap;
+    if (dailyCap != null) {
+      final dailyCountSoFar = await _liveDailyCapCountToday(today);
+      if (dailyCountSoFar >= dailyCap) {
+        return const CompletionRejectedDailyCapReached();
+      }
     }
 
     final nowForRecency = _clock.nowEpochMillis();

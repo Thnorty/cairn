@@ -29,4 +29,18 @@ class AppConfig {
   /// pointing the client at a blank URL/key.
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+
+  /// Public RevenueCat API key read via `--dart-define`.
+  ///
+  /// RevenueCat public keys are safe to embed in client binaries. Defaulted to
+  /// empty so an unconfigured build stays inert; a configured build supplies
+  /// it via `--dart-define` or bakes the key in a later step.
+  static const String revenueCatApiKey = String.fromEnvironment(
+    'REVENUECAT_API_KEY',
+    defaultValue: '',
+  );
+
+  /// Whether a RevenueCat API key is configured for subscriptions.
+  static bool get isPremiumConfigured => revenueCatApiKey.isNotEmpty;
 }
+

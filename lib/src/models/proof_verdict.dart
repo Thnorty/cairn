@@ -57,8 +57,9 @@ class ProofPolicy {
   final double confidenceThreshold;
 
   /// Maximum successful (verified or pending) completions per local day,
-  /// across all tasks. Rejections do not burn this cap.
-  final int dailyCap;
+  /// across all tasks. Rejections do not burn this cap. Null means no daily
+  /// cap (premium / unlimited proofs); default is 5 for the free tier.
+  final int? dailyCap;
 
   /// Maximum rejected verification attempts per task per local day, shared
   /// across slots.

@@ -233,4 +233,45 @@ void main() {
 
     expect(result, isA<CompletionRejectedDailyCapReached>());
   });
+
+  test('returns null past 5 completions when dailyCap is null (unlimited)', () async {
+    final verifier =
+        FakeProofVerifier((_) => const VerdictReceived(_passingVerdict));
+    final repo = CompletionRepository(
+      db,
+      clock,
+      verifier: verifier,
+      policy: const ProofPolicy(dailyCap: null),
+    );
+
+    for (var i = 0; i < 6; i++) {
+      final t = await taskRepo.createTask(
+        title: 'T$i',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      final r = await repo.completeWithProof(
+        taskId: t.id,
+        occurrenceDate: d(2026, 7, 10),
+        proof: _proof(),
+      );
+      expect(r, isA<CompletionRecorded>());
+    }
+
+    final seventhTask = await taskRepo.createTask(
+      title: 'T-seventh',
+      recurrenceType: RecurrenceType.daily,
+      startDate: d(2026, 7, 1),
+    );
+
+    CompleteOccurrenceResult? result;
+    await expectNoWrites(() async {
+      result = await repo.precheckProof(
+        taskId: seventhTask.id,
+        occurrenceDate: d(2026, 7, 10),
+      );
+    });
+
+    expect(result, isNull);
+  });
 }

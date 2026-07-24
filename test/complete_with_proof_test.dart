@@ -304,6 +304,39 @@ void main() {
     expect(verifyingVerifier.callCount, callCountBefore); // short-circuited
   });
 
+  test('with a null-cap policy (premium), 6+ successful proofs succeed without rejection', () async {
+    final clock = FixedClock(d(2026, 7, 10));
+    final taskRepo = TaskRepository(db, clock);
+
+    final tasks = <Task>[];
+    for (var i = 0; i < 7; i++) {
+      tasks.add(await taskRepo.createTask(
+        title: 'T$i',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      ));
+    }
+
+    final verifier =
+        FakeProofVerifier((_) => const VerdictReceived(_passingVerdict));
+    final unlimitedRepo = CompletionRepository(
+      db,
+      clock,
+      verifier: verifier,
+      policy: const ProofPolicy(dailyCap: null),
+    );
+
+    for (var i = 0; i < 7; i++) {
+      final r = await unlimitedRepo.completeWithProof(
+        taskId: tasks[i].id,
+        occurrenceDate: d(2026, 7, 10),
+        proof: _proof(),
+      );
+      expect(r, isA<CompletionRecorded>(), reason: 'completion $i should succeed');
+    }
+    expect(verifier.callCount, 7);
+  });
+
   test(
       'backfill, not-scheduled, task-not-found and already-completed all '
       'short-circuit before the verifier is called', () async {

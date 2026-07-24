@@ -133,6 +133,28 @@ void main() {
         expect(segment.color, AppColors.statsMutedFillBg, reason: 'segment $i');
       }
     });
+
+    testStatsWidgets(
+        'when dailyCap is null (premium), the proofs used today card is omitted',
+        (tester) async {
+      final clock = FixedClock(d(2026, 7, 20));
+      final db = inMemoryDatabase();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            clockProvider.overrideWithValue(clock),
+            debugPremiumOverrideProvider.overrideWith((ref) => true),
+          ],
+          child: wrap(const StatsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      addTearDown(db.close);
+
+      expect(find.text('PROOFS USED TODAY'), findsNothing);
+      expect(find.byKey(const ValueKey('proof-segment-0')), findsNothing);
+    });
   });
 
   group('weekly chart', () {

@@ -281,10 +281,32 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   @override
   Widget build(BuildContext context) {
     final verifierMode = ref.watch(debugVerifierModeProvider);
+    final premiumOverride = ref.watch(debugPremiumOverrideProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cairn: Phase 1 debug'),
         actions: [
+          // 3-state cycling button (none -> ON -> OFF -> none). A
+          // PopupMenuButton<bool?> can't be used here: Flutter treats a null
+          // menu selection as "cancelled" and never fires onSelected for it,
+          // so the "none (real)" state would be unreachable once forced on/off.
+          TextButton(
+            onPressed: () {
+              final next = switch (premiumOverride) {
+                null => true,
+                true => false,
+                false => null,
+              };
+              ref.read(debugPremiumOverrideProvider.notifier).state = next;
+            },
+            child: Text(
+              'Premium: ${switch (premiumOverride) {
+                null => 'none',
+                true => 'ON',
+                false => 'OFF',
+              }}',
+            ),
+          ),
           PopupMenuButton<DebugVerifierMode>(
             tooltip: 'Fake verifier mode',
             initialValue: verifierMode,
@@ -339,6 +361,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   Widget _buildAltitudeCard() {
     final rank = _rank;
     final dailyCap = ref.read(proofPolicyProvider).dailyCap;
+    final dailyCapStr = dailyCap == null ? '∞' : '$dailyCap';
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -358,7 +381,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             const SizedBox(height: 4),
-            Text('Proofs today: $_proofsUsedToday/$dailyCap'),
+            Text('Proofs today: $_proofsUsedToday/$dailyCapStr'),
           ],
         ),
       ),

@@ -2,6 +2,18 @@ import 'package:cairn/src/models/proof_verdict.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('ProofPolicy constructor', () {
+    test('default dailyCap is 5', () {
+      const policy = ProofPolicy();
+      expect(policy.dailyCap, equals(5));
+    });
+
+    test('dailyCap null is constructible (unlimited proofs)', () {
+      const policy = ProofPolicy(dailyCap: null);
+      expect(policy.dailyCap, isNull);
+    });
+  });
+
   group('ProofPolicy.isVerified', () {
     const policy = ProofPolicy();
 

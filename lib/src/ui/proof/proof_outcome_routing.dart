@@ -188,8 +188,10 @@ Future<bool> routeToProofOutcome(
       return true;
 
     case CompletionRejectedDailyCapReached():
+      // A daily-cap rejection can only occur when a cap is configured
+      // (ProofPolicy.dailyCap != null).
       go(DailyLimitScreen(
-        dailyCap: policy.dailyCap,
+        dailyCap: policy.dailyCap!,
         // Pushed via the captured `navigator`, not `openPremiumScreen`'s own
         // `BuildContext`-based helper: this callback can fire long after the
         // calling screen's context is gone (see this function's own doc
