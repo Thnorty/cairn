@@ -1,8 +1,5 @@
 # Cairn - Play Store listing copy
 
-Paste-ready text for the Play Console store listing. Limits are Google's:
-short description 80 characters, full description 4000 characters.
-
 ---
 
 ## App name (30 char limit)
@@ -75,8 +72,8 @@ Stop performing consistency. Start proving it.
 
 ## Notes for the listing form
 
-- **Category:** Health & Fitness, or Productivity. Productivity is the closer fit, and a less brutal category to compete in.
-- **Tags:** habit tracker, habits, routine, streaks, accountability, self improvement
+- **Category:** Productivity
+- **Tags:** Activity tracker, Health & fitness, Productivity, Self-help, Workout
 - **Contains ads:** No
 - **In-app purchases:** Yes (subscription)
 - **Website:** https://thnorty.github.io/cairn/docs/
