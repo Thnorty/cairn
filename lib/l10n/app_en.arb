@@ -1068,11 +1068,11 @@
   "@premiumYearlyPlanTitle": {
     "description": "Title of the Premium screen's Yearly plan card (selected by default)."
   },
-  "premiumYearlyPlanSubtitle": "$27.99/yr · $2.33/mo",
+  "premiumYearlyPlanSubtitle": "$20.99/yr · $1.75/mo",
   "@premiumYearlyPlanSubtitle": {
     "description": "Subtitle of the Premium screen's Yearly plan card."
   },
-  "premiumYearlyPlanPrice": "$27.99",
+  "premiumYearlyPlanPrice": "$20.99",
   "@premiumYearlyPlanPrice": {
     "description": "Trailing price figure on the Premium screen's Yearly plan card."
   },
@@ -1085,12 +1085,12 @@
   "@premiumMonthlyPlanSubtitle": {
     "description": "Subtitle of the Premium screen's Monthly plan card."
   },
-  "premiumMonthlyPlanPrice": "$3.99",
+  "premiumMonthlyPlanPrice": "$2.99",
   "@premiumMonthlyPlanPrice": {
     "description": "Trailing price figure on the Premium screen's Monthly plan card."
   },
 
-  "premiumBestValueRibbon": "BEST VALUE · SAVE 42%",
+  "premiumBestValueRibbon": "BEST VALUE · SAVE 41%",
   "@premiumBestValueRibbon": {
     "description": "Ribbon badge on the Premium screen's Yearly plan card. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
   },
@@ -1099,7 +1099,7 @@
   "@premiumStartTrialButton": {
     "description": "Primary footer button on the Premium screen. Premium is post-MVP with no billing/IAP integration yet, so this is a no-op-for-now that shows premiumComingSoonSnackbar rather than starting a real trial."
   },
-  "premiumTrialSubtitle": "Then $27.99/yr · cancel anytime",
+  "premiumTrialSubtitle": "Then $20.99/yr · cancel anytime",
   "@premiumTrialSubtitle": {
     "description": "Caption under the Premium screen's primary trial button. Kept static (matching the Yearly default selection) rather than reflecting whichever plan card is currently selected - the canonical design shows only this one static line, and switching it to the Monthly price/cadence when that card is selected would be inventing copy the design doesn't have."
   },

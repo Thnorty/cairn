@@ -1163,13 +1163,13 @@ abstract class AppLocalizations {
   /// Subtitle of the Premium screen's Yearly plan card.
   ///
   /// In en, this message translates to:
-  /// **'\$27.99/yr · \$2.33/mo'**
+  /// **'\$20.99/yr · \$1.75/mo'**
   String get premiumYearlyPlanSubtitle;
 
   /// Trailing price figure on the Premium screen's Yearly plan card.
   ///
   /// In en, this message translates to:
-  /// **'\$27.99'**
+  /// **'\$20.99'**
   String get premiumYearlyPlanPrice;
 
   /// Title of the Premium screen's Monthly plan card.
@@ -1187,13 +1187,13 @@ abstract class AppLocalizations {
   /// Trailing price figure on the Premium screen's Monthly plan card.
   ///
   /// In en, this message translates to:
-  /// **'\$3.99'**
+  /// **'\$2.99'**
   String get premiumMonthlyPlanPrice;
 
   /// Ribbon badge on the Premium screen's Yearly plan card. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
   ///
   /// In en, this message translates to:
-  /// **'BEST VALUE · SAVE 42%'**
+  /// **'BEST VALUE · SAVE 41%'**
   String get premiumBestValueRibbon;
 
   /// Primary footer button on the Premium screen. Premium is post-MVP with no billing/IAP integration yet, so this is a no-op-for-now that shows premiumComingSoonSnackbar rather than starting a real trial.
@@ -1205,7 +1205,7 @@ abstract class AppLocalizations {
   /// Caption under the Premium screen's primary trial button. Kept static (matching the Yearly default selection) rather than reflecting whichever plan card is currently selected - the canonical design shows only this one static line, and switching it to the Monthly price/cadence when that card is selected would be inventing copy the design doesn't have.
   ///
   /// In en, this message translates to:
-  /// **'Then \$27.99/yr · cancel anytime'**
+  /// **'Then \$20.99/yr · cancel anytime'**
   String get premiumTrialSubtitle;
 
   /// Footer link on the Premium screen. A legal-destination placeholder for now (no Terms screen exists yet) - a later phase wires a real destination.

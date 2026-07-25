@@ -224,7 +224,7 @@ Marginal cost is tiny and concentrated in the AI verification (~cents/user/month
 - **Full trail, all past stones, streaks, rank ladder — forever.** Plus basic stats, reminders, all recurrence types, and **record sync** (tasks/completions/streaks/rank follow you to a new phone; only the photo archive is premium).
 - Basic streaks, local-only, single device, anonymous (no account).
 
-**Premium (~$3.99/mo or ~$27.99/yr, 7-day trial).** Governing principle: **charge for capacity and additions, never for access to what the user already built.**
+**Premium (~$2.99/mo or ~$20.99/yr, 7-day trial).** Governing principle: **charge for capacity and additions, never for access to what the user already built.**
 
 1. **Unlimited AI proofs.** The honest gate — the only thing with a real per-use cost (the Gemini call). Everything below is gravy.
 2. **Cloud photo backup.** The expensive half of sync — ~400 KB/proof × 5/day ≈ ~50 MB/user/month, so storage+egress is real money at scale. Gating it is cost-justified, not artificial. Premium users get their whole proof archive backed up and restorable on a new phone.

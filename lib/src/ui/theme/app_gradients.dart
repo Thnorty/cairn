@@ -172,7 +172,7 @@ abstract final class AppGradients {
     );
   }
 
-  /// Premium screen's "Best value · save 42%" ribbon background, 155deg
+  /// Premium screen's "Best value · save 41%" ribbon background, 155deg
   /// `#7a8d5a -> #5f7444`.
   static LinearGradient get premiumRibbonBg {
     final (begin, end) = cssGradientAlignment(155);

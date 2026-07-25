@@ -610,7 +610,7 @@ abstract final class AppTextStyles {
   );
 
   /// 10.5px Work Sans 700, 0.6px letter-spacing, uppercase - the Premium
-  /// screen's "Best value · save 42%" ribbon label. Callers must pass
+  /// screen's "Best value · save 41%" ribbon label. Callers must pass
   /// already-uppercased text, same reason as [sectionLabel].
   static const TextStyle premiumRibbonLabel = TextStyle(
     fontFamily: AppFontFamilies.workSans,
@@ -620,7 +620,7 @@ abstract final class AppTextStyles {
     color: AppColors.premiumOnSageText,
   );
 
-  /// 12px Work Sans 400 - the Premium screen's "Then $27.99/yr · cancel
+  /// 12px Work Sans 400 - the Premium screen's "Then $20.99/yr · cancel
   /// anytime" footer subtitle under its trial button.
   static const TextStyle premiumTrialSubtitle = TextStyle(
     fontFamily: AppFontFamilies.workSans,

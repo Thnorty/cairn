@@ -186,7 +186,7 @@ abstract final class AppShadows {
     ),
   ];
 
-  /// Premium screen's "Best value · save 42%" ribbon:
+  /// Premium screen's "Best value · save 41%" ribbon:
   /// `0 4px 8px -4px rgba(90,110,60,.6)`.
   static const List<BoxShadow> premiumRibbon = [
     BoxShadow(

@@ -443,7 +443,7 @@ abstract final class AppColors {
   /// literal per-use distinctions (see [trailWhereYouStartedText]).
   static const Color premiumOnSageText = Color(0xFFF4F0E6);
 
-  /// `#7a8d5a` / `#5f7444` - the Premium screen's "Best value · save 42%"
+  /// `#7a8d5a` / `#5f7444` - the Premium screen's "Best value · save 41%"
   /// ribbon background gradient (155deg).
   static const Color premiumRibbonBgLight = Color(0xFF7A8D5A);
   static const Color premiumRibbonBgDark = Color(0xFF5F7444);

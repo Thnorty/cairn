@@ -1,4 +1,4 @@
-import 'package:cairn/l10n/generated/app_localizations.dart';
+﻿import 'package:cairn/l10n/generated/app_localizations.dart';
 import 'package:cairn/src/premium/premium_service.dart';
 import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/ui/premium/premium_screen.dart';
@@ -84,8 +84,8 @@ void main() {
       expect(find.text('Monthly'), findsOneWidget);
       expect(find.text('Start 7-day free trial'), findsOneWidget);
 
-      expect(find.text('\$27.99'), findsOneWidget);
-      expect(find.text('\$3.99'), findsOneWidget);
+      expect(find.text('\$20.99'), findsOneWidget);
+      expect(find.text('\$2.99'), findsOneWidget);
 
       expect(find.text('Available now'), findsOneWidget);
       expect(find.text('Coming soon'), findsNWidgets(4));
