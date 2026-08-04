@@ -2,14 +2,17 @@
 /// (`String.fromEnvironment`), so a value can be overridden per build
 /// without touching source.
 ///
-/// The defaults below are this Cairn project's public Supabase values: the
-/// project URL and its publishable (anon) key are not secrets by design
-/// (row-level security, not secrecy, is what protects data behind them), so
-/// baking them in as defaults lets a plain `flutter run` work out of the
-/// box. The Gemini API key is never here and never ships in the app binary
-/// at all: it lives only as an Edge Function secret
+/// Every default below is a *public* value, safe to ship in the binary, so
+/// baking them in lets a plain `flutter run` or release build work out of the
+/// box: the Supabase project URL and its publishable (anon) key (row-level
+/// security, not secrecy, is what protects data behind them), RevenueCat's
+/// public SDK key, and the hosted legal-document URLs.
+///
+/// Genuine secrets are never here and never ship in the app binary at all.
+/// The Gemini API key lives only as an Edge Function secret
 /// (`supabase/functions/verify-proof`), read server-side via
-/// `Deno.env.get('GEMINI_API_KEY')`.
+/// `Deno.env.get('GEMINI_API_KEY')`; the Google Play service-account JSON and
+/// RevenueCat's REST key live only in their respective dashboards.
 class AppConfig {
   const AppConfig._();
 
@@ -30,20 +33,34 @@ class AppConfig {
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 
-  /// Public RevenueCat API key read via `--dart-define`.
+  /// Public RevenueCat Android SDK key.
   ///
-  /// RevenueCat public keys are safe to embed in client binaries. Defaulted to
-  /// empty so an unconfigured build stays inert; a configured build supplies
-  /// it via `--dart-define` or bakes the key in a later step.
+  /// RevenueCat's *public* SDK keys are designed to ship inside client
+  /// binaries (the secret counterpart is the REST key, which never leaves the
+  /// dashboard), so this is baked in as a default for the same reason the
+  /// Supabase anon key above is: a plain `flutter run` or release build then
+  /// works without remembering a flag. Overridable via `--dart-define` for a
+  /// different RevenueCat project, or to `''` to force an inert build.
   static const String revenueCatApiKey = String.fromEnvironment(
     'REVENUECAT_API_KEY',
-    defaultValue: '',
+    defaultValue: 'goog_eOzBeHeylWNyEBhLKPxvwvwtlfa',
   );
 
   /// Whether a RevenueCat API key is configured for subscriptions.
   static bool get isPremiumConfigured => revenueCatApiKey.isNotEmpty;
 
-  static const String termsUrl = String.fromEnvironment('TERMS_URL', defaultValue: '');
-  static const String privacyUrl = String.fromEnvironment('PRIVACY_URL', defaultValue: '');
+  /// Public legal-document URLs linked from the Premium paywall footer.
+  ///
+  /// Both are served from this repo's `docs/` folder via GitHub Pages, so the
+  /// hosted copy and the committed source stay in step.
+  static const String termsUrl = String.fromEnvironment(
+    'TERMS_URL',
+    defaultValue: 'https://thnorty.github.io/cairn/docs/terms.html',
+  );
+
+  static const String privacyUrl = String.fromEnvironment(
+    'PRIVACY_URL',
+    defaultValue: 'https://thnorty.github.io/cairn/docs/privacy.html',
+  );
 }
 
