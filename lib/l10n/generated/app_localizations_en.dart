@@ -514,6 +514,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Unlimited proofs, backup, deeper insights.';
 
   @override
+  String get profilePremiumBadge => 'PREMIUM';
+
+  @override
   String get profileComingSoonSnackbar => 'Coming soon';
 
   @override
@@ -1166,4 +1169,109 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountOfflineBannerGeneric =>
       'You\'re offline. Try again once you\'re connected.';
+
+  @override
+  String get statsDeeperInsightsSectionLabel => 'DEEPER INSIGHTS';
+
+  @override
+  String get statsConsistencyCardTitle => 'Consistency';
+
+  @override
+  String statsConsistencySummarySuffix(num weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: 'last $weeks weeks',
+      one: 'last 1 week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsConsistencyStartCaption(num weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: '$weeks weeks ago',
+      one: '1 week ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsInsightsEmptyState => 'Not enough history yet.';
+
+  @override
+  String get statsBestTimeCardTitle => 'Best time of day';
+
+  @override
+  String statsBestTimeRangeLabel(String start, String end) {
+    return '$start to $end';
+  }
+
+  @override
+  String get statsTimeBucketMidnight => '12a';
+
+  @override
+  String get statsTimeBucketFourAm => '4a';
+
+  @override
+  String get statsTimeBucketEightAm => '8a';
+
+  @override
+  String get statsTimeBucketNoon => '12p';
+
+  @override
+  String get statsTimeBucketFourPm => '4p';
+
+  @override
+  String get statsTimeBucketEightPm => '8p';
+
+  @override
+  String statsBestTimeCaption(num count, num total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count of your $total stones landed in this window.',
+      one: '1 of your $total stones landed in this window.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsRankProjectionCardTitle => 'Rank projection';
+
+  @override
+  String statsRankProjectionHeadline(String tier, String date) {
+    return '$tier by $date';
+  }
+
+  @override
+  String statsRankProjectionCaption(String metresPerWeek, num weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: '$weeks weeks',
+      one: '1 week',
+    );
+    return 'At +$metresPerWeek m a week, about $_temp0 out.';
+  }
+
+  @override
+  String statsRankProjectionCurrentMetres(String metres) {
+    return '$metres m';
+  }
+
+  @override
+  String statsRankProjectionRemaining(String metres) {
+    return '$metres m to go';
+  }
+
+  @override
+  String get statsRankProjectionAtTopRank =>
+      'You\'ve reached the top rank. Nothing left to project.';
+
+  @override
+  String get statsRankProjectionNoPace =>
+      'Complete a few more stones and we\'ll project your next rank.';
 }

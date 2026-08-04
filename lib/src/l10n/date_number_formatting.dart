@@ -136,6 +136,18 @@ String formatMetresNumber(int metres, Locale locale) {
   return NumberFormat.decimalPattern(locale.toLanguageTag()).format(metres);
 }
 
+/// Formats [fraction] (a `0.0..1.0` ratio) as a whole-number percentage with
+/// the locale's own percent symbol/placement, e.g. "82%" for `en`. Used by
+/// the Stats screen's "Deeper insights" consistency card
+/// (`Cairn Stats - Deeper Insights.dc.html`'s "82% last 8 weeks" summary).
+/// `NumberFormat.percentPattern` multiplies by 100 and rounds to the
+/// nearest whole percent by default - never build this by hand (manual
+/// `%`-suffixing breaks for locales that place or format the symbol
+/// differently), same rationale as [formatMetresNumber].
+String formatPercent(double fraction, Locale locale) {
+  return NumberFormat.percentPattern(locale.toLanguageTag()).format(fraction);
+}
+
 /// Uppercases [input] correctly for [locale].
 ///
 /// `String.toUpperCase()` uses Dart's locale-*invariant* default Unicode

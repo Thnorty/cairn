@@ -325,6 +325,19 @@ abstract final class AppColors {
   /// [heroLabelSage]).
   static const Color heroProgressFillStart = Color(0xFF9AA87C);
 
+  /// rgba(154,168,124,.18) - the rank hero's PREMIUM badge background. Same
+  /// rgb triple as [heroProgressFillStart] (`#9aa87c`) at a different alpha;
+  /// kept as its own token per this file's precedent of preserving distinct
+  /// per-source alphas rather than merging them (see
+  /// [trailWhereYouStartedText]).
+  static const Color heroPremiumBadgeBg = Color(0x2E9AA87C);
+
+  /// rgba(194,205,174,.22) - the rank hero's PREMIUM badge border. Same rgb
+  /// triple as [heroLabelSage] (`#c2cdae`, reused directly for the badge's
+  /// text per the design's own comment) at a different alpha; kept as its
+  /// own token for the same reason as [heroPremiumBadgeBg] above.
+  static const Color heroPremiumBadgeBorder = Color(0x38C2CDAE);
+
   /// rgba(255,255,255,.6) - the top inset-highlight line on the rank-ladder
   /// and settings list panels and the Cairn Premium row (distinct from
   /// [cardTopHighlight]'s .7/.55, which the irregular task cards use).
@@ -423,6 +436,16 @@ abstract final class AppColors {
   /// card background gradient (165deg).
   static const Color statsLockedCardBgLight = Color(0xFFECE7DB);
   static const Color statsLockedCardBgDark = Color(0xFFDDD4C2);
+
+  /// rgba(122,141,96,.3) - the top (opaque) stop of the Deeper Insights
+  /// Consistency card's area-fill gradient under its curve; the bottom
+  /// (transparent) stop reuses [sageGlowEnd] directly rather than a new
+  /// token (same rgb triple at 0 alpha, already shared across several
+  /// unrelated screens' own glow rings). Numerically identical to
+  /// [dialogSageIconBorder] but kept as its own token since the two mark
+  /// unrelated things, per this file's own precedent (see
+  /// [achievedTierIconBg]).
+  static const Color statsConsistencyFillStart = Color(0x4D7A8D60);
 
   // ---- Premium screen -------------------------------------------------------
 

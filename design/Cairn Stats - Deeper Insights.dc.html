@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  a { color: #6e8156; text-decoration: none; }
+  a:hover { color: #5a6b44; }
+  .stscroll::-webkit-scrollbar { width: 0; }
+</style>
+</helmet>
+
+<!--
+  Cairn Stats, PREMIUM (entitled) state.
+
+  Companion to `Cairn Stats.dc.html`, which stays canonical for the free
+  state. Two differences, both driven by entitlement:
+
+  1. The "Proofs used today" card is ABSENT. Premium lifts ProofPolicy.dailyCap
+     to null, and StatsScreen already renders that card only when the cap is
+     non-null, so an entitled user has no cap card at all rather than a card
+     reading "unlimited".
+  2. The locked "Deeper insights" upsell card is replaced by the real section:
+     three cards over data already in the local drift DB (completions carry
+     `completedAt` epoch millis, so time-of-day is available without any
+     schema change).
+
+  Everything else on the screen is identical to the free state.
+-->
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:44px 24px;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 80% at 50% -10%, rgba(140,120,95,.14), transparent 55%), repeating-radial-gradient(circle at 76% 8%, transparent 0 30px, rgba(90,78,58,.045) 30px 31px);">
+
+  <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+    <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;">
+
+      <!-- header -->
+      <div style="position:relative;z-index:5;background:linear-gradient(180deg,#ece5d7 82%,rgba(236,229,215,0));padding-bottom:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 30px 4px;color:#33302b;font-weight:600;font-size:15px;letter-spacing:.3px;">
+          <span>7:26</span>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="display:flex;align-items:flex-end;gap:2px;height:11px;">
+              <div style="width:3px;height:5px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:7px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:9px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:11px;background:#33302b;border-radius:1px;"></div>
+            </div>
+            <div style="width:16px;height:11px;border:1.5px solid #33302b;border-radius:3px;position:relative;padding:1.5px;"><div style="width:70%;height:100%;background:#33302b;border-radius:1px;"></div><div style="position:absolute;right:-3px;top:3px;width:2px;height:4px;background:#33302b;border-radius:0 1px 1px 0;"></div></div>
+          </div>
+        </div>
+        <div style="padding:8px 24px 0;">
+          <div style="font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#9c917e;margin-bottom:4px;">Your ground</div>
+          <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:30px;color:#2c2924;line-height:1;">Stats</div>
+        </div>
+      </div>
+
+      <!-- scroll body -->
+      <div class="stscroll" style="position:relative;flex:1;overflow-y:auto;padding:12px 22px 16px;">
+
+        <!-- top stat tiles -->
+        <div style="display:flex;gap:12px;">
+          <div style="flex:1;background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:26px;padding:18px 16px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 10px 18px -14px rgba(60,50,35,.4);">
+            <div style="display:flex;align-items:flex-end;gap:8px;">
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
+                <div style="width:9px;height:4px;border-radius:50%;background:#6d8056;margin-bottom:-.5px;"></div>
+                <div style="width:14px;height:5px;border-radius:50%;background:#b6ad9c;margin-bottom:-.5px;"></div>
+                <div style="width:18px;height:5px;border-radius:50%;background:#aea491;"></div>
+              </div>
+              <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:34px;color:#2c2924;line-height:.9;">248</div>
+            </div>
+            <div style="font-size:12.5px;color:#6a6153;margin-top:8px;">Stones placed</div>
+          </div>
+          <div style="flex:1;background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:26px;padding:18px 16px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 10px 18px -14px rgba(60,50,35,.4);">
+            <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:34px;color:#2c2924;line-height:.9;">6</div>
+            <div style="font-size:12.5px;color:#6a6153;margin-top:8px;">Cairns built</div>
+          </div>
+        </div>
+
+        <!--
+          NO "Proofs used today" card here: premium has no daily cap, and
+          StatsScreen gates that card on `snapshot.dailyCap != null`.
+        -->
+
+        <!-- weekly chart -->
+        <div style="margin-top:14px;background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:26px;padding:18px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;">
+            <span style="font-size:13.5px;font-weight:600;color:#2c2924;">This week</span>
+            <span style="font-size:12px;color:#6a6153;">19 of 21 done</span>
+          </div>
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;height:104px;">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:8px;background:linear-gradient(180deg,#9aa87c,#6d8056);height:66%;"></div><span style="font-size:11px;color:#8a8072;font-weight:600;">M</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:8px;background:linear-gradient(180deg,#9aa87c,#6d8056);height:100%;"></div><span style="font-size:11px;color:#8a8072;font-weight:600;">T</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:8px;background:linear-gradient(180deg,#9aa87c,#6d8056);height:100%;"></div><span style="font-size:11px;color:#8a8072;font-weight:600;">W</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:8px;background:linear-gradient(180deg,#9aa87c,#6d8056);height:66%;"></div><span style="font-size:11px;color:#8a8072;font-weight:600;">T</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:8px;background:linear-gradient(180deg,#9aa87c,#6d8056);height:100%;"></div><span style="font-size:11px;color:#8a8072;font-weight:600;">F</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:8px;background:linear-gradient(180deg,#9aa87c,#6d8056);height:100%;"></div><span style="font-size:11px;color:#8a8072;font-weight:600;">S</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:8px;background:rgba(120,108,88,.18);height:33%;"></div><span style="font-size:11px;color:#8a8072;font-weight:600;">S</span></div>
+          </div>
+        </div>
+
+        <!-- current streaks -->
+        <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9c917e;margin:22px 0 11px;">Current streaks</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:22px;padding:14px 16px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+            <div style="display:flex;align-items:center;gap:13px;">
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;"><div style="width:10px;height:4px;border-radius:50%;background:#6d8056;margin-bottom:-.5px;"></div><div style="width:15px;height:5px;border-radius:50%;background:#b6ad9c;margin-bottom:-.5px;"></div><div style="width:20px;height:5px;border-radius:50%;background:#aea491;"></div></div>
+              <span style="font-family:'Zilla Slab',serif;font-weight:600;font-size:16px;color:#2c2924;">Morning workout</span>
+            </div>
+            <span style="font-size:13px;font-weight:600;color:#5f7a45;">9 days</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:22px;padding:14px 16px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+            <div style="display:flex;align-items:center;gap:13px;">
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;"><div style="width:10px;height:4px;border-radius:50%;background:#6d8056;margin-bottom:-.5px;"></div><div style="width:15px;height:5px;border-radius:50%;background:#b6ad9c;margin-bottom:-.5px;"></div><div style="width:20px;height:5px;border-radius:50%;background:#aea491;"></div></div>
+              <span style="font-family:'Zilla Slab',serif;font-weight:600;font-size:16px;color:#2c2924;">Read 20 pages</span>
+            </div>
+            <span style="font-size:13px;font-weight:600;color:#5f7a45;">4 days</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:22px;padding:14px 16px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+            <div style="display:flex;align-items:center;gap:13px;">
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;"><div style="width:10px;height:4px;border-radius:50%;background:#6d8056;margin-bottom:-.5px;"></div><div style="width:15px;height:5px;border-radius:50%;background:#b6ad9c;margin-bottom:-.5px;"></div><div style="width:20px;height:5px;border-radius:50%;background:#aea491;"></div></div>
+              <span style="font-family:'Zilla Slab',serif;font-weight:600;font-size:16px;color:#2c2924;">Water the plants</span>
+            </div>
+            <span style="font-size:13px;font-weight:600;color:#5f7a45;">6 days</span>
+          </div>
+        </div>
+
+        <!--
+          DEEPER INSIGHTS: the unlocked replacement for the free state's
+          locked upsell card. The sage PREMIUM pill on the section label is
+          deliberate: it is the one place in the app that reminds an entitled
+          user, in passing, what they are paying for. Sage (not the
+          terracotta of the free state's upsell pill) because in this design
+          language sage means "yours / live" and terracotta means "buy this".
+        -->
+        <div style="display:flex;align-items:center;gap:9px;margin:22px 0 11px;">
+          <span style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9c917e;">Deeper insights</span>
+          <span style="font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#5f7a45;background:rgba(122,141,96,.18);padding:3px 7px;border-radius:9px;">Premium</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px;">
+
+          <!-- 1. consistency curve -->
+          <div style="background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:26px;padding:18px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
+              <span style="font-size:13.5px;font-weight:600;color:#2c2924;">Consistency</span>
+              <span style="font-size:12px;color:#6a6153;"><strong style="color:#5f7a45;font-weight:600;">82%</strong> last 8 weeks</span>
+            </div>
+            <svg width="100%" height="88" viewBox="0 0 290 88" preserveAspectRatio="none" style="display:block;overflow:visible;">
+              <defs>
+                <linearGradient id="consFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#7a8d60" stop-opacity=".3"></stop>
+                  <stop offset="100%" stop-color="#7a8d60" stop-opacity="0"></stop>
+                </linearGradient>
+              </defs>
+              <!-- 50% reference line -->
+              <line x1="3" y1="47" x2="285" y2="47" stroke="rgba(120,108,88,.18)" stroke-width="1" stroke-dasharray="3 4"></line>
+              <!-- area under the curve -->
+              <path d="M3,43.5 L43.3,38.6 L83.6,41.4 L123.9,30.2 L164.1,26 L204.4,31.6 L244.7,20.4 L285,17.6 L285,82 L3,82 Z" fill="url(#consFill)"></path>
+              <!-- the curve itself -->
+              <path d="M3,43.5 L43.3,38.6 L83.6,41.4 L123.9,30.2 L164.1,26 L204.4,31.6 L244.7,20.4 L285,17.6" fill="none" stroke="#6d8056" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+              <!-- current week marker -->
+              <circle cx="285" cy="17.6" r="4.5" fill="#f3eee3" stroke="#6d8056" stroke-width="2.4"></circle>
+            </svg>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;">
+              <span style="font-size:11px;color:#9c917e;">8 weeks ago</span>
+              <span style="font-size:11px;color:#9c917e;">This week</span>
+            </div>
+          </div>
+
+          <!-- 2. best times of day -->
+          <div style="background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:26px;padding:18px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:15px;">
+              <span style="font-size:13.5px;font-weight:600;color:#2c2924;">Best time of day</span>
+              <span style="font-size:12px;font-weight:600;color:#5f7a45;">8a to 12p</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;height:78px;">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:7px;background:rgba(120,108,88,.2);height:8%;"></div><span style="font-size:10.5px;color:#8a8072;font-weight:600;">12a</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:7px;background:rgba(120,108,88,.2);height:46%;"></div><span style="font-size:10.5px;color:#8a8072;font-weight:600;">4a</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:7px;background:linear-gradient(180deg,#9aa87c,#6d8056);height:100%;"></div><span style="font-size:10.5px;color:#5f7a45;font-weight:700;">8a</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:7px;background:rgba(120,108,88,.2);height:38%;"></div><span style="font-size:10.5px;color:#8a8072;font-weight:600;">12p</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:7px;background:rgba(120,108,88,.2);height:62%;"></div><span style="font-size:10.5px;color:#8a8072;font-weight:600;">4p</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end;"><div style="width:100%;border-radius:7px;background:rgba(120,108,88,.2);height:22%;"></div><span style="font-size:10.5px;color:#8a8072;font-weight:600;">8p</span></div>
+            </div>
+            <div style="font-size:11.5px;color:#9c917e;margin-top:11px;">84 of your 248 stones landed in this window.</div>
+          </div>
+
+          <!-- 3. rank projection -->
+          <div style="background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:26px;padding:18px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+            <div style="font-size:13.5px;font-weight:600;color:#2c2924;margin-bottom:14px;">Rank projection</div>
+            <div style="display:flex;align-items:center;gap:14px;">
+              <span style="width:42px;height:42px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.18);display:flex;align-items:center;justify-content:center;">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#5f7a45" stroke-width="2" stroke-linejoin="round"><path d="M3 19l5.5-9 3.5 5 2-3 6.5 7z"></path></svg>
+              </span>
+              <div style="flex:1;">
+                <div style="font-family:'Zilla Slab',serif;font-weight:600;font-size:20px;color:#2c2924;line-height:1.1;">Crag by 12 Sep</div>
+                <div style="font-size:12.5px;color:#6a6153;margin-top:2px;">At +38 m a week, about 7 weeks out.</div>
+              </div>
+            </div>
+            <div style="margin-top:15px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#9c917e;margin-bottom:7px;">
+                <span>840 m</span>
+                <span>260 m to go</span>
+              </div>
+              <div style="height:8px;border-radius:5px;background:rgba(120,108,88,.2);overflow:hidden;">
+                <div style="width:60%;height:100%;border-radius:5px;background:linear-gradient(90deg,#9aa87c,#6d8056);"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- tab bar -->
+      <div style="position:relative;z-index:5;flex-shrink:0;padding:12px 40px 26px;background:linear-gradient(0deg,#e9e1d3 66%,rgba(233,225,211,0));display:flex;align-items:flex-end;justify-content:space-between;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:48px;color:#a19785;">
+          <svg width="23" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h14V9.5"></path></svg>
+          <span style="font-size:10.5px;font-weight:500;color:#a19785;">Today</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:48px;color:#a19785;">
+          <svg width="23" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21c0-3.5 4-3.5 4-7s-4-3.5-4-7 4-3.5 4-4"></path><circle cx="10" cy="3" r="0.6" fill="currentColor" stroke="none"></circle><path d="M14 3c0 3.5 4 3.5 4 7s-4 3.5-4 7 3 3 4 4"></path></svg>
+          <span style="font-size:10.5px;font-weight:500;color:#a19785;">Trail</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:48px;color:#33302b;">
+          <svg width="23" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"></path><path d="M12 20V4"></path><path d="M20 20v-7"></path></svg>
+          <span style="font-size:10.5px;font-weight:600;color:#33302b;">Stats</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:48px;color:#a19785;">
+          <svg width="23" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"></circle><path d="M5.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path></svg>
+          <span style="font-size:10.5px;font-weight:500;color:#a19785;">Profile</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

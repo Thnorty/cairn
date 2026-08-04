@@ -818,6 +818,12 @@ abstract class AppLocalizations {
   /// **'Unlimited proofs, backup, deeper insights.'**
   String get profilePremiumSubtitle;
 
+  /// Small pill badge on the Profile screen's rank hero card, shown only while premiumStatusProvider is true. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel/premiumBestValueRibbon; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'PREMIUM'**
+  String get profilePremiumBadge;
+
   /// No longer shown anywhere in the Profile screen (its Cairn Premium row navigates to PremiumScreen directly, and Phase 4b wires the account-status row's 'Create' action to the real account-upgrade flow), but kept as a translated string rather than deleted in case a future regression needs a coming-soon snackbar back.
   ///
   /// In en, this message translates to:
@@ -1891,6 +1897,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You\'re offline. Try again once you\'re connected.'**
   String get accountOfflineBannerGeneric;
+
+  /// All-caps section label above the Stats screen's premium 'Deeper insights' cards (Cairn Stats - Deeper Insights.dc.html), paired with a small sage PREMIUM pill (statsPremiumBadge). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'DEEPER INSIGHTS'**
+  String get statsDeeperInsightsSectionLabel;
+
+  /// Heading of the Deeper Insights 'Consistency' card, showing the weekly consistency trend chart.
+  ///
+  /// In en, this message translates to:
+  /// **'Consistency'**
+  String get statsConsistencyCardTitle;
+
+  /// Plain (muted) remainder of the Consistency card's header summary, following the sage-coloured percentage rendered separately, e.g. 'last 8 weeks' in '82% last 8 weeks'. weeks is InsightsService.consistencyWindowWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'{weeks, plural, one{last 1 week} other{last {weeks} weeks}}'**
+  String statsConsistencySummarySuffix(num weeks);
+
+  /// Caption under the left edge of the Consistency card's chart, e.g. '8 weeks ago'. weeks is InsightsService.consistencyWindowWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'{weeks, plural, one{1 week ago} other{{weeks} weeks ago}}'**
+  String statsConsistencyStartCaption(num weeks);
+
+  /// Shared fallback body line for a Deeper Insights card with nothing to show yet: the Consistency card when ConsistencySnapshot.overallRate is null (no week in the window had anything scheduled), and the Best time of day card when BestTimeOfDay.total is 0. Not part of the canonical design (which depicts only the populated state) - authored copy for the degenerate case, the same scope note statsNoActiveStreaksLabel's own doc comment makes for its card.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough history yet.'**
+  String get statsInsightsEmptyState;
+
+  /// Heading of the Deeper Insights 'Best time of day' card, showing a 6-bucket bar chart of stones by time of day.
+  ///
+  /// In en, this message translates to:
+  /// **'Best time of day'**
+  String get statsBestTimeCardTitle;
+
+  /// The peak time-of-day bucket's range, shown sage-coloured at the top right of the Best time of day card, e.g. '8a to 12p'. start/end are two of the six statsTimeBucket* short labels.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} to {end}'**
+  String statsBestTimeRangeLabel(String start, String end);
+
+  /// Short label for the Best time of day chart's midnight-to-4am bucket ([0,4) local hour).
+  ///
+  /// In en, this message translates to:
+  /// **'12a'**
+  String get statsTimeBucketMidnight;
+
+  /// Short label for the Best time of day chart's 4am-to-8am bucket ([4,8) local hour).
+  ///
+  /// In en, this message translates to:
+  /// **'4a'**
+  String get statsTimeBucketFourAm;
+
+  /// Short label for the Best time of day chart's 8am-to-noon bucket ([8,12) local hour).
+  ///
+  /// In en, this message translates to:
+  /// **'8a'**
+  String get statsTimeBucketEightAm;
+
+  /// Short label for the Best time of day chart's noon-to-4pm bucket ([12,16) local hour).
+  ///
+  /// In en, this message translates to:
+  /// **'12p'**
+  String get statsTimeBucketNoon;
+
+  /// Short label for the Best time of day chart's 4pm-to-8pm bucket ([16,20) local hour).
+  ///
+  /// In en, this message translates to:
+  /// **'4p'**
+  String get statsTimeBucketFourPm;
+
+  /// Short label for the Best time of day chart's 8pm-to-midnight bucket ([20,24) local hour).
+  ///
+  /// In en, this message translates to:
+  /// **'8p'**
+  String get statsTimeBucketEightPm;
+
+  /// Caption under the Best time of day card's bars, naming how many of the user's total stones landed in the peak bucket, e.g. '84 of your 248 stones landed in this window.'
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 of your {total} stones landed in this window.} other{{count} of your {total} stones landed in this window.}}'**
+  String statsBestTimeCaption(num count, num total);
+
+  /// Heading of the Deeper Insights 'Rank projection' card.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank projection'**
+  String get statsRankProjectionCardTitle;
+
+  /// Rank projection card's main line naming the next rank tier and a projected date, e.g. 'Crag by Sep 12'. tier is RankTier.label (domain vocabulary, not translated - the same treatment profileMetresToNextTier's own {tier} placeholder gets); date is already formatted via formatShortMonthDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{tier} by {date}'**
+  String statsRankProjectionHeadline(String tier, String date);
+
+  /// Rank projection card's caption under the headline, naming the recent weekly pace and a rough weeks-out estimate, e.g. 'At +38 m a week, about 7 weeks out.' metresPerWeek is already formatted via formatMetresNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'At +{metresPerWeek} m a week, about {weeks, plural, one{1 week} other{{weeks} weeks}} out.'**
+  String statsRankProjectionCaption(String metresPerWeek, num weeks);
+
+  /// Left value under the Rank projection card's progress bar: the user's current total altitude, e.g. '840 m'. metres is already formatted via formatMetresNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'{metres} m'**
+  String statsRankProjectionCurrentMetres(String metres);
+
+  /// Right value under the Rank projection card's progress bar: metres still needed to reach the next tier, e.g. '260 m to go'. metres is already formatted via formatMetresNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'{metres} m to go'**
+  String statsRankProjectionRemaining(String metres);
+
+  /// Rank projection card's fallback body line when the user has already reached the top rank tier (Summit), so InsightsService.rankProjection() returns null with nothing to project. Not part of the canonical design (which depicts only the populated state) - authored copy for the degenerate case, distinguishing this cause from statsRankProjectionNoPace.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the top rank. Nothing left to project.'**
+  String get statsRankProjectionAtTopRank;
+
+  /// Rank projection card's fallback body line when the user is below the top rank but has no recent verified pace to project from, so InsightsService.rankProjection() returns null with nothing to project. Not part of the canonical design (which depicts only the populated state) - authored copy for the degenerate case, distinguishing this cause from statsRankProjectionAtTopRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete a few more stones and we\'ll project your next rank.'**
+  String get statsRankProjectionNoPace;
 }
 
 class _AppLocalizationsDelegate

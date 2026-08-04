@@ -161,6 +161,19 @@ abstract final class AppGradients {
     colors: [AppColors.heroProgressFillStart, AppColors.sage],
   );
 
+  /// Deeper Insights Rank projection card's progress-bar fill, 90deg
+  /// `#9aa87c -> #6d8056` - the same colour pair as [statsWeekBarFill]
+  /// (heroProgressFillStart -> sage), just horizontal instead of vertical
+  /// (this progress bar fills left-to-right, not bottom-to-top).
+  static LinearGradient get statsRankProjectionFill {
+    final (begin, end) = cssGradientAlignment(90);
+    return LinearGradient(
+      begin: begin,
+      end: end,
+      colors: const [AppColors.heroProgressFillStart, AppColors.sage],
+    );
+  }
+
   /// Stats screen's locked "Deeper insights" card background, 165deg
   /// `#ece7db -> #ddd4c2`.
   static LinearGradient get statsLockedCardBg {

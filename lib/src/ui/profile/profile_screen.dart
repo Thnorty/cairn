@@ -51,6 +51,7 @@ class ProfileScreen extends ConsumerWidget {
     final snapshotAsync = ref.watch(profileSnapshotProvider);
     final accountFeatureAvailable = ref.watch(accountFeatureAvailableProvider);
     final accountStateAsync = ref.watch(accountStateProvider);
+    final isPremium = ref.watch(premiumStatusProvider);
 
     void openCreateAccountFlow() {
       Navigator.of(context, rootNavigator: true).push(
@@ -87,6 +88,7 @@ class ProfileScreen extends ConsumerWidget {
               child: snapshotAsync.when(
                 data: (snapshot) => _ProfileBody(
                   snapshot: snapshot,
+                  isPremium: isPremium,
                   accountFeatureAvailable: accountFeatureAvailable,
                   accountStateAsync: accountStateAsync,
                   onCreateAccount: openCreateAccountFlow,
@@ -110,6 +112,7 @@ class ProfileScreen extends ConsumerWidget {
 class _ProfileBody extends StatelessWidget {
   const _ProfileBody({
     required this.snapshot,
+    required this.isPremium,
     required this.accountFeatureAvailable,
     required this.accountStateAsync,
     required this.onCreateAccount,
@@ -117,6 +120,13 @@ class _ProfileBody extends StatelessWidget {
   });
 
   final ProfileSnapshot snapshot;
+
+  /// Whether the user is currently entitled to Premium
+  /// (`premiumStatusProvider`), watched once here in this screen's
+  /// `ConsumerWidget` ancestor and threaded down as a plain bool - see
+  /// [_RankHeroCard]'s own doc comment on why it stays a [StatelessWidget]
+  /// rather than becoming a [ConsumerWidget] just for this one flag.
+  final bool isPremium;
 
   /// False when no live Supabase project is configured
   /// ([AccountFeatureAvailableProvider]); the whole account entry (both the
@@ -139,7 +149,7 @@ class _ProfileBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _RankHeroCard(snapshot: snapshot),
+          _RankHeroCard(snapshot: snapshot, isPremium: isPremium),
           const SizedBox(height: 14),
           _RankLadderPanel(rank: snapshot.rank),
           const SizedBox(height: 14),
@@ -184,9 +194,17 @@ class _ProfileBody extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _RankHeroCard extends StatelessWidget {
-  const _RankHeroCard({required this.snapshot});
+  const _RankHeroCard({required this.snapshot, required this.isPremium});
 
   final ProfileSnapshot snapshot;
+
+  /// Whether to show the PREMIUM badge (see `Cairn Profile.dc.html`'s own
+  /// HTML comment above the badge `<span>` for the design rationale). Passed
+  /// down from [ProfileScreen]'s `ConsumerWidget` build method rather than
+  /// watched here directly: this card stays a plain [StatelessWidget], the
+  /// same "pass a bool down" approach this run's spec calls for instead of
+  /// promoting it to a [ConsumerWidget] just for one flag.
+  final bool isPremium;
 
   @override
   Widget build(BuildContext context) {
@@ -196,69 +214,111 @@ class _RankHeroCard extends StatelessWidget {
     final totalText = formatMetresNumber(snapshot.totalAltitude, locale);
 
     return Container(
-      padding: const EdgeInsetsDirectional.fromSTEB(22, 22, 22, 20),
       decoration: BoxDecoration(
         gradient: AppGradients.heroDark,
         borderRadius: BorderRadius.circular(AppRadii.heroCard),
         boxShadow: AppShadows.heroCard,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      // A Stack (rather than folding the badge into the padded Column below)
+      // so the badge's top/end offsets are measured from the CARD's own
+      // edge, matching the source file's CSS: the badge `<span>` is
+      // `position:absolute` against the outer div, which has its own
+      // `padding:22px 22px 20px` - offsets on an absolutely positioned
+      // element are relative to its containing block's edge, not inset by
+      // that block's own padding. A `Positioned` child of a `Padding`-wrapped
+      // Column would instead measure from the padded content box, sitting
+      // ~22px further in than the design.
+      child: Stack(
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const _RankBadge(),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(22, 22, 22, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(l10n.profileCurrentRankLabel, style: AppTextStyles.heroLabel),
-                    const SizedBox(height: 2),
-                    Text(rank.tier.label, style: AppTextStyles.heroTierTitle),
-                    const SizedBox(height: 1),
-                    Text(
-                      l10n.profileMetresGainedLabel(totalText),
-                      style: AppTextStyles.heroGainedSubtitle,
-                    ),
-                    // Withheld metres, shown only while a proof is still
-                    // awaiting a verdict - never folded into the total above
-                    // (see CLAUDE.md's pending-completion decision and
-                    // ProfileSnapshot's doc comment).
-                    if (snapshot.pendingAltitude > 0) ...[
-                      const SizedBox(height: 3),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
+                    const _RankBadge(),
+                    const SizedBox(width: 15),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const _Glyph(
-                            shape: _GlyphShape.clockPending,
-                            color: AppColors.heroPendingText,
-                            size: 11,
-                          ),
-                          const SizedBox(width: 5),
+                          Text(l10n.profileCurrentRankLabel, style: AppTextStyles.heroLabel),
+                          const SizedBox(height: 2),
+                          Text(rank.tier.label, style: AppTextStyles.heroTierTitle),
+                          const SizedBox(height: 1),
                           Text(
-                            l10n.profilePendingMetresLabel(
-                              formatMetresNumber(snapshot.pendingAltitude, locale),
-                            ),
-                            style: AppTextStyles.heroPendingLabel,
+                            l10n.profileMetresGainedLabel(totalText),
+                            style: AppTextStyles.heroGainedSubtitle,
                           ),
+                          // Withheld metres, shown only while a proof is
+                          // still awaiting a verdict - never folded into the
+                          // total above (see CLAUDE.md's pending-completion
+                          // decision and ProfileSnapshot's doc comment).
+                          if (snapshot.pendingAltitude > 0) ...[
+                            const SizedBox(height: 3),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const _Glyph(
+                                  shape: _GlyphShape.clockPending,
+                                  color: AppColors.heroPendingText,
+                                  size: 11,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  l10n.profilePendingMetresLabel(
+                                    formatMetresNumber(snapshot.pendingAltitude, locale),
+                                  ),
+                                  style: AppTextStyles.heroPendingLabel,
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
-                    ],
+                    ),
                   ],
                 ),
-              ),
-            ],
+                // No design reference exists for the Summit (top-rank)
+                // state, so the whole progress-to-next block is simply
+                // omitted once there's nowhere further to climb, rather
+                // than inventing copy for it.
+                if (rank.metresToNext != null && rank.nextTier != null) ...[
+                  const SizedBox(height: 18),
+                  _ProgressToNext(rank: rank, l10n: l10n, locale: locale),
+                ],
+              ],
+            ),
           ),
-          // No design reference exists for the Summit (top-rank) state, so
-          // the whole progress-to-next block is simply omitted once there's
-          // nowhere further to climb, rather than inventing copy for it.
-          if (rank.metresToNext != null && rank.nextTier != null) ...[
-            const SizedBox(height: 18),
-            _ProgressToNext(rank: rank, l10n: l10n, locale: locale),
-          ],
+          if (isPremium)
+            const PositionedDirectional(top: 18, end: 20, child: _PremiumBadge()),
         ],
+      ),
+    );
+  }
+}
+
+/// The rank hero's "PREMIUM" pill (`Cairn Profile.dc.html`'s HTML comment
+/// above the badge `<span>`): sage, not the terracotta used by the paywall
+/// upsell pills elsewhere - in this design language sage means "yours /
+/// live" and terracotta means "buy this".
+class _PremiumBadge extends StatelessWidget {
+  const _PremiumBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.heroPremiumBadgeBg,
+        border: Border.all(color: AppColors.heroPremiumBadgeBorder),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.symmetric(horizontal: 9, vertical: 4),
+        child: Text(l10n.profilePremiumBadge, style: AppTextStyles.heroPremiumBadgeLabel),
       ),
     );
   }

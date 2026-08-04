@@ -313,6 +313,18 @@ abstract final class AppTextStyles {
     color: AppColors.heroLabelSage,
   );
 
+  /// 9.5px Work Sans 700, 1px letter-spacing, uppercase - the Profile rank
+  /// hero's PREMIUM badge label, shown only while `premiumStatusProvider` is
+  /// true. Callers must pass already-uppercased text, same Turkish
+  /// dotted-i reason as [sectionLabel].
+  static const TextStyle heroPremiumBadgeLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w700,
+    fontSize: 9.5,
+    letterSpacing: 1,
+    color: AppColors.heroLabelSage,
+  );
+
   /// 14px Work Sans 400 - the Profile rank-ladder row's tier-name label,
   /// default (already-passed-tier) colour; callers `.copyWith` for the
   /// current-tier (bold, ink) and future-tier (faint) variants.
@@ -562,6 +574,62 @@ abstract final class AppTextStyles {
     fontSize: 11,
     letterSpacing: 0.5,
     color: AppColors.terracotta,
+  );
+
+  /// 9.5px Work Sans 700, 1px letter-spacing, uppercase - the sage "PREMIUM"
+  /// pill on the Stats screen's unlocked "Deeper insights" section label
+  /// (entitled state only). Distinct from [statsPremiumBadgeLabel] (11px/
+  /// 0.5px letter-spacing/terracotta, the LOCKED card's own badge): sage
+  /// here deliberately means "yours / live" where the locked card's
+  /// terracotta means "buy this", per the design's own doc comment. Callers
+  /// must pass already-uppercased text, same Turkish dotted-i reason as
+  /// [sectionLabel].
+  static const TextStyle statsInsightsPremiumBadgeLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w700,
+    fontSize: 9.5,
+    letterSpacing: 1,
+    color: AppColors.sageText,
+  );
+
+  /// 11px Work Sans 400 - the Deeper Insights Consistency card's axis
+  /// captions under its chart ("8 weeks ago" / "This week"). Distinct from
+  /// [statsResetCaption] (11.5px, a size step up): close but not identical
+  /// in the source file, faithfully kept as its own token rather than
+  /// collapsed.
+  static const TextStyle statsInsightsAxisCaption = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 11,
+    color: AppColors.labelGrey,
+  );
+
+  /// 12px Work Sans 600 - the Deeper Insights Best time of day card's peak
+  /// range label, top right ("8a to 12p").
+  static const TextStyle statsBestTimePeakLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 12,
+    color: AppColors.sageText,
+  );
+
+  /// 10.5px Work Sans 600 - a Deeper Insights Best time of day bar's label
+  /// beneath it (e.g. "8a"), default (non-peak) colour; callers `.copyWith`
+  /// the peak bar's own bolder sage variant.
+  static const TextStyle statsTimeBucketLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 10.5,
+    color: AppColors.textFaint,
+  );
+
+  /// 20px Zilla Slab 600 - the Deeper Insights Rank projection card's main
+  /// line ("Crag by Sep 12").
+  static const TextStyle statsRankProjectionHeadline = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w600,
+    fontSize: 20,
+    color: AppColors.inkPrimary,
   );
 
   // ---- Premium screen -----------------------------------------------------

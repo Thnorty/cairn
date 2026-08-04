@@ -20,6 +20,7 @@ import 'services/auth_service.dart';
 import 'services/camera_permission_requester.dart';
 import 'services/camera_session.dart';
 import 'services/home_service.dart';
+import 'services/insights_service.dart';
 import 'services/occurrence_generator.dart';
 import 'services/photo_capture.dart';
 import 'services/points_service.dart';
@@ -233,6 +234,68 @@ final statsServiceProvider = Provider<StatsService>((ref) {
 /// [trailSnapshotProvider]).
 final statsSnapshotProvider = StreamProvider<StatsSnapshot>((ref) {
   return ref.watch(statsServiceProvider).watchStats();
+});
+
+/// Computes the Stats screen's "Deeper insights" figures (consistency, best
+/// time of day, rank projection - see [InsightsService]'s own doc comment).
+/// Deliberately NOT gated on [premiumStatusProvider] here: this service
+/// computes unconditionally, and the later work order that builds the
+/// "Deeper insights" UI on top of it applies the entitlement gate there.
+final insightsServiceProvider = Provider<InsightsService>((ref) {
+  return InsightsService(
+    ref.watch(taskRepositoryProvider),
+    ref.watch(completionRepositoryProvider),
+    ref.watch(occurrenceGeneratorProvider),
+    ref.watch(pointsServiceProvider),
+    ref.watch(clockProvider),
+  );
+});
+
+/// The Stats screen's "Deeper insights" figures, bundled for its premium
+/// section: [InsightsService.consistency]/[InsightsService.bestTimeOfDay]/
+/// [InsightsService.rankProjection] plus [isAtTopRank] - a minimal extra
+/// signal computed here (via the same already-public
+/// [CompletionRepository.totalAltitude]/[PointsService.rankFor] calls
+/// [InsightsService.rankProjection] itself makes internally) rather than
+/// added to [InsightsService], so the UI can tell apart the two reasons
+/// [InsightsSnapshot.rankProjection] can be null: already at the top rank
+/// (nothing to project) versus not enough recent pace yet - two different
+/// empty-state messages, per `Cairn Stats - Deeper Insights.dc.html`'s own
+/// work order.
+typedef InsightsSnapshot = ({
+  ConsistencySnapshot consistency,
+  BestTimeOfDay bestTimeOfDay,
+  RankProjection? rankProjection,
+  bool isAtTopRank,
+});
+
+/// Drives the Stats screen's "Deeper insights" section. A plain
+/// [FutureProvider] (InsightsService itself has no `watchX` stream method,
+/// per its own doc comment - it computes unconditionally on request) that
+/// re-executes whenever [statsSnapshotProvider] emits a new snapshot, which
+/// already happens on every relevant tasks/completions change (see that
+/// provider's own doc comment): watched here purely as a recompute trigger,
+/// its own value is unused, so Deeper Insights never goes stale relative to
+/// the rest of the Stats screen without InsightsService needing its own
+/// separate watch/stream plumbing.
+final insightsSnapshotProvider = FutureProvider<InsightsSnapshot>((ref) async {
+  ref.watch(statsSnapshotProvider);
+  final insights = ref.watch(insightsServiceProvider);
+
+  final consistency = await insights.consistency();
+  final bestTimeOfDay = await insights.bestTimeOfDay();
+  final rankProjection = await insights.rankProjection();
+
+  final totalAltitude = await ref.read(completionRepositoryProvider).totalAltitude();
+  final isAtTopRank =
+      ref.read(pointsServiceProvider).rankFor(totalAltitude).nextTier == null;
+
+  return (
+    consistency: consistency,
+    bestTimeOfDay: bestTimeOfDay,
+    rankProjection: rankProjection,
+    isAtTopRank: isAtTopRank,
+  );
 });
 
 // Photo-library metadata is tried first (its timestamp is harder to forge

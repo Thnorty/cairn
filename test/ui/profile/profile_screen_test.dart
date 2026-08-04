@@ -183,6 +183,39 @@ void main() {
       expect(find.text('+26 m awaiting verification'), findsOneWidget);
       expect(find.text('0 m gained'), findsOneWidget); // not counted yet
     });
+
+    testProfileWidgets(
+        'renders the PREMIUM badge on the rank hero when the user is '
+        'entitled', (tester) async {
+      final db = inMemoryDatabase();
+      addTearDown(db.close);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            clockProvider.overrideWithValue(FixedClock(d(2026, 7, 10))),
+            debugPremiumOverrideProvider.overrideWith((ref) => true),
+          ],
+          child: wrap(const ProfileScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('PREMIUM'), findsOneWidget);
+    });
+
+    testProfileWidgets(
+        'omits the PREMIUM badge on the rank hero for a free '
+        '(non-entitled) user', (tester) async {
+      final db = await pumpProfile(
+        tester,
+        clock: FixedClock(d(2026, 7, 10)),
+        seed: (db, taskRepo) async {},
+      );
+      addTearDown(db.close);
+
+      expect(find.text('PREMIUM'), findsNothing);
+    });
   });
 
   group('rank ladder', () {

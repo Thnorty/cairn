@@ -1,11 +1,14 @@
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
 import '../../l10n/date_number_formatting.dart';
 import '../../providers.dart';
+import '../../services/insights_service.dart';
+import '../../services/points_service.dart';
 import '../../services/stats_service.dart';
 import '../premium/premium_screen.dart';
 import '../theme/app_colors.dart';
@@ -14,6 +17,7 @@ import '../theme/app_radii.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
+import '../widgets/glyphs.dart';
 import '../widgets/screen_header.dart';
 
 /// The Stats screen (`Cairn Stats.dc.html`): lifetime stones/cairns totals,
@@ -40,6 +44,7 @@ class StatsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final snapshotAsync = ref.watch(statsSnapshotProvider);
+    final isPremium = ref.watch(premiumStatusProvider);
 
     void openPremium() => openPremiumScreen(context);
 
@@ -69,6 +74,7 @@ class StatsScreen extends ConsumerWidget {
                 data: (snapshot) => _StatsBody(
                   snapshot: snapshot,
                   onPremiumTap: openPremium,
+                  isPremium: isPremium,
                 ),
                 // The stream's first emission is effectively synchronous
                 // (see HomeService.watchToday's doc comment), so there's
@@ -85,10 +91,22 @@ class StatsScreen extends ConsumerWidget {
 }
 
 class _StatsBody extends StatelessWidget {
-  const _StatsBody({required this.snapshot, required this.onPremiumTap});
+  const _StatsBody({
+    required this.snapshot,
+    required this.onPremiumTap,
+    required this.isPremium,
+  });
 
   final StatsSnapshot snapshot;
   final VoidCallback onPremiumTap;
+
+  /// Gates which "Deeper insights" treatment renders below the current
+  /// streaks list: the locked upsell card (unchanged) when false, the real
+  /// section (`Cairn Stats - Deeper Insights.dc.html`) when true. Read once
+  /// in [StatsScreen.build] via [premiumStatusProvider] and threaded down
+  /// rather than watched again here, the same way [snapshot] itself is
+  /// threaded down from [statsSnapshotProvider] instead of re-watched.
+  final bool isPremium;
 
   @override
   Widget build(BuildContext context) {
@@ -109,8 +127,13 @@ class _StatsBody extends StatelessWidget {
           Text(l10n.statsCurrentStreaksLabel, style: AppTextStyles.formSectionLabel),
           const SizedBox(height: 11),
           _CurrentStreaksList(streaks: snapshot.streaks),
-          const SizedBox(height: 16),
-          _DeeperInsightsCard(onTap: onPremiumTap),
+          if (isPremium) ...[
+            const SizedBox(height: 22),
+            const _DeeperInsightsSection(),
+          ] else ...[
+            const SizedBox(height: 16),
+            _DeeperInsightsCard(onTap: onPremiumTap),
+          ],
         ],
       ),
     );
@@ -559,6 +582,624 @@ class _StreakRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Deeper insights (entitled state): consistency / best time of day / rank
+// projection - Cairn Stats - Deeper Insights.dc.html
+// ---------------------------------------------------------------------------
+
+/// The unlocked "Deeper insights" section shown in place of
+/// [_DeeperInsightsCard] once [premiumStatusProvider] is true: a section
+/// label + sage PREMIUM pill, then three cards (Consistency, Best time of
+/// day, Rank projection) built from [insightsSnapshotProvider]. A
+/// [ConsumerWidget] of its own (rather than threading another provider
+/// value down from [StatsScreen]) since this is the one part of the screen
+/// that needs a second, independent async source alongside [snapshot].
+class _DeeperInsightsSection extends ConsumerWidget {
+  const _DeeperInsightsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final insightsAsync = ref.watch(insightsSnapshotProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(l10n.statsDeeperInsightsSectionLabel, style: AppTextStyles.formSectionLabel),
+            const SizedBox(width: 9),
+            _InsightsPremiumPill(label: l10n.statsPremiumBadge),
+          ],
+        ),
+        const SizedBox(height: 11),
+        insightsAsync.when(
+          data: (insights) => _DeeperInsightsCards(insights: insights),
+          // Same reasoning as StatsScreen's own top-level snapshot: the
+          // underlying reads resolve quickly and there's no meaningful
+          // loading UI to design for this brief a window.
+          loading: () => const SizedBox.shrink(),
+          error: (error, stackTrace) => Text('$error', style: AppTextStyles.caption),
+        ),
+      ],
+    );
+  }
+}
+
+/// The small sage "PREMIUM" pill on [_DeeperInsightsSection]'s label row.
+/// Sage (not [_DeeperInsightsCard]'s terracotta) is deliberate: sage means
+/// "yours / live" here, terracotta means "buy this" on the locked card - see
+/// the canonical design's own doc comment.
+class _InsightsPremiumPill extends StatelessWidget {
+  const _InsightsPremiumPill({required this.label});
+
+  final String label;
+
+  /// The design's own literal radius/padding for this pill - distinct one-
+  /// off values, not shared [AppRadii] tokens.
+  static const double _radius = 9;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsetsDirectional.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.achievedTierIconBg,
+        borderRadius: BorderRadius.circular(_radius),
+      ),
+      child: Text(label, style: AppTextStyles.statsInsightsPremiumBadgeLabel),
+    );
+  }
+}
+
+/// The three Deeper Insights cards, 12px apart, in design order.
+class _DeeperInsightsCards extends StatelessWidget {
+  const _DeeperInsightsCards({required this.insights});
+
+  final InsightsSnapshot insights;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _ConsistencyCard(snapshot: insights.consistency),
+        const SizedBox(height: 12),
+        _BestTimeOfDayCard(bestTimeOfDay: insights.bestTimeOfDay),
+        const SizedBox(height: 12),
+        _RankProjectionCard(
+          projection: insights.rankProjection,
+          isAtTopRank: insights.isAtTopRank,
+        ),
+      ],
+    );
+  }
+}
+
+/// A single centred muted line replacing a Deeper Insights card's body when
+/// it has nothing to show yet (see each card's own doc comment for its
+/// specific degenerate condition). Not part of the canonical design (which
+/// depicts only the populated state) - the card and its header stay put;
+/// only the body swaps for this line, per this work order's own spec.
+class _InsightsEmptyBody extends StatelessWidget {
+  const _InsightsEmptyBody({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.symmetric(vertical: 20),
+      child: Center(
+        child: Text(message, style: AppTextStyles.caption, textAlign: TextAlign.center),
+      ),
+    );
+  }
+}
+
+/// Card 1: Consistency - a per-week trend line over
+/// [InsightsService.consistencyWindowWeeks] weeks, plus the overall rate.
+class _ConsistencyCard extends StatelessWidget {
+  const _ConsistencyCard({required this.snapshot});
+
+  final ConsistencySnapshot snapshot;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    final overallRate = snapshot.overallRate;
+
+    return _StatsCard(
+      radius: AppRadii.listPanel,
+      padding: const EdgeInsetsDirectional.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (overallRate == null)
+            Text(l10n.statsConsistencyCardTitle, style: AppTextStyles.statsCardHeading)
+          else
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(l10n.statsConsistencyCardTitle, style: AppTextStyles.statsCardHeading),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      formatPercent(overallRate, locale),
+                      style: AppTextStyles.statsWeekSummaryLabel.copyWith(
+                        color: AppColors.sageText,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      l10n.statsConsistencySummarySuffix(InsightsService.consistencyWindowWeeks),
+                      style: AppTextStyles.statsWeekSummaryLabel,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          if (overallRate == null)
+            _InsightsEmptyBody(message: l10n.statsInsightsEmptyState)
+          else ...[
+            const SizedBox(height: 14),
+            _ConsistencyChart(weeks: snapshot.weeks),
+            const SizedBox(height: 9),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.statsConsistencyStartCaption(InsightsService.consistencyWindowWeeks),
+                  style: AppTextStyles.statsInsightsAxisCaption,
+                ),
+                Text(l10n.statsThisWeekLabel, style: AppTextStyles.statsInsightsAxisCaption),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// The Consistency card's line chart: a sage stroke over a soft gradient
+/// area fill, a dashed 50% reference line, and a filled marker circle on
+/// the final (current-week) point.
+///
+/// Every week in [weeks] gets a plotted point, evenly spaced left to right
+/// (oldest to current), even one with a null [WeeklyConsistency.rate] (no
+/// week in the window had anything scheduled): it is plotted at 0 rather
+/// than skipped, so the curve always has exactly
+/// [InsightsService.consistencyWindowWeeks] points at fixed x-positions
+/// matching the "8 weeks ago .. This week" axis captions underneath. This
+/// card's own caller replaces the whole card body with [_InsightsEmptyBody]
+/// when EVERY week is null ([ConsistencySnapshot.overallRate] null); a
+/// single null week amid real history (most commonly the still-in-progress
+/// current week very early on, e.g. all day Monday) is a real, if
+/// unavoidably ambiguous, "nothing yet" data point, and 0 is the simplest
+/// honest way to plot it without the curve's x-axis becoming variable-length.
+class _ConsistencyChart extends StatelessWidget {
+  const _ConsistencyChart({required this.weeks});
+
+  final List<WeeklyConsistency> weeks;
+
+  static const double _height = 88;
+
+  @override
+  Widget build(BuildContext context) {
+    final points = [for (final week in weeks) week.rate ?? 0.0];
+    return SizedBox(
+      width: double.infinity,
+      height: _height,
+      child: CustomPaint(painter: _ConsistencyChartPainter(points: points)),
+    );
+  }
+}
+
+class _ConsistencyChartPainter extends CustomPainter {
+  const _ConsistencyChartPainter({required this.points});
+
+  final List<double> points;
+
+  static const double _xPad = 3;
+  static const double _topPad = 8;
+  static const double _bottomPad = 8;
+  static const double _dashWidth = 3;
+  static const double _dashGap = 4;
+  static const double _markerRadius = 4.5;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (points.length < 2) return;
+
+    final chartWidth = size.width - _xPad * 2;
+    const chartTop = _topPad;
+    final chartBottom = size.height - _bottomPad;
+    final chartHeight = chartBottom - chartTop;
+
+    Offset pointAt(int i) {
+      final x = _xPad + chartWidth * i / (points.length - 1);
+      final y = chartBottom - points[i].clamp(0.0, 1.0) * chartHeight;
+      return Offset(x, y);
+    }
+
+    final offsets = [for (var i = 0; i < points.length; i++) pointAt(i)];
+
+    // 50% dashed reference line.
+    final refY = chartBottom - 0.5 * chartHeight;
+    final dashPaint = Paint()
+      ..color = AppColors.statsFutureBarBg
+      ..strokeWidth = 1;
+    var dashX = _xPad;
+    final dashEnd = size.width - _xPad;
+    while (dashX < dashEnd) {
+      final segmentEnd = (dashX + _dashWidth).clamp(0.0, dashEnd);
+      canvas.drawLine(Offset(dashX, refY), Offset(segmentEnd, refY), dashPaint);
+      dashX += _dashWidth + _dashGap;
+    }
+
+    // Soft gradient area fill under the curve.
+    final fillPath = Path()..moveTo(offsets.first.dx, offsets.first.dy);
+    for (final point in offsets.skip(1)) {
+      fillPath.lineTo(point.dx, point.dy);
+    }
+    fillPath
+      ..lineTo(offsets.last.dx, chartBottom)
+      ..lineTo(offsets.first.dx, chartBottom)
+      ..close();
+    final fillPaint = Paint()
+      ..shader = ui.Gradient.linear(
+        Offset(0, chartTop),
+        Offset(0, chartBottom),
+        const [AppColors.statsConsistencyFillStart, AppColors.sageGlowEnd],
+      );
+    canvas.drawPath(fillPath, fillPaint);
+
+    // The curve itself.
+    final linePath = Path()..moveTo(offsets.first.dx, offsets.first.dy);
+    for (final point in offsets.skip(1)) {
+      linePath.lineTo(point.dx, point.dy);
+    }
+    canvas.drawPath(
+      linePath,
+      Paint()
+        ..color = AppColors.sage
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+
+    // Filled marker circle on the final (current-week) point.
+    final marker = offsets.last;
+    canvas.drawCircle(marker, _markerRadius, Paint()..color = AppColors.cardGradientLight);
+    canvas.drawCircle(
+      marker,
+      _markerRadius,
+      Paint()
+        ..color = AppColors.sage
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ConsistencyChartPainter oldDelegate) =>
+      !listEquals(points, oldDelegate.points);
+}
+
+/// Card 2: Best time of day - a 6-bucket bar chart of stones by local hour.
+class _BestTimeOfDayCard extends StatelessWidget {
+  const _BestTimeOfDayCard({required this.bestTimeOfDay});
+
+  final BestTimeOfDay bestTimeOfDay;
+
+  /// The six bucket labels in [BestTimeOfDay.bucketCounts] order
+  /// (`[0,4) [4,8) [8,12) [12,16) [16,20) [20,24)`), shared by the bars
+  /// themselves and by [statsBestTimeRangeLabel]'s start/end.
+  static List<String> bucketLabels(AppLocalizations l10n) => [
+        l10n.statsTimeBucketMidnight,
+        l10n.statsTimeBucketFourAm,
+        l10n.statsTimeBucketEightAm,
+        l10n.statsTimeBucketNoon,
+        l10n.statsTimeBucketFourPm,
+        l10n.statsTimeBucketEightPm,
+      ];
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final peak = bestTimeOfDay.peakBucketIndex;
+    final labels = bucketLabels(l10n);
+
+    return _StatsCard(
+      radius: AppRadii.listPanel,
+      padding: const EdgeInsetsDirectional.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(l10n.statsBestTimeCardTitle, style: AppTextStyles.statsCardHeading),
+              if (peak != null)
+                Text(
+                  l10n.statsBestTimeRangeLabel(labels[peak], labels[(peak + 1) % labels.length]),
+                  style: AppTextStyles.statsBestTimePeakLabel,
+                ),
+            ],
+          ),
+          if (peak == null)
+            _InsightsEmptyBody(message: l10n.statsInsightsEmptyState)
+          else ...[
+            const SizedBox(height: 15),
+            _BestTimeBars(bestTimeOfDay: bestTimeOfDay, peakIndex: peak, labels: labels),
+            const SizedBox(height: 11),
+            Text(
+              l10n.statsBestTimeCaption(bestTimeOfDay.bucketCounts[peak], bestTimeOfDay.total),
+              style: AppTextStyles.caption,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _BestTimeBars extends StatelessWidget {
+  const _BestTimeBars({
+    required this.bestTimeOfDay,
+    required this.peakIndex,
+    required this.labels,
+  });
+
+  final BestTimeOfDay bestTimeOfDay;
+  final int peakIndex;
+  final List<String> labels;
+
+  static const double _height = 78;
+
+  @override
+  Widget build(BuildContext context) {
+    final peakCount = bestTimeOfDay.bucketCounts[peakIndex];
+
+    return SizedBox(
+      height: _height,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (var i = 0; i < bestTimeOfDay.bucketCounts.length; i++) ...[
+            if (i != 0) const SizedBox(width: 8),
+            Expanded(
+              child: _BestTimeBarColumn(
+                key: ValueKey('best-time-bar-$i'),
+                fraction: peakCount == 0 ? 0.0 : bestTimeOfDay.bucketCounts[i] / peakCount,
+                isPeak: i == peakIndex,
+                label: labels[i],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _BestTimeBarColumn extends StatelessWidget {
+  const _BestTimeBarColumn({
+    super.key,
+    required this.fraction,
+    required this.isPeak,
+    required this.label,
+  });
+
+  final double fraction;
+  final bool isPeak;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: FractionallySizedBox(
+              heightFactor: fraction.clamp(0.0, 1.0),
+              widthFactor: 1.0,
+              child: DecoratedBox(
+                key: const ValueKey('best-time-bar-fill'),
+                decoration: BoxDecoration(
+                  gradient: isPeak ? AppGradients.statsWeekBarFill : null,
+                  color: isPeak ? null : AppColors.statsMutedFillBg,
+                  borderRadius: BorderRadius.circular(7),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 7),
+        Text(
+          label,
+          style: isPeak
+              ? AppTextStyles.statsTimeBucketLabel.copyWith(
+                  color: AppColors.sageText,
+                  fontWeight: FontWeight.w700,
+                )
+              : AppTextStyles.statsTimeBucketLabel,
+        ),
+      ],
+    );
+  }
+}
+
+/// Card 3: Rank projection - at the user's recent pace, when the next rank
+/// tier arrives.
+class _RankProjectionCard extends StatelessWidget {
+  const _RankProjectionCard({required this.projection, required this.isAtTopRank});
+
+  final RankProjection? projection;
+
+  /// Distinguishes WHY [projection] is null (see [InsightsSnapshot]'s own
+  /// doc comment): already at the top rank tier (nothing to project) versus
+  /// not enough recent pace yet - two different fallback messages.
+  final bool isAtTopRank;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    final projection = this.projection;
+
+    return _StatsCard(
+      radius: AppRadii.listPanel,
+      padding: const EdgeInsetsDirectional.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(l10n.statsRankProjectionCardTitle, style: AppTextStyles.statsCardHeading),
+          if (projection == null)
+            _InsightsEmptyBody(
+              message: isAtTopRank
+                  ? l10n.statsRankProjectionAtTopRank
+                  : l10n.statsRankProjectionNoPace,
+            )
+          else ...[
+            const SizedBox(height: 14),
+            _RankProjectionBody(projection: projection, locale: locale, l10n: l10n),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _RankProjectionBody extends StatelessWidget {
+  const _RankProjectionBody({
+    required this.projection,
+    required this.locale,
+    required this.l10n,
+  });
+
+  final RankProjection projection;
+  final Locale locale;
+  final AppLocalizations l10n;
+
+  static const double _iconCircleSize = 42;
+
+  @override
+  Widget build(BuildContext context) {
+    final weeksOut = (projection.metresRemaining / projection.metresPerWeek).round();
+    final currentMetres = projection.nextTier.thresholdMetres - projection.metresRemaining;
+
+    // Same span/progressed/fraction recipe ProfileScreen's own
+    // `_ProgressToNext` uses for the rank hero's progress bar: the current
+    // tier is always the entry immediately before nextTier in RankTier.
+    // values (RankProjection only ever names a non-Pebble tier as next, so
+    // index-1 is always safe).
+    final tierIndex = RankTier.values.indexOf(projection.nextTier);
+    final currentTierThreshold = RankTier.values[tierIndex - 1].thresholdMetres;
+    final span = (projection.nextTier.thresholdMetres - currentTierThreshold).toDouble();
+    final progressed = (currentMetres - currentTierThreshold).toDouble();
+    final fraction = span <= 0 ? 1.0 : (progressed / span).clamp(0.0, 1.0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: _iconCircleSize,
+              height: _iconCircleSize,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.achievedTierIconBg,
+              ),
+              alignment: Alignment.center,
+              child: const MountainGlyph(color: AppColors.sageText, size: 21),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.statsRankProjectionHeadline(
+                      projection.nextTier.label,
+                      formatShortMonthDay(projection.projectedDate, locale),
+                    ),
+                    style: AppTextStyles.statsRankProjectionHeadline,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    l10n.statsRankProjectionCaption(
+                      formatMetresNumber(projection.metresPerWeek.round(), locale),
+                      weeksOut,
+                    ),
+                    style: AppTextStyles.caption,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 15),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              l10n.statsRankProjectionCurrentMetres(formatMetresNumber(currentMetres, locale)),
+              style: AppTextStyles.statsResetCaption,
+            ),
+            Text(
+              l10n.statsRankProjectionRemaining(
+                formatMetresNumber(projection.metresRemaining, locale),
+              ),
+              style: AppTextStyles.statsResetCaption,
+            ),
+          ],
+        ),
+        const SizedBox(height: 7),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(5),
+          child: SizedBox(
+            width: double.infinity,
+            height: 8,
+            child: Stack(
+              children: [
+                const Positioned.fill(child: ColoredBox(color: AppColors.statsMutedFillBg)),
+                FractionallySizedBox(
+                  alignment: AlignmentDirectional.centerStart,
+                  widthFactor: fraction,
+                  heightFactor: 1.0,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(gradient: AppGradients.statsRankProjectionFill),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
