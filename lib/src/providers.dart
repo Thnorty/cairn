@@ -8,6 +8,7 @@ import 'clock.dart';
 import 'config.dart';
 import 'db/database.dart';
 import 'models/proof_verdict.dart';
+import 'models/stone_style.dart';
 import 'premium/premium_service.dart';
 import 'premium/revenuecat_premium_service.dart';
 import 'premium/unconfigured_premium_service.dart';
@@ -534,5 +535,47 @@ final premiumStatusProvider = Provider<bool>((ref) {
   final override = ref.watch(debugPremiumOverrideProvider);
   if (override != null) return override;
   return ref.watch(_premiumStatusStreamProvider).asData?.value ?? false;
+});
+
+// -----------------------------------------------------------------------------
+// Stone Styles (Phase 5)
+// -----------------------------------------------------------------------------
+
+/// The user's *stored* stone-style choice, persisted in `AppSettings` via
+/// [SettingsRepository.stoneStyle]/[SettingsRepository.setStoneStyle] - see
+/// [StoneStyle]'s own doc comment for why this is a distinct notion from
+/// [effectiveStoneStyleProvider] below. A plain [FutureProvider] +
+/// manual-`ref.invalidate`-on-write, the same convention
+/// [onboardingCompleteProvider]/[accountStateProvider] already use for
+/// AppSettings-backed state, rather than a live stream: the Stone Style
+/// picker's Apply button calls
+/// `ref.read(settingsRepositoryProvider).setStoneStyle(...)` then
+/// `ref.invalidate(storedStoneStyleProvider)`, mirroring exactly how
+/// `OnboardingFlow` commits `markOnboardingComplete()`.
+///
+/// Named distinctly from (not merged into) [effectiveStoneStyleProvider] so
+/// the stored-vs-effective split the spec for this feature calls out stays
+/// explicit in the code, not just in a comment: a single ambiguously-named
+/// provider returning "the" style would immediately raise the question of
+/// which of the two notions it means.
+final storedStoneStyleProvider = FutureProvider<StoneStyle>((ref) {
+  return ref.watch(settingsRepositoryProvider).stoneStyle();
+});
+
+/// The stone style that should actually be RENDERED wherever a themed
+/// [CairnStack] is drawn: [storedStoneStyleProvider]'s value, unless the
+/// user isn't currently entitled to premium, in which case this resolves to
+/// [StoneStyle.river] regardless of what's stored. A lapsed subscriber's
+/// premium pick stays in `AppSettings` untouched (see
+/// [storedStoneStyleProvider]) so re-subscribing restores it exactly, but it
+/// is never rendered while they're not entitled - see [StoneStyle]'s own doc
+/// comment for the full rationale. This is the provider every screen that
+/// draws the app's *current* cairn style should watch.
+final effectiveStoneStyleProvider = Provider<StoneStyle>((ref) {
+  final stored = ref.watch(storedStoneStyleProvider).asData?.value ?? StoneStyle.river;
+  if (stored.requiresPremium && !ref.watch(premiumStatusProvider)) {
+    return StoneStyle.river;
+  }
+  return stored;
 });
 

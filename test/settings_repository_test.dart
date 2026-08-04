@@ -1,5 +1,7 @@
 import 'package:cairn/src/db/database.dart';
+import 'package:cairn/src/models/stone_style.dart';
 import 'package:cairn/src/repo/settings_repository.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers.dart';
@@ -33,6 +35,41 @@ void main() {
       await repo.markOnboardingComplete();
 
       expect(await repo.isOnboardingComplete(), isTrue);
+    });
+  });
+
+  group('stone style', () {
+    test('a fresh database defaults to river with no stored value', () async {
+      expect(await repo.stoneStyle(), StoneStyle.river);
+    });
+
+    test('setStoneStyle then stoneStyle round-trips for every style', () async {
+      for (final style in StoneStyle.values) {
+        await repo.setStoneStyle(style);
+        expect(await repo.stoneStyle(), style);
+      }
+    });
+
+    test('setStoneStyle is idempotent (safe to call twice with the same '
+        'value, an upsert not an insert)', () async {
+      await repo.setStoneStyle(StoneStyle.granite);
+      await repo.setStoneStyle(StoneStyle.granite);
+
+      expect(await repo.stoneStyle(), StoneStyle.granite);
+    });
+
+    test('an unknown value written directly to the row parses back to river '
+        'rather than throwing', () async {
+      // Bypasses setStoneStyle to simulate a future/corrupted stored value
+      // this build's StoneStyle enum doesn't recognise.
+      await db.into(db.appSettings).insertOnConflictUpdate(
+            const AppSettingsCompanion(
+              key: Value('stone_style'),
+              value: Value('marble'),
+            ),
+          );
+
+      expect(await repo.stoneStyle(), StoneStyle.river);
     });
   });
 }

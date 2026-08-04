@@ -5,15 +5,19 @@ import 'package:cairn/src/clock.dart';
 import 'package:cairn/src/db/database.dart';
 import 'package:cairn/src/l10n/date_number_formatting.dart';
 import 'package:cairn/src/models/proof_verdict.dart';
+import 'package:cairn/src/models/stone_style.dart';
 import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/completion_repository.dart';
+import 'package:cairn/src/repo/settings_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
 import 'package:cairn/src/ui/home/home_occurrence_card.dart';
 import 'package:cairn/src/ui/home/home_screen.dart';
 import 'package:cairn/src/ui/proof/camera_capture_screen.dart';
 import 'package:cairn/src/ui/proof/daily_limit_screen.dart';
+import 'package:cairn/src/ui/theme/app_colors.dart';
 import 'package:cairn/src/ui/widgets/buttons.dart';
+import 'package:cairn/src/ui/widgets/cairn_stack.dart';
 import 'package:cairn/src/ui/widgets/ghost_cairn.dart';
 import 'package:cairn/src/ui/widgets/status_chip.dart';
 import 'package:flutter/material.dart';
@@ -489,6 +493,136 @@ void main() {
       expect(find.byType(CameraCaptureScreen), findsNothing);
     });
   });
+
+  group('Stone Styles (Phase 5): themes real Home cards via the app-level scope', () {
+    // This is the test that would have caught the original gap: applying a
+    // style used to only repaint the picker's own preview tiles, while every
+    // other cairn in the app (Home included) kept rendering the hardcoded
+    // StoneStyle.river default. Reproducing main.dart's own one line of
+    // wiring (`ref.watch(effectiveStoneStyleProvider)` feeding a
+    // StoneStyleScope) around the real HomeScreen - rather than asserting
+    // against CairnStack in isolation - is what actually exercises that
+    // wiring end to end.
+    LinearGradient stoneGradient(WidgetTester tester, int i) {
+      final container = tester.widget<Container>(
+        find.descendant(
+          of: find.byKey(ValueKey('cairn-stone-$i')),
+          matching: find.byType(Container),
+        ),
+      );
+      final decoration = container.decoration! as BoxDecoration;
+      return decoration.gradient! as LinearGradient;
+    }
+
+    /// Seeds a task with two verified completions on consecutive days (day
+    /// one via its own earlier-dated clock, since completions can never be
+    /// back-filled - see CLAUDE.md's no-back-filling rule), so today's card
+    /// renders a 2-stone growing cairn: stone index 0 (today's, most recent)
+    /// is sage-highlighted regardless of style, but stone index 1
+    /// (yesterday's) renders the plain themed palette - exactly what this
+    /// group needs to observe.
+    Future<AppDatabase> seedTwoStoneCairn(FixedClock todayClock) async {
+      final db = inMemoryDatabase();
+      final dayOneClock = FixedClock(d(2026, 7, 9));
+      final taskRepo = TaskRepository(db, dayOneClock);
+      final task = await taskRepo.createTask(
+        title: 'Morning workout',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      final dayOneCompletionRepo =
+          CompletionRepository(db, dayOneClock, verifier: FakeProofVerifier());
+      await dayOneCompletionRepo.completeOccurrence(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 9),
+      );
+      final completionRepo =
+          CompletionRepository(db, todayClock, verifier: FakeProofVerifier());
+      await completionRepo.completeOccurrence(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+      );
+      return db;
+    }
+
+    testHomeWidgets(
+        'a themed CairnStack renders on Home when the app-level scope '
+        'carries a premium style (entitled, stored Basalt)', (tester) async {
+      final clock = FixedClock(d(2026, 7, 10));
+      final db = await seedTwoStoneCairn(clock);
+      addTearDown(db.close);
+      await SettingsRepository(db).setStoneStyle(StoneStyle.basalt);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            clockProvider.overrideWithValue(clock),
+            debugPremiumOverrideProvider.overrideWith((ref) => true),
+          ],
+          child: const _ThemedHomeAppStandin(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Stone 0 is today's, sage-highlighted regardless of style; stone 1
+      // (yesterday's) is the one that actually reveals the applied palette.
+      expect(stoneGradient(tester, 1).colors, [
+        AppColors.basaltGradients[1 % AppColors.basaltGradients.length].$1,
+        AppColors.basaltGradients[1 % AppColors.basaltGradients.length].$2,
+      ]);
+    });
+
+    testHomeWidgets(
+        'lapse case end to end: a stored Basalt style while NOT entitled '
+        'still renders river on the real screen', (tester) async {
+      final clock = FixedClock(d(2026, 7, 10));
+      final db = await seedTwoStoneCairn(clock);
+      addTearDown(db.close);
+      await SettingsRepository(db).setStoneStyle(StoneStyle.basalt);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            clockProvider.overrideWithValue(clock),
+            debugPremiumOverrideProvider.overrideWith((ref) => false),
+          ],
+          child: const _ThemedHomeAppStandin(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(stoneGradient(tester, 1).colors, [
+        AppColors.stoneGradients[1 % AppColors.stoneGradients.length].$1,
+        AppColors.stoneGradients[1 % AppColors.stoneGradients.length].$2,
+      ]);
+    });
+  });
+}
+
+/// A minimal stand-in for `main.dart`'s `CairnApp`, reproducing its exact
+/// one line of Stone Styles wiring (watch `effectiveStoneStyleProvider`,
+/// install a `StoneStyleScope` fed from it) around a real screen - without
+/// the entangled `proofRetryTriggerProvider`/`authBootstrapProvider`/
+/// `syncTriggerProvider` watches `CairnApp` itself also carries, which touch
+/// platform channels `CairnApp` is deliberately never pumped directly in
+/// tests to avoid (see its own doc comment).
+class _ThemedHomeAppStandin extends ConsumerWidget {
+  const _ThemedHomeAppStandin();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final style = ref.watch(effectiveStoneStyleProvider);
+    return StoneStyleScope(
+      style: style,
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const HomeScreen(),
+      ),
+    );
+  }
 }
 
 /// Seeds data via [seed] (given the same in-memory [AppDatabase] the

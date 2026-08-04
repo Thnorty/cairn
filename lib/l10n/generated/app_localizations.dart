@@ -2023,6 +2023,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Complete a few more stones and we\'ll project your next rank.'**
   String get statsRankProjectionNoPace;
+
+  /// Row label in the Profile screen's settings list that opens the Stone Style picker (Cairn Stone Styles.dc.html).
+  ///
+  /// In en, this message translates to:
+  /// **'Stone style'**
+  String get profileStoneStyleRow;
+
+  /// All-caps eyebrow label above the title on the Stone Style picker screen (Cairn Stone Styles.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'MAKE IT YOURS'**
+  String get stoneStyleEyebrow;
+
+  /// Title on the Stone Style picker screen, under the eyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Stone style'**
+  String get stoneStyleTitle;
+
+  /// One-line subtitle under the Stone Style picker's title.
+  ///
+  /// In en, this message translates to:
+  /// **'Every cairn you have built, in a different rock.'**
+  String get stoneStyleSubtitle;
+
+  /// Name of the River stone style (the free default) on the Stone Style picker's tile.
+  ///
+  /// In en, this message translates to:
+  /// **'River'**
+  String get stoneStyleRiverName;
+
+  /// One-line description under the River style tile's name.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm and worn smooth.'**
+  String get stoneStyleRiverDescription;
+
+  /// Name of the Granite stone style (premium) on the Stone Style picker's tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Granite'**
+  String get stoneStyleGraniteName;
+
+  /// One-line description under the Granite style tile's name.
+  ///
+  /// In en, this message translates to:
+  /// **'Rose-flecked, hard-wearing.'**
+  String get stoneStyleGraniteDescription;
+
+  /// Name of the Slate stone style (premium) on the Stone Style picker's tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Slate'**
+  String get stoneStyleSlateName;
+
+  /// One-line description under the Slate style tile's name.
+  ///
+  /// In en, this message translates to:
+  /// **'Cool blue, split flat.'**
+  String get stoneStyleSlateDescription;
+
+  /// Name of the Basalt stone style (premium) on the Stone Style picker's tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Basalt'**
+  String get stoneStyleBasaltName;
+
+  /// One-line description under the Basalt style tile's name.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark, volcanic, heavy.'**
+  String get stoneStyleBasaltDescription;
+
+  /// Free-state footer CTA on the Stone Style picker, opening the Premium paywall.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock with Premium'**
+  String get stoneStyleUnlockButton;
+
+  /// Free-state footer caption on the Stone Style picker, under the Unlock with Premium button.
+  ///
+  /// In en, this message translates to:
+  /// **'River is yours for keeps.'**
+  String get stoneStyleFreeFooterCaption;
+
+  /// Entitled-state footer CTA on the Stone Style picker, naming the currently-tapped (not-yet-applied) style, e.g. 'Apply Slate'. styleName is one of stoneStyleRiverName/stoneStyleGraniteName/stoneStyleSlateName/stoneStyleBasaltName. Disabled whenever the tapped style already matches the applied one.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply {styleName}'**
+  String stoneStyleApplyButton(String styleName);
+
+  /// Entitled-state footer caption on the Stone Style picker, under the Apply button.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to every cairn, everywhere.'**
+  String get stoneStyleEntitledFooterCaption;
 }
 
 class _AppLocalizationsDelegate

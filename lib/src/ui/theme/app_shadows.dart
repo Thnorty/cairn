@@ -10,6 +10,17 @@ import 'app_colors.dart';
 /// thin gradient line at the top of the surface (see `CardSurface`'s
 /// `_TopHighlight`) rather than folded into these shadow lists; that's a
 /// deliberate, noted deviation from a literal CSS shadow translation.
+///
+/// One exception: individual cairn stones ([stone]/[stoneMuted] below) never
+/// got this treatment - `CairnStack`'s `_Stone` paints only a gradient fill
+/// plus these drop shadows, no inset top-highlight bar at all. So when the
+/// Stone Style feature's design (`Cairn Stone Styles.dc.html`) asked for
+/// that highlight's opacity to vary per style (.45 for the lighter River/
+/// Granite, .30 for the darker Slate/Basalt, so a near-black Basalt stone
+/// doesn't get a blown-out white rim), there was nothing to make per-style:
+/// the highlight it's describing was never implemented here, so this was
+/// deliberately left alone rather than inventing a highlight that didn't
+/// exist before.
 abstract final class AppShadows {
   /// Standard raised parchment card (Card 1/1b/2):
   /// `0 16px 24px -16px rgba(60,50,35,.45), 0 4px 8px -4px rgba(60,50,35,.22)`.
@@ -205,6 +216,17 @@ abstract final class AppShadows {
       offset: Offset(0, 30),
       blurRadius: 60,
       spreadRadius: -20,
+    ),
+  ];
+
+  /// Stone Style picker's selected/applied tile lift:
+  /// `0 10px 20px -14px rgba(60,50,35,.5)`.
+  static const List<BoxShadow> stoneStyleSelectedTile = [
+    BoxShadow(
+      color: Color(0x803C3223),
+      offset: Offset(0, 10),
+      blurRadius: 20,
+      spreadRadius: -14,
     ),
   ];
 }

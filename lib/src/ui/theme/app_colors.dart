@@ -210,6 +210,85 @@ abstract final class AppColors {
     (Color(0xFFCDC6B6), Color(0xFFA59B89)),
   ];
 
+  // ---- Stone styles (Cairn Stone Styles.dc.html, Phase 5) --------------------
+  //
+  // Four named stone styles laid out as a deliberate VALUE ladder, lightest
+  // to darkest: River (the two lists above, now given a name - unchanged,
+  // free default), Granite, Slate, Basalt. Each is an 8-pair normal + 6-pair
+  // muted palette, the exact shape [stoneGradients]/[stoneGradientsMuted]
+  // already have, sourced verbatim from the design file's own header
+  // comment. See `lib/src/models/stone_style.dart` for the enum that
+  // resolves a style to its pair here.
+
+  /// Granite stone gradient pairs (light, dark), 158deg - rose-flecked warm
+  /// grey, one value-step darker than [stoneGradients].
+  static const List<(Color, Color)> graniteGradients = [
+    (Color(0xFFE4D2CB), Color(0xFFB99A90)),
+    (Color(0xFFDECBC4), Color(0xFFB3948A)),
+    (Color(0xFFE6D5CE), Color(0xFFBE9F95)),
+    (Color(0xFFDAC7C0), Color(0xFFAE8F85)),
+    (Color(0xFFE2D0C9), Color(0xFFB69790)),
+    (Color(0xFFDFCCC5), Color(0xFFB19289)),
+    (Color(0xFFE5D3CC), Color(0xFFBB9C92)),
+    (Color(0xFFDCC9C2), Color(0xFFAC8D83)),
+  ];
+
+  /// Muted/dimmed Granite stone gradient pairs.
+  static const List<(Color, Color)> graniteGradientsMuted = [
+    (Color(0xFFDCCCC6), Color(0xFFB0958C)),
+    (Color(0xFFD6C5BF), Color(0xFFAA8F86)),
+    (Color(0xFFDECFC9), Color(0xFFB39891)),
+    (Color(0xFFD4C3BD), Color(0xFFA68B82)),
+    (Color(0xFFD9CAC4), Color(0xFFAD928A)),
+    (Color(0xFFD2C1BB), Color(0xFFA28781)),
+  ];
+
+  /// Slate stone gradient pairs (light, dark), 158deg - cool blue-grey, one
+  /// value-step darker than [graniteGradients].
+  static const List<(Color, Color)> slateGradients = [
+    (Color(0xFFA8B3BE), Color(0xFF6E7C8B)),
+    (Color(0xFFA1ACB7), Color(0xFF687684)),
+    (Color(0xFFACB7C2), Color(0xFF73818F)),
+    (Color(0xFF9CA7B2), Color(0xFF63717F)),
+    (Color(0xFFA5B0BB), Color(0xFF6B7987)),
+    (Color(0xFFA9B4BF), Color(0xFF707E8C)),
+    (Color(0xFF9FAAB5), Color(0xFF667482)),
+    (Color(0xFFAAB5C0), Color(0xFF717F8D)),
+  ];
+
+  /// Muted/dimmed Slate stone gradient pairs.
+  static const List<(Color, Color)> slateGradientsMuted = [
+    (Color(0xFFAEB7C0), Color(0xFF7C8895)),
+    (Color(0xFFA8B1BA), Color(0xFF76828F)),
+    (Color(0xFFB1BAC3), Color(0xFF808C99)),
+    (Color(0xFFA4ADB6), Color(0xFF727E8B)),
+    (Color(0xFFACB5BE), Color(0xFF7A8693)),
+    (Color(0xFFA0A9B2), Color(0xFF6E7A87)),
+  ];
+
+  /// Basalt stone gradient pairs (light, dark), 158deg - dark, near-neutral
+  /// volcanic grey, the darkest step of the ladder.
+  static const List<(Color, Color)> basaltGradients = [
+    (Color(0xFF6F6B65), Color(0xFF3F3B37)),
+    (Color(0xFF65615C), Color(0xFF38352F)),
+    (Color(0xFF736F69), Color(0xFF43403A)),
+    (Color(0xFF625E59), Color(0xFF35322C)),
+    (Color(0xFF6B6761), Color(0xFF3C3934)),
+    (Color(0xFF706C66), Color(0xFF403D38)),
+    (Color(0xFF67635D), Color(0xFF3A3731)),
+    (Color(0xFF6D6963), Color(0xFF3E3B35)),
+  ];
+
+  /// Muted/dimmed Basalt stone gradient pairs.
+  static const List<(Color, Color)> basaltGradientsMuted = [
+    (Color(0xFF6A6660), Color(0xFF474440)),
+    (Color(0xFF615D58), Color(0xFF413E3A)),
+    (Color(0xFF6E6A64), Color(0xFF4B4844)),
+    (Color(0xFF5E5A55), Color(0xFF3E3B37)),
+    (Color(0xFF68645E), Color(0xFF454240)),
+    (Color(0xFF5C5853), Color(0xFF3B3835)),
+  ];
+
   /// Freshly-placed/highlighted top stone (sage), 158deg.
   static const Color stoneSageLight = Color(0xFF96A776);
   static const Color stoneSageDark = Color(0xFF6D8056);
@@ -752,5 +831,21 @@ abstract final class AppColors {
   /// rgba(179,84,58,.13) / rgba(179,84,58,.3) - clay dialog icon circle tint.
   static const Color dialogClayIconBg = Color(0x21B3543A);
   static const Color dialogClayIconBorder = Color(0x4DB3543A);
+
+  // ---- Stone Style picker screen (Cairn Stone Styles.dc.html) --------------
+
+  /// rgba(150,130,100,.14) - the Stone Style picker's own single warm-wash
+  /// start stop (the design's phone-screen background), close to but
+  /// distinct from [dustWashSoft]'s rgba(150,131,104,.14) - kept as its own
+  /// token per this file's precedent of preserving literal per-source
+  /// distinctions (see [trailWhereYouStartedText]). Pairs with the shared
+  /// [dustWashEnd] transparent stop, same as every other single-wash screen.
+  static const Color stoneStyleWash = Color(0x24968264);
+
+  /// `#eee9de` / `#e0d8c7` - a LOCKED style tile's background gradient
+  /// (165deg), distinct from the flatter [cardGradientLight]/
+  /// [cardGradientDark] an unlocked or selected tile uses.
+  static const Color stoneStyleLockedTileLight = Color(0xFFEEE9DE);
+  static const Color stoneStyleLockedTileDark = Color(0xFFE0D8C7);
 }
 

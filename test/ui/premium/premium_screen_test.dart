@@ -65,7 +65,7 @@ void main() {
 
   group('content and tags', () {
     testWidgets(
-        'renders real prices on both plan cards, 4 Coming soon tags, and 1 Available now tag',
+        'renders real prices on both plan cards, 2 Coming soon tags, and 3 Available now tags',
         (tester) async {
       await pumpPremium(tester);
 
@@ -87,8 +87,11 @@ void main() {
       expect(find.text('\$20.99'), findsOneWidget);
       expect(find.text('\$2.99'), findsOneWidget);
 
-      expect(find.text('Available now'), findsOneWidget);
-      expect(find.text('Coming soon'), findsNWidgets(4));
+      // Three benefits are live now: "Unlimited AI proofs", "Deeper
+      // insights" and "Stone styles". Bump these counts as each remaining
+      // roadmap row ships.
+      expect(find.text('Available now'), findsNWidgets(3));
+      expect(find.text('Coming soon'), findsNWidgets(2));
     });
   });
 

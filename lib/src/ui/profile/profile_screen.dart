@@ -13,6 +13,7 @@ import '../../services/profile_service.dart';
 import '../account/account_flow.dart';
 import '../account/signed_in_account_row.dart';
 import '../premium/premium_screen.dart';
+import '../stone_style/stone_style_screen.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
 import '../theme/app_radii.dart';
@@ -942,6 +943,15 @@ class _SettingsSection extends ConsumerWidget {
                   builder: (_) => const HowCairnsWorkScreen(),
                 )),
               ),
+              const _HairlineDivider(),
+              // Phase 5's Stone Styles feature: opens StoneStyleScreen
+              // (Cairn Stone Styles.dc.html), the last (newest) row per this
+              // list's existing append-in-order precedent.
+              _SettingsRow(
+                glyph: _GlyphShape.stones,
+                label: l10n.profileStoneStyleRow,
+                onTap: () => openStoneStyleScreen(context),
+              ),
             ],
           ),
         ),
@@ -992,7 +1002,7 @@ class _SettingsRow extends StatelessWidget {
 /// Which one-off stroke-icon glyph to paint on this screen. Grouped into one
 /// enum + [CustomPainter] (mirroring `TabBarIcon`'s own pattern) rather than
 /// a separate tiny painter class per icon.
-enum _GlyphShape { clockPending, check, chevronRight, bell, shield, restore, info }
+enum _GlyphShape { clockPending, check, chevronRight, bell, shield, restore, info, stones }
 
 class _Glyph extends StatelessWidget {
   const _Glyph({required this.shape, required this.color, this.size = 18});
@@ -1025,6 +1035,7 @@ class _GlyphPainter extends CustomPainter {
         _GlyphShape.shield => 2,
         _GlyphShape.restore => 2,
         _GlyphShape.info => 2,
+        _GlyphShape.stones => 2,
       };
 
   @override
@@ -1163,6 +1174,17 @@ class _GlyphPainter extends CustomPainter {
         canvas.drawCircle(p(12, 12), 9 * s, paint);
         canvas.drawLine(p(12, 10.8), p(12, 16), paint);
         canvas.drawCircle(p(12, 8.2), 0.9 * s, Paint()..color = color);
+        break;
+      case _GlyphShape.stones:
+        // Three stacked stone outlines, widest at the bottom - a small
+        // stroke-based cairn pictogram for the "Stone style" settings row,
+        // in the same 24x24 stroke-icon shape as every other glyph on this
+        // screen (not a filled/coloured motif like `_PremiumMountainBars` or
+        // `_StackedPebbleGlyph` elsewhere in this app, since every other
+        // `_GlyphShape` here is an outline).
+        canvas.drawOval(Rect.fromCenter(center: p(12, 7.4), width: 8 * s, height: 4.4 * s), paint);
+        canvas.drawOval(Rect.fromCenter(center: p(12, 12.6), width: 11.5 * s, height: 5 * s), paint);
+        canvas.drawOval(Rect.fromCenter(center: p(12, 18.2), width: 15 * s, height: 5.6 * s), paint);
         break;
     }
   }

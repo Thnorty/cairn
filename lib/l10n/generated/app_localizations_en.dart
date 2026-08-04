@@ -1274,4 +1274,56 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get statsRankProjectionNoPace =>
       'Complete a few more stones and we\'ll project your next rank.';
+
+  @override
+  String get profileStoneStyleRow => 'Stone style';
+
+  @override
+  String get stoneStyleEyebrow => 'MAKE IT YOURS';
+
+  @override
+  String get stoneStyleTitle => 'Stone style';
+
+  @override
+  String get stoneStyleSubtitle =>
+      'Every cairn you have built, in a different rock.';
+
+  @override
+  String get stoneStyleRiverName => 'River';
+
+  @override
+  String get stoneStyleRiverDescription => 'Warm and worn smooth.';
+
+  @override
+  String get stoneStyleGraniteName => 'Granite';
+
+  @override
+  String get stoneStyleGraniteDescription => 'Rose-flecked, hard-wearing.';
+
+  @override
+  String get stoneStyleSlateName => 'Slate';
+
+  @override
+  String get stoneStyleSlateDescription => 'Cool blue, split flat.';
+
+  @override
+  String get stoneStyleBasaltName => 'Basalt';
+
+  @override
+  String get stoneStyleBasaltDescription => 'Dark, volcanic, heavy.';
+
+  @override
+  String get stoneStyleUnlockButton => 'Unlock with Premium';
+
+  @override
+  String get stoneStyleFreeFooterCaption => 'River is yours for keeps.';
+
+  @override
+  String stoneStyleApplyButton(String styleName) {
+    return 'Apply $styleName';
+  }
+
+  @override
+  String get stoneStyleEntitledFooterCaption =>
+      'Applies to every cairn, everywhere.';
 }

@@ -1754,5 +1754,74 @@
   "statsRankProjectionNoPace": "Complete a few more stones and we'll project your next rank.",
   "@statsRankProjectionNoPace": {
     "description": "Rank projection card's fallback body line when the user is below the top rank but has no recent verified pace to project from, so InsightsService.rankProjection() returns null with nothing to project. Not part of the canonical design (which depicts only the populated state) - authored copy for the degenerate case, distinguishing this cause from statsRankProjectionAtTopRank."
+  },
+
+  "profileStoneStyleRow": "Stone style",
+  "@profileStoneStyleRow": {
+    "description": "Row label in the Profile screen's settings list that opens the Stone Style picker (Cairn Stone Styles.dc.html)."
+  },
+
+  "stoneStyleEyebrow": "MAKE IT YOURS",
+  "@stoneStyleEyebrow": {
+    "description": "All-caps eyebrow label above the title on the Stone Style picker screen (Cairn Stone Styles.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+  "stoneStyleTitle": "Stone style",
+  "@stoneStyleTitle": {
+    "description": "Title on the Stone Style picker screen, under the eyebrow."
+  },
+  "stoneStyleSubtitle": "Every cairn you have built, in a different rock.",
+  "@stoneStyleSubtitle": {
+    "description": "One-line subtitle under the Stone Style picker's title."
+  },
+  "stoneStyleRiverName": "River",
+  "@stoneStyleRiverName": {
+    "description": "Name of the River stone style (the free default) on the Stone Style picker's tile."
+  },
+  "stoneStyleRiverDescription": "Warm and worn smooth.",
+  "@stoneStyleRiverDescription": {
+    "description": "One-line description under the River style tile's name."
+  },
+  "stoneStyleGraniteName": "Granite",
+  "@stoneStyleGraniteName": {
+    "description": "Name of the Granite stone style (premium) on the Stone Style picker's tile."
+  },
+  "stoneStyleGraniteDescription": "Rose-flecked, hard-wearing.",
+  "@stoneStyleGraniteDescription": {
+    "description": "One-line description under the Granite style tile's name."
+  },
+  "stoneStyleSlateName": "Slate",
+  "@stoneStyleSlateName": {
+    "description": "Name of the Slate stone style (premium) on the Stone Style picker's tile."
+  },
+  "stoneStyleSlateDescription": "Cool blue, split flat.",
+  "@stoneStyleSlateDescription": {
+    "description": "One-line description under the Slate style tile's name."
+  },
+  "stoneStyleBasaltName": "Basalt",
+  "@stoneStyleBasaltName": {
+    "description": "Name of the Basalt stone style (premium) on the Stone Style picker's tile."
+  },
+  "stoneStyleBasaltDescription": "Dark, volcanic, heavy.",
+  "@stoneStyleBasaltDescription": {
+    "description": "One-line description under the Basalt style tile's name."
+  },
+  "stoneStyleUnlockButton": "Unlock with Premium",
+  "@stoneStyleUnlockButton": {
+    "description": "Free-state footer CTA on the Stone Style picker, opening the Premium paywall."
+  },
+  "stoneStyleFreeFooterCaption": "River is yours for keeps.",
+  "@stoneStyleFreeFooterCaption": {
+    "description": "Free-state footer caption on the Stone Style picker, under the Unlock with Premium button."
+  },
+  "stoneStyleApplyButton": "Apply {styleName}",
+  "@stoneStyleApplyButton": {
+    "description": "Entitled-state footer CTA on the Stone Style picker, naming the currently-tapped (not-yet-applied) style, e.g. 'Apply Slate'. styleName is one of stoneStyleRiverName/stoneStyleGraniteName/stoneStyleSlateName/stoneStyleBasaltName. Disabled whenever the tapped style already matches the applied one.",
+    "placeholders": {
+      "styleName": { "type": "String", "example": "Slate" }
+    }
+  },
+  "stoneStyleEntitledFooterCaption": "Applies to every cairn, everywhere.",
+  "@stoneStyleEntitledFooterCaption": {
+    "description": "Entitled-state footer caption on the Stone Style picker, under the Apply button."
   }
 }

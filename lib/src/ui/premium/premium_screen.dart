@@ -369,11 +369,11 @@ class _ValueList extends StatelessWidget {
         isLive: false,
       ),
       _ValueRow(
-        icon: const _ValueGlyph(shape: _ValueGlyphShape.insights, isLive: false),
+        icon: const _ValueGlyph(shape: _ValueGlyphShape.insights, isLive: true),
         title: l10n.statsDeeperInsightsTitle,
         subtitle: l10n.statsDeeperInsightsSubtitle,
-        tag: l10n.premiumTagComingSoon,
-        isLive: false,
+        tag: l10n.premiumTagAvailableNow,
+        isLive: true,
       ),
       _ValueRow(
         icon: const _ValueGlyph(shape: _ValueGlyphShape.widget, isLive: false),
@@ -383,11 +383,11 @@ class _ValueList extends StatelessWidget {
         isLive: false,
       ),
       _ValueRow(
-        icon: const _StoneStylesGlyph(isLive: false),
+        icon: const _StoneStylesGlyph(isLive: true),
         title: l10n.premiumValueStoneStylesTitle,
         subtitle: l10n.premiumValueStoneStylesSubtitle,
-        tag: l10n.premiumTagComingSoon,
-        isLive: false,
+        tag: l10n.premiumTagAvailableNow,
+        isLive: true,
       ),
     ];
 

@@ -10,6 +10,7 @@ import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
 import 'package:cairn/src/ui/premium/premium_screen.dart';
 import 'package:cairn/src/ui/profile/profile_screen.dart';
+import 'package:cairn/src/ui/stone_style/stone_style_screen.dart';
 import 'package:cairn/src/ui/trail/how_cairns_work_screen.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
@@ -387,6 +388,27 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(HowCairnsWorkScreen), findsOneWidget);
+    });
+
+    testProfileWidgets(
+        'renders the Stone style row and tapping it navigates to '
+        'StoneStyleScreen', (tester) async {
+      final db = await pumpProfile(
+        tester,
+        clock: FixedClock(d(2026, 7, 10)),
+        seed: (db, taskRepo) async {},
+      );
+      addTearDown(db.close);
+
+      expect(find.text('Stone style'), findsOneWidget);
+      expect(find.byType(StoneStyleScreen), findsNothing);
+
+      await tester.ensureVisible(find.text('Stone style'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Stone style'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StoneStyleScreen), findsOneWidget);
     });
 
     testProfileWidgets(

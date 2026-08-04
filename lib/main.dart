@@ -8,6 +8,7 @@ import 'src/config.dart';
 import 'src/providers.dart';
 import 'src/ui/onboarding/onboarding_gate.dart';
 import 'src/ui/theme/app_theme.dart';
+import 'src/ui/widgets/cairn_stack.dart' show StoneStyleScope;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,6 +54,12 @@ Future<void> main() async {
 /// watching any of these providers here never touches that test and never
 /// drags connectivity_plus's platform channel, or a real Supabase auth call,
 /// into it.
+///
+/// Also installs [StoneStyleScope] (Phase 5's "Stone Styles" feature), fed
+/// from `effectiveStoneStyleProvider`: the single Riverpod touch point that
+/// feature needs, so every [CairnStack] beneath it (i.e. every real screen)
+/// themes automatically with no further wiring - see that scope's own doc
+/// comment.
 class CairnApp extends ConsumerWidget {
   const CairnApp({super.key});
 
@@ -61,14 +68,18 @@ class CairnApp extends ConsumerWidget {
     ref.watch(proofRetryTriggerProvider);
     ref.watch(authBootstrapProvider);
     ref.watch(syncTriggerProvider);
-    return MaterialApp(
-      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      // System locale only for now: no in-app language picker yet (that's a
-      // Profile-screen decision for a later phase).
-      theme: AppTheme.light,
-      home: const OnboardingGate(),
+    final stoneStyle = ref.watch(effectiveStoneStyleProvider);
+    return StoneStyleScope(
+      style: stoneStyle,
+      child: MaterialApp(
+        onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        // System locale only for now: no in-app language picker yet (that's
+        // a Profile-screen decision for a later phase).
+        theme: AppTheme.light,
+        home: const OnboardingGate(),
+      ),
     );
   }
 }

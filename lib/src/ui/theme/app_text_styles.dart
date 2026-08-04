@@ -986,5 +986,29 @@ abstract final class AppTextStyles {
     fontSize: 22,
     color: AppColors.inkPrimary,
   );
+
+  // ---- Stone Style picker screen ---------------------------------------
+
+  /// 13.5px Work Sans 400 - the Stone Style picker's subtitle under its
+  /// title ("Every cairn you have built, in a different rock."). Close to
+  /// but distinct from [howCairnsWorkSubhead] (13.5px/400 too, but height
+  /// 1.5 and [AppColors.emptyStateBodyText]): kept as its own token per this
+  /// file's own precedent of preserving literal per-source distinctions.
+  static const TextStyle stoneStyleSubtitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 13.5,
+    height: 1.45,
+    color: AppColors.textMuted,
+  );
+
+  /// 11.5px Work Sans 400 - a style tile's one-line description under its
+  /// name; callers `.copyWith` a locked tile's dimmer [AppColors.textFaint].
+  static const TextStyle stoneStyleTileDescription = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 11.5,
+    color: AppColors.textMuted,
+  );
 }
 

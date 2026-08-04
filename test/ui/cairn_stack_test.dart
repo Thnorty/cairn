@@ -1,3 +1,4 @@
+import 'package:cairn/src/models/stone_style.dart';
 import 'package:cairn/src/ui/theme/app_colors.dart';
 import 'package:cairn/src/ui/widgets/cairn_stack.dart';
 import 'package:flutter/material.dart';
@@ -176,6 +177,146 @@ void main() {
 
         expect(find.byKey(stoneKey(0)), findsOneWidget);
         expect(find.byKey(stoneKey(1)), findsNothing);
+      });
+    });
+
+    group('stone styles (Phase 5)', () {
+      LinearGradient stoneGradient(WidgetTester tester, int i) {
+        final container = tester.widget<Container>(
+          find.descendant(of: find.byKey(stoneKey(i)), matching: find.byType(Container)),
+        );
+        final decoration = container.decoration! as BoxDecoration;
+        return decoration.gradient! as LinearGradient;
+      }
+
+      testWidgets('defaults to StoneStyle.river, identical to the pre-Phase-5 '
+          'hardcoded palette', (tester) async {
+        await pump(tester, const CairnStack(stoneCount: 5));
+
+        expect(stoneGradient(tester, 1).colors, [
+          AppColors.stoneGradients[1 % AppColors.stoneGradients.length].$1,
+          AppColors.stoneGradients[1 % AppColors.stoneGradients.length].$2,
+        ]);
+      });
+
+      for (final entry in [
+        (StoneStyle.granite, AppColors.graniteGradients),
+        (StoneStyle.slate, AppColors.slateGradients),
+        (StoneStyle.basalt, AppColors.basaltGradients),
+      ]) {
+        final (style, palette) = entry;
+        testWidgets('style: ${style.name} renders that style\'s palette for a '
+            'non-top stone', (tester) async {
+          await pump(tester, CairnStack(stoneCount: 5, style: style));
+
+          expect(stoneGradient(tester, 2).colors, [
+            palette[2 % palette.length].$1,
+            palette[2 % palette.length].$2,
+          ]);
+        });
+      }
+
+      for (final entry in [
+        (StoneStyle.granite, AppColors.graniteGradientsMuted),
+        (StoneStyle.slate, AppColors.slateGradientsMuted),
+        (StoneStyle.basalt, AppColors.basaltGradientsMuted),
+      ]) {
+        final (style, mutedPalette) = entry;
+        testWidgets(
+            'muted + style: ${style.name} renders that style\'s MUTED palette',
+            (tester) async {
+          await pump(tester, CairnStack(stoneCount: 4, style: style, muted: true));
+
+          expect(stoneGradient(tester, 1).colors, [
+            mutedPalette[1 % mutedPalette.length].$1,
+            mutedPalette[1 % mutedPalette.length].$2,
+          ]);
+        });
+      }
+
+      for (final style in StoneStyle.values) {
+        testWidgets(
+            'highlightTop stays sage regardless of style: ${style.name}',
+            (tester) async {
+          await pump(
+            tester,
+            CairnStack(stoneCount: 5, style: style, highlightTop: true),
+          );
+
+          expect(stoneGradient(tester, 0).colors, [
+            AppColors.stoneSageLight,
+            AppColors.stoneSageDark,
+          ]);
+        });
+
+        testWidgets(
+            'pendingTop stays the muted pending clay regardless of style: '
+            '${style.name}', (tester) async {
+          await pump(
+            tester,
+            CairnStack(stoneCount: 5, style: style, pendingTop: true),
+          );
+
+          expect(stoneGradient(tester, 0).colors, [
+            AppColors.stonePendingLight,
+            AppColors.stonePendingDark,
+          ]);
+        });
+      }
+    });
+
+    group('StoneStyleScope (Phase 5: applies everywhere)', () {
+      LinearGradient stoneGradient(WidgetTester tester, int i) {
+        final container = tester.widget<Container>(
+          find.descendant(of: find.byKey(stoneKey(i)), matching: find.byType(Container)),
+        );
+        final decoration = container.decoration! as BoxDecoration;
+        return decoration.gradient! as LinearGradient;
+      }
+
+      testWidgets(
+          'with no explicit style: param, a CairnStack inside a '
+          'StoneStyleScope renders that scope\'s style', (tester) async {
+        await pump(
+          tester,
+          const StoneStyleScope(
+            style: StoneStyle.basalt,
+            child: CairnStack(stoneCount: 5),
+          ),
+        );
+
+        expect(stoneGradient(tester, 2).colors, [
+          AppColors.basaltGradients[2 % AppColors.basaltGradients.length].$1,
+          AppColors.basaltGradients[2 % AppColors.basaltGradients.length].$2,
+        ]);
+      });
+
+      testWidgets(
+          'an explicit style: param still overrides the surrounding scope '
+          '(what the Stone Style picker\'s own tiles rely on)', (tester) async {
+        await pump(
+          tester,
+          const StoneStyleScope(
+            style: StoneStyle.basalt,
+            child: CairnStack(stoneCount: 5, style: StoneStyle.granite),
+          ),
+        );
+
+        expect(stoneGradient(tester, 2).colors, [
+          AppColors.graniteGradients[2 % AppColors.graniteGradients.length].$1,
+          AppColors.graniteGradients[2 % AppColors.graniteGradients.length].$2,
+        ]);
+      });
+
+      testWidgets(
+          'with no scope at all (every bare-pumped widget test predating '
+          'this feature) it still falls back to river', (tester) async {
+        await pump(tester, const CairnStack(stoneCount: 5));
+
+        expect(stoneGradient(tester, 2).colors, [
+          AppColors.stoneGradients[2 % AppColors.stoneGradients.length].$1,
+          AppColors.stoneGradients[2 % AppColors.stoneGradients.length].$2,
+        ]);
       });
     });
   });

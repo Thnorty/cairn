@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
+import '../../models/stone_style.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
 import '../theme/app_shadows.dart';
@@ -30,11 +31,71 @@ import '../theme/app_shadows.dart';
 /// `Text` at all (just gradient-filled `Container`s), so it doesn't need
 /// its own `Material` ancestor to avoid MaterialApp's debug-style fallback
 /// for un-Materialed text.
+///
+/// [style] (see [StoneStyle], Phase 5's "Stone Styles" feature) picks which
+/// stone gradient palette [_layout] draws from. It's nullable so "no explicit
+/// style passed" is distinguishable from "explicitly river" - [build]
+/// resolves the actual palette with this precedence: [style] if one was
+/// passed, else the nearest ancestor [StoneStyleScope], else [StoneStyle.river]
+/// (which reproduces exactly the palette this widget always drew before the
+/// Stone Styles feature existed - [AppColors.stoneGradients]/
+/// [stoneGradientsMuted] - so every existing call site/test that predates the
+/// feature, or that never sits under a scope, compiles and renders
+/// unchanged).
+///
+/// Deliberately kept a plain [StatelessWidget] rather than a `ConsumerWidget`
+/// watching the app's current style provider directly: this widget is
+/// pumped directly (with no `ProviderScope` ancestor) by its own dedicated
+/// unit test suite (`test/ui/cairn_stack_test.dart`), and the Stone Style
+/// picker's own tiles each need a specific, explicit style regardless of
+/// what's actually applied (all four styles side by side) - an explicit
+/// `style:` parameter has to win over any surrounding scope for that reason
+/// alone. [StoneStyleScope] is what lets every *other* call site (Home,
+/// Trail, the verify-flow screens, the Premium crest, the "How cairns work"
+/// legend, onboarding - see that widget's own doc comment) theme
+/// automatically with no edits of their own: it's installed exactly once,
+/// high up in `main.dart`'s `CairnApp`, fed from `effectiveStoneStyleProvider`
+/// - the single Riverpod touch point this feature needs.
+
+/// Carries a [StoneStyle] down the widget tree so every [CairnStack] beneath
+/// it that doesn't pass its own explicit `style:` renders themed, without
+/// [CairnStack] itself needing to become a `ConsumerWidget` (see that
+/// class's own doc comment on why it stays a [StatelessWidget]).
+///
+/// Installed exactly ONCE, high up in `main.dart`'s `CairnApp`, fed from
+/// `effectiveStoneStyleProvider` - the one Riverpod touch point this whole
+/// mechanism needs. Every other production call site is unchanged: as long
+/// as it sits somewhere beneath that one scope (true for every real screen -
+/// Navigator-pushed routes included, since they mount beneath `CairnApp`'s
+/// `MaterialApp`), its [CairnStack]s theme automatically.
+///
+/// [of] returns `null` when there is no ancestor scope at all, which is
+/// exactly the case for every existing widget test that pumps a bare
+/// [CairnStack] with no `ProviderScope`/[StoneStyleScope] ancestor - those
+/// tests keep working untouched because [CairnStack.build] treats a `null`
+/// result from here the same as "fall back to [StoneStyle.river]".
+class StoneStyleScope extends InheritedWidget {
+  const StoneStyleScope({super.key, required this.style, required super.child});
+
+  /// The style every un-styled [CairnStack] beneath this scope should render.
+  final StoneStyle style;
+
+  /// Looks up the nearest ancestor [StoneStyleScope]'s [style], or `null` if
+  /// none exists.
+  static StoneStyle? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<StoneStyleScope>()?.style;
+  }
+
+  @override
+  bool updateShouldNotify(StoneStyleScope oldWidget) => style != oldWidget.style;
+}
+
 class CairnStack extends StatelessWidget {
   const CairnStack({
     super.key,
     required this.stoneCount,
     this.scale = 1.0,
+    this.style,
     this.muted = false,
     this.mutedOpacity = true,
     this.highlightTop = false,
@@ -54,6 +115,14 @@ class CairnStack extends StatelessWidget {
   /// sizes (the Home cards' ~60px-wide mini cairns vs. the ~88-100px
   /// cairn on the verification-result screen).
   final double scale;
+
+  /// Which stone gradient palette to draw from; see this class's own doc
+  /// comment for the full explicit-parameter/[StoneStyleScope]/river
+  /// resolution precedence. Never affects [highlightTop]'s sage or
+  /// [pendingTop]'s muted clay top-stone colours - those are semantic
+  /// ("verified"/"awaiting"), not decorative, and stay identical in every
+  /// style (see `Cairn Stone Styles.dc.html`'s own header comment).
+  final StoneStyle? style;
 
   /// The dimmed/desaturated variant used for a not-yet-due task (Home
   /// Card 3): lower-saturation stone colours and lighter shadows. By
@@ -178,7 +247,11 @@ class CairnStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stones = _layout();
+    // Precedence: an explicit `style:` param wins, else the nearest
+    // StoneStyleScope ancestor, else river - see this class's own doc
+    // comment.
+    final effectiveStyle = style ?? StoneStyleScope.of(context) ?? StoneStyle.river;
+    final stones = _layout(effectiveStyle);
 
     double contentHeight = 0;
     double contentWidth = 0;
@@ -232,11 +305,9 @@ class CairnStack extends StatelessWidget {
     return muted && mutedOpacity ? Opacity(opacity: 0.75, child: stack) : stack;
   }
 
-  List<_StoneLayout> _layout() {
+  List<_StoneLayout> _layout(StoneStyle effectiveStyle) {
     final n = stoneCount;
-    final palette = muted
-        ? AppColors.stoneGradientsMuted
-        : AppColors.stoneGradients;
+    final palette = _paletteFor(effectiveStyle, muted: muted);
     final topWidth = _topWidthFor(n);
     final bottomWidth = _bottomWidthFor(n);
     final topHeight = _topHeightFor(n);
@@ -297,6 +368,23 @@ class CairnStack extends StatelessWidget {
   }
 
   static double _lerp(double a, double b, double t) => a + (b - a) * t;
+
+  /// Resolves [style] (a pure domain enum - see its own doc comment) to the
+  /// concrete [AppColors] palette it names, the normal 8-pair list or the
+  /// muted 6-pair one depending on [muted]. The one place in the app that
+  /// maps [StoneStyle] to actual colour.
+  static List<(Color, Color)> _paletteFor(StoneStyle style, {required bool muted}) {
+    switch (style) {
+      case StoneStyle.river:
+        return muted ? AppColors.stoneGradientsMuted : AppColors.stoneGradients;
+      case StoneStyle.granite:
+        return muted ? AppColors.graniteGradientsMuted : AppColors.graniteGradients;
+      case StoneStyle.slate:
+        return muted ? AppColors.slateGradientsMuted : AppColors.slateGradients;
+      case StoneStyle.basalt:
+        return muted ? AppColors.basaltGradientsMuted : AppColors.basaltGradients;
+    }
+  }
 }
 
 class _StoneLayout {
