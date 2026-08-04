@@ -1088,7 +1088,7 @@ abstract class AppLocalizations {
   /// **'PREMIUM'**
   String get statsPremiumBadge;
 
-  /// Snackbar shown when tapping the Stats screen's 'Go unlimited' link or its 'Deeper insights' card, both Premium affordances that are out of scope for this phase (post-MVP Premium) and are deliberate no-ops-for-now rather than a fake/invented flow - same pattern as profileComingSoonSnackbar for the Profile screen's own Premium affordances.
+  /// No longer shown anywhere on the Stats screen (its 'Go unlimited' link and 'Deeper insights' card both open PremiumScreen directly now that Phase 5 made Premium a real purchase), but kept as a translated string rather than deleted, the same way profileComingSoonSnackbar is.
   ///
   /// In en, this message translates to:
   /// **'Coming soon'**
@@ -1160,17 +1160,23 @@ abstract class AppLocalizations {
   /// **'Yearly'**
   String get premiumYearlyPlanTitle;
 
-  /// Subtitle of the Premium screen's Yearly plan card.
+  /// Subtitle of the Premium screen's Yearly plan card. yearlyPrice and perMonth are live store-formatted price strings (already carrying the local currency sign), passed in by the caller rather than hardcoded USD.
   ///
   /// In en, this message translates to:
-  /// **'\$20.99/yr · \$1.75/mo'**
-  String get premiumYearlyPlanSubtitle;
+  /// **'{yearlyPrice}/yr · {perMonth}/mo'**
+  String premiumYearlyPlanSubtitle(String yearlyPrice, String perMonth);
 
-  /// Trailing price figure on the Premium screen's Yearly plan card.
+  /// Trailing price figure on the Premium screen's Yearly plan card. Fallback used only while live offerings are loading or unconfigured.
   ///
   /// In en, this message translates to:
   /// **'\$20.99'**
   String get premiumYearlyPlanPrice;
+
+  /// Per-month equivalent fallback for the Yearly plan card's subtitle. Fallback used only while live offerings are loading or unconfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'\$1.75'**
+  String get premiumYearlyPerMonthPrice;
 
   /// Title of the Premium screen's Monthly plan card.
   ///
@@ -1184,43 +1190,49 @@ abstract class AppLocalizations {
   /// **'Billed every month'**
   String get premiumMonthlyPlanSubtitle;
 
-  /// Trailing price figure on the Premium screen's Monthly plan card.
+  /// Trailing price figure on the Premium screen's Monthly plan card. Fallback used only while live offerings are loading or unconfigured.
   ///
   /// In en, this message translates to:
   /// **'\$2.99'**
   String get premiumMonthlyPlanPrice;
 
-  /// Ribbon badge on the Premium screen's Yearly plan card. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  /// Ribbon badge on the Premium screen's Yearly plan card. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime. percent is computed live from the store's annual vs. monthly prices, falling back to 41 while loading or unconfigured.
   ///
   /// In en, this message translates to:
-  /// **'BEST VALUE · SAVE 41%'**
-  String get premiumBestValueRibbon;
+  /// **'BEST VALUE · SAVE {percent}%'**
+  String premiumBestValueRibbon(int percent);
 
-  /// Primary footer button on the Premium screen. Premium is post-MVP with no billing/IAP integration yet, so this is a no-op-for-now that shows premiumComingSoonSnackbar rather than starting a real trial.
+  /// Primary footer button on the Premium screen. Starts a real RevenueCat purchase of whichever plan card is selected (Phase 5b-2 wired the billing seam), showing an in-place spinner while in flight; the '7-day' figure must stay in step with the trial length configured on the Play Console base plans.
   ///
   /// In en, this message translates to:
   /// **'Start 7-day free trial'**
   String get premiumStartTrialButton;
 
-  /// Caption under the Premium screen's primary trial button. Kept static (matching the Yearly default selection) rather than reflecting whichever plan card is currently selected - the canonical design shows only this one static line, and switching it to the Monthly price/cadence when that card is selected would be inventing copy the design doesn't have.
+  /// Caption under the Premium screen's primary trial button, shown when the Yearly plan card is selected. price is the live (or fallback) yearly price string.
   ///
   /// In en, this message translates to:
-  /// **'Then \$20.99/yr · cancel anytime'**
-  String get premiumTrialSubtitle;
+  /// **'Then {price}/yr · cancel anytime'**
+  String premiumTrialSubtitleYearly(String price);
 
-  /// Footer link on the Premium screen. A legal-destination placeholder for now (no Terms screen exists yet) - a later phase wires a real destination.
+  /// Caption under the Premium screen's primary trial button, shown when the Monthly plan card is selected. price is the live (or fallback) monthly price string.
+  ///
+  /// In en, this message translates to:
+  /// **'Then {price}/mo · cancel anytime'**
+  String premiumTrialSubtitleMonthly(String price);
+
+  /// Footer link on the Premium screen. Opens the hosted Terms of Service in an external browser via AppConfig.termsUrl; the link renders inert (no tap target) if that dart-define is built empty.
   ///
   /// In en, this message translates to:
   /// **'Terms'**
   String get premiumTermsLink;
 
-  /// Footer link on the Premium screen. A legal-destination placeholder for now (no Privacy screen exists yet) - a later phase wires a real destination.
+  /// Footer link on the Premium screen. Opens the hosted Privacy Policy in an external browser via AppConfig.privacyUrl; the link renders inert (no tap target) if that dart-define is built empty.
   ///
   /// In en, this message translates to:
   /// **'Privacy'**
   String get premiumPrivacyLink;
 
-  /// Snackbar shown when tapping the Premium screen's 'Start 7-day free trial' button, which is out of scope for this phase (no billing/IAP integration - Premium is presentational only) and is a deliberate no-op-for-now rather than a fake/invented purchase flow - same pattern as profileComingSoonSnackbar/statsComingSoonSnackbar for their own screens' Premium affordances.
+  /// No longer shown anywhere on the Premium screen (Phase 5b-2 wired the 'Start 7-day free trial' button to a real RevenueCat purchase, so the placeholder no-op it stood in for is gone), but kept as a translated string rather than deleted, the same way profileComingSoonSnackbar is.
   ///
   /// In en, this message translates to:
   /// **'Coming soon'**

@@ -62,6 +62,8 @@ class RevenueCatPremiumService implements PremiumService {
             id: monthlyPkg.identifier,
             period: PremiumPeriod.monthly,
             priceString: monthlyPkg.storeProduct.priceString,
+            price: monthlyPkg.storeProduct.price,
+            pricePerMonthString: monthlyPkg.storeProduct.pricePerMonthString,
           ),
         );
       }
@@ -74,6 +76,8 @@ class RevenueCatPremiumService implements PremiumService {
             id: annualPkg.identifier,
             period: PremiumPeriod.annual,
             priceString: annualPkg.storeProduct.priceString,
+            price: annualPkg.storeProduct.price,
+            pricePerMonthString: annualPkg.storeProduct.pricePerMonthString,
           ),
         );
       }

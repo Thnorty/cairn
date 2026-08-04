@@ -92,6 +92,99 @@ void main() {
     });
   });
 
+  group('live pricing', () {
+    testWidgets(
+        'yearly subtitle renders the live per-month string in local currency, not the USD fallback',
+        (tester) async {
+      const offering = PremiumOffering(
+        plans: [
+          PremiumPlan(
+            id: 'monthly',
+            period: PremiumPeriod.monthly,
+            priceString: 'TRY 169.99',
+            price: 169.99,
+          ),
+          PremiumPlan(
+            id: 'annual',
+            period: PremiumPeriod.annual,
+            priceString: 'TRY 1,189.99',
+            price: 1189.99,
+            pricePerMonthString: 'TRY 99.17',
+          ),
+        ],
+      );
+      final fakePremium = FakePremiumService(offerings: offering);
+
+      await pumpPremium(tester, fakePremium: fakePremium);
+
+      expect(find.text('TRY 1,189.99/yr · TRY 99.17/mo'), findsOneWidget);
+      expect(find.text(r'$20.99/yr · $1.75/mo'), findsNothing);
+      expect(find.text(r'$1.75'), findsNothing);
+    });
+
+    testWidgets(
+        'footer shows the yearly price with /yr when Yearly is selected, and switches to the monthly price with /mo after selecting Monthly',
+        (tester) async {
+      await pumpPremium(tester);
+
+      // Yearly is selected by default (design default).
+      expect(find.text('Then \$20.99/yr · cancel anytime'), findsOneWidget);
+      expect(find.text('Then \$2.99/mo · cancel anytime'), findsNothing);
+
+      await tester.ensureVisible(find.text('Monthly'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Monthly'));
+      await tester.pump();
+
+      expect(find.text('Then \$2.99/mo · cancel anytime'), findsOneWidget);
+      expect(find.text('Then \$20.99/yr · cancel anytime'), findsNothing);
+    });
+
+    testWidgets('ribbon renders a computed savings percentage that differs from the 41% design fallback',
+        (tester) async {
+      const offering = PremiumOffering(
+        plans: [
+          PremiumPlan(
+            id: 'monthly',
+            period: PremiumPeriod.monthly,
+            priceString: r'$5.00',
+            price: 5.00,
+          ),
+          PremiumPlan(
+            id: 'annual',
+            period: PremiumPeriod.annual,
+            priceString: r'$40.00',
+            price: 40.00,
+            pricePerMonthString: r'$3.33',
+          ),
+        ],
+      );
+      // (1 - 40 / (5 * 12)) * 100 == 33.33..., floored to 33.
+      final fakePremium = FakePremiumService(offerings: offering);
+
+      await pumpPremium(tester, fakePremium: fakePremium);
+
+      expect(find.text('BEST VALUE · SAVE 33%'), findsOneWidget);
+      expect(find.text('BEST VALUE · SAVE 41%'), findsNothing);
+    });
+
+    testWidgets(
+        'all four price-bearing fallbacks render the hardcoded design strings when loadOfferings() returns null',
+        (tester) async {
+      final fakePremium = FakePremiumService(offerings: null);
+
+      await pumpPremium(tester, fakePremium: fakePremium);
+
+      // Yearly plan card price + subtitle fallback.
+      expect(find.text(r'$20.99'), findsOneWidget);
+      expect(find.text(r'$20.99/yr · $1.75/mo'), findsOneWidget);
+      // Best value ribbon fallback.
+      expect(find.text('BEST VALUE · SAVE 41%'), findsOneWidget);
+      // Footer trial subtitle fallback (Yearly selected by default).
+      expect(find.text('Then \$20.99/yr · cancel anytime'), findsOneWidget);
+    });
+  });
+
   group('plan selection and purchasing', () {
     testWidgets('Yearly is selected by default and tapping Monthly selects it',
         (tester) async {

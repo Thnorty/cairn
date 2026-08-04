@@ -15,10 +15,23 @@ class PremiumPlan {
   /// Store-localized total price string (e.g. "$27.99" or "GBP 3.99").
   final String priceString;
 
+  /// Numeric local-currency price backing [priceString]. Used only for
+  /// derived arithmetic (e.g. computing a savings percentage against another
+  /// plan's price); never render this directly, use [priceString] instead.
+  final double price;
+
+  /// Store-formatted per-month equivalent price (e.g. "$1.75" or "TRY 99.17"),
+  /// or null when the store does not supply one (e.g. non-subscription
+  /// products). This comes straight from the store already currency-formatted
+  /// - callers must not attempt their own formatting or currency conversion.
+  final String? pricePerMonthString;
+
   const PremiumPlan({
     required this.id,
     required this.period,
     required this.priceString,
+    required this.price,
+    this.pricePerMonthString,
   });
 
   @override
@@ -28,10 +41,12 @@ class PremiumPlan {
           runtimeType == other.runtimeType &&
           id == other.id &&
           period == other.period &&
-          priceString == other.priceString;
+          priceString == other.priceString &&
+          price == other.price &&
+          pricePerMonthString == other.pricePerMonthString;
 
   @override
-  int get hashCode => Object.hash(id, period, priceString);
+  int get hashCode => Object.hash(id, period, priceString, price, pricePerMonthString);
 }
 
 /// Available subscription plans offered by the store.

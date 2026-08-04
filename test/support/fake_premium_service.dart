@@ -13,11 +13,14 @@ class FakePremiumService implements PremiumService {
         id: 'monthly',
         period: PremiumPeriod.monthly,
         priceString: r'$2.99',
+        price: 2.99,
       ),
       PremiumPlan(
         id: 'annual',
         period: PremiumPeriod.annual,
         priceString: r'$20.99',
+        price: 20.99,
+        pricePerMonthString: r'$1.75',
       ),
     ],
   );

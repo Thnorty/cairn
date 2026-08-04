@@ -1,4 +1,4 @@
-﻿import 'package:cairn/src/premium/premium_service.dart';
+import 'package:cairn/src/premium/premium_service.dart';
 import 'package:cairn/src/premium/unconfigured_premium_service.dart';
 import 'package:cairn/src/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,11 +13,13 @@ void main() {
         id: 'monthly',
         period: PremiumPeriod.monthly,
         priceString: r'$2.99',
+        price: 2.99,
       );
       const plan2 = PremiumPlan(
         id: 'monthly',
         period: PremiumPeriod.monthly,
         priceString: r'$2.99',
+        price: 2.99,
       );
 
       expect(plan1, equals(plan2));
@@ -29,11 +31,13 @@ void main() {
         id: 'monthly',
         period: PremiumPeriod.monthly,
         priceString: r'$2.99',
+        price: 2.99,
       );
       const plan2 = PremiumPlan(
         id: 'annual',
         period: PremiumPeriod.annual,
         priceString: r'$20.99',
+        price: 20.99,
       );
 
       expect(plan1, isNot(equals(plan2)));
@@ -45,11 +49,13 @@ void main() {
       id: 'plan_m',
       period: PremiumPeriod.monthly,
       priceString: r'$2.99',
+      price: 2.99,
     );
     const annualPlan = PremiumPlan(
       id: 'plan_a',
       period: PremiumPeriod.annual,
       priceString: r'$20.99',
+      price: 20.99,
     );
 
     test('resolves monthly and annual convenience getters', () {
@@ -95,6 +101,7 @@ void main() {
         id: 'test',
         period: PremiumPeriod.monthly,
         priceString: r'$1.00',
+        price: 1.00,
       );
       final outcome = await service.purchase(plan);
       expect(outcome, isA<PremiumPurchaseFailed>());
@@ -151,6 +158,7 @@ void main() {
         id: 'monthly',
         period: PremiumPeriod.monthly,
         priceString: r'$2.99',
+        price: 2.99,
       );
 
       final outcome = await fake.purchase(plan);
@@ -179,6 +187,7 @@ void main() {
         id: 'monthly',
         period: PremiumPeriod.monthly,
         priceString: r'$2.99',
+        price: 2.99,
       );
 
       expect(await fake.purchase(plan), isA<PremiumPurchaseCancelled>());

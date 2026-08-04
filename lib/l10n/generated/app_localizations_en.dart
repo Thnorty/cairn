@@ -738,10 +738,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumYearlyPlanTitle => 'Yearly';
 
   @override
-  String get premiumYearlyPlanSubtitle => '\$20.99/yr · \$1.75/mo';
+  String premiumYearlyPlanSubtitle(String yearlyPrice, String perMonth) {
+    return '$yearlyPrice/yr · $perMonth/mo';
+  }
 
   @override
   String get premiumYearlyPlanPrice => '\$20.99';
+
+  @override
+  String get premiumYearlyPerMonthPrice => '\$1.75';
 
   @override
   String get premiumMonthlyPlanTitle => 'Monthly';
@@ -753,13 +758,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumMonthlyPlanPrice => '\$2.99';
 
   @override
-  String get premiumBestValueRibbon => 'BEST VALUE · SAVE 41%';
+  String premiumBestValueRibbon(int percent) {
+    return 'BEST VALUE · SAVE $percent%';
+  }
 
   @override
   String get premiumStartTrialButton => 'Start 7-day free trial';
 
   @override
-  String get premiumTrialSubtitle => 'Then \$20.99/yr · cancel anytime';
+  String premiumTrialSubtitleYearly(String price) {
+    return 'Then $price/yr · cancel anytime';
+  }
+
+  @override
+  String premiumTrialSubtitleMonthly(String price) {
+    return 'Then $price/mo · cancel anytime';
+  }
 
   @override
   String get premiumTermsLink => 'Terms';

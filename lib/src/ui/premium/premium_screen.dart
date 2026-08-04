@@ -32,6 +32,27 @@ void openPremiumScreen(BuildContext context) {
 
 enum _PremiumPlan { yearly, monthly }
 
+/// Fallback savings percentage matching the canonical design ("SAVE 41%"),
+/// used whenever a live offering isn't available or its prices don't allow
+/// a sane computation.
+const int _fallbackSavePercent = 41;
+
+/// Computes how much cheaper the annual plan is versus paying monthly for a
+/// year, as a whole-number percentage. Floors rather than rounds so a
+/// borderline ratio (e.g. 41.5% or 41.7%) reads as the conservative "SAVE
+/// 41%" rather than overstating the discount, and clamps to 0..99 so a
+/// malformed store response can never render a negative or absurd figure.
+int _computeSavePercent(PremiumOffering? offering) {
+  final annual = offering?.annual;
+  final monthly = offering?.monthly;
+  if (annual == null || monthly == null || monthly.price <= 0) {
+    return _fallbackSavePercent;
+  }
+  final ratio = 1 - (annual.price / (monthly.price * 12));
+  final percent = (ratio * 100).floor();
+  return percent.clamp(0, 99);
+}
+
 /// `Cairn Premium.dc.html` & `Cairn Premium - Billing States.dc.html`:
 /// the Premium paywall screen.
 class PremiumScreen extends ConsumerStatefulWidget {
@@ -133,6 +154,9 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
 
     final yearlyPrice = offering?.annual?.priceString ?? l10n.premiumYearlyPlanPrice;
     final monthlyPrice = offering?.monthly?.priceString ?? l10n.premiumMonthlyPlanPrice;
+    final yearlyPerMonth =
+        offering?.annual?.pricePerMonthString ?? l10n.premiumYearlyPerMonthPrice;
+    final savePercent = _computeSavePercent(offering);
 
     final VoidCallback? onStartTrial = (!isPremium && offering != null && !_inFlight)
         ? () => _handlePurchase(offering)
@@ -184,6 +208,8 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                       selected: _selectedPlan,
                       yearlyPrice: yearlyPrice,
                       monthlyPrice: monthlyPrice,
+                      yearlyPerMonth: yearlyPerMonth,
+                      savePercent: savePercent,
                       enabled: !_inFlight,
                       onSelect: (plan) => setState(() => _selectedPlan = plan),
                     ),
@@ -202,6 +228,9 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             _Footer(
               l10n: l10n,
               inFlight: _inFlight,
+              selectedPeriod: _selectedPlan,
+              selectedPrice:
+                  _selectedPlan == _PremiumPlan.yearly ? yearlyPrice : monthlyPrice,
               onStartTrial: onStartTrial,
               onRestore: onRestore,
             ),
@@ -592,6 +621,8 @@ class _PlanCards extends StatelessWidget {
     required this.selected,
     required this.yearlyPrice,
     required this.monthlyPrice,
+    required this.yearlyPerMonth,
+    required this.savePercent,
     required this.enabled,
     required this.onSelect,
   });
@@ -600,6 +631,8 @@ class _PlanCards extends StatelessWidget {
   final _PremiumPlan selected;
   final String yearlyPrice;
   final String monthlyPrice;
+  final String yearlyPerMonth;
+  final int savePercent;
   final bool enabled;
   final ValueChanged<_PremiumPlan> onSelect;
 
@@ -611,9 +644,9 @@ class _PlanCards extends StatelessWidget {
           key: const ValueKey('plan-card-yearly'),
           selected: selected == _PremiumPlan.yearly,
           title: l10n.premiumYearlyPlanTitle,
-          subtitle: l10n.premiumYearlyPlanSubtitle,
+          subtitle: l10n.premiumYearlyPlanSubtitle(yearlyPrice, yearlyPerMonth),
           price: yearlyPrice,
-          ribbonLabel: l10n.premiumBestValueRibbon,
+          ribbonLabel: l10n.premiumBestValueRibbon(savePercent),
           onTap: enabled ? () => onSelect(_PremiumPlan.yearly) : null,
         ),
         const SizedBox(height: 11),
@@ -831,17 +864,25 @@ class _Footer extends StatelessWidget {
   const _Footer({
     required this.l10n,
     required this.inFlight,
+    required this.selectedPeriod,
+    required this.selectedPrice,
     required this.onStartTrial,
     required this.onRestore,
   });
 
   final AppLocalizations l10n;
   final bool inFlight;
+  final _PremiumPlan selectedPeriod;
+  final String selectedPrice;
   final VoidCallback? onStartTrial;
   final VoidCallback? onRestore;
 
   @override
   Widget build(BuildContext context) {
+    final trialSubtitle = selectedPeriod == _PremiumPlan.yearly
+        ? l10n.premiumTrialSubtitleYearly(selectedPrice)
+        : l10n.premiumTrialSubtitleMonthly(selectedPrice);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(26, 12, 26, 26),
@@ -866,7 +907,7 @@ class _Footer extends StatelessWidget {
           ),
           const SizedBox(height: 9),
           Text(
-            l10n.premiumTrialSubtitle,
+            trialSubtitle,
             textAlign: TextAlign.center,
             style: AppTextStyles.premiumTrialSubtitle,
           ),
