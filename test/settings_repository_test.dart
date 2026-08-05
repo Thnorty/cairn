@@ -72,4 +72,58 @@ void main() {
       expect(await repo.stoneStyle(), StoneStyle.river);
     });
   });
+
+  group('display name', () {
+    test('a fresh database has no stored display name', () async {
+      expect(await repo.displayName(), isNull);
+    });
+
+    test('setDisplayName then displayName round-trips', () async {
+      await repo.setDisplayName('Sam');
+
+      expect(await repo.displayName(), 'Sam');
+    });
+
+    test('setDisplayName trims surrounding whitespace before storing',
+        () async {
+      await repo.setDisplayName('  Sam  ');
+
+      expect(await repo.displayName(), 'Sam');
+    });
+
+    test('setDisplayName is idempotent (safe to call twice, an upsert not '
+        'an insert) and the later call wins', () async {
+      await repo.setDisplayName('Sam');
+      await repo.setDisplayName('Riley');
+
+      expect(await repo.displayName(), 'Riley');
+    });
+
+    test('setDisplayName with a whitespace-only value is a no-op: any '
+        'existing stored name is left untouched', () async {
+      await repo.setDisplayName('Sam');
+      await repo.setDisplayName('   ');
+
+      expect(await repo.displayName(), 'Sam');
+    });
+
+    test('setDisplayName with a whitespace-only value on a fresh database '
+        'writes nothing: displayName still resolves to null', () async {
+      await repo.setDisplayName('   ');
+
+      expect(await repo.displayName(), isNull);
+    });
+
+    test('a whitespace-only value written directly to the row (bypassing '
+        'setDisplayName) reads back as null, not as a blank name', () async {
+      await db.into(db.appSettings).insertOnConflictUpdate(
+            const AppSettingsCompanion(
+              key: Value('display_name'),
+              value: Value('   '),
+            ),
+          );
+
+      expect(await repo.displayName(), isNull);
+    });
+  });
 }

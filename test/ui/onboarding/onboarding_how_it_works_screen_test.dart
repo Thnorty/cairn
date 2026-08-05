@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers.dart';
 
-/// Widget tests for the onboarding How It Works screen (step 2 of 3: the
+/// Widget tests for the onboarding How It Works screen (step 2 of 4: the
 /// three "Do the thing / Snap a photo / AI verifies" step cards moved here
 /// from the welcome screen - see `onboarding_how_it_works_screen.dart`'s
 /// doc comment), exercised through the real [OnboardingFlow] - same
@@ -61,6 +61,7 @@ void main() {
 
       final dots = tester.widget<OnboardingProgressDots>(find.byType(OnboardingProgressDots));
       expect(dots.activeIndex, 1);
+      expect(dots.count, 4);
       expect(find.byKey(const ValueKey('onboarding-back-button')), findsOneWidget);
     });
   });
@@ -78,14 +79,15 @@ void main() {
   });
 
   group('continue', () {
-    testWidgets('"Continue" pushes the verification screen (step 3)', (tester) async {
+    testWidgets('"Continue" pushes the Your Name screen (step 3), not '
+        'straight to Verification', (tester) async {
       await pumpHowItWorks(tester);
 
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
-      expect(find.text('How verification works'), findsOneWidget);
-      expect(find.text('Continue'), findsNothing);
+      expect(find.text('What should we call you?'), findsOneWidget);
+      expect(find.text('How verification works'), findsNothing);
     });
   });
 }

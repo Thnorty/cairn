@@ -21,6 +21,7 @@ class SettingsRepository {
   static const _onboardingCompleteKey = 'onboarding_complete';
   static const _trueValue = 'true';
   static const _stoneStyleKey = 'stone_style';
+  static const _displayNameKey = 'display_name';
 
   /// Whether the first-launch onboarding flow has already been completed.
   /// False for a fresh database (no row yet) or any stored value other than
@@ -64,6 +65,43 @@ class SettingsRepository {
           AppSettingsCompanion(
             key: const Value(_stoneStyleKey),
             value: Value(style.toStored),
+          ),
+        );
+  }
+
+  /// The user's stored display name (Home's greeting/avatar - see
+  /// `Cairn Onboarding Name.dc.html`'s doc comment), local to this device
+  /// and the source of truth for rendering regardless of whether an account
+  /// exists. Null for a fresh database (no row yet), and null - not the raw
+  /// stored value - for a whitespace-only stored value: trimmed on read as
+  /// well as on write, so a row that somehow ended up empty/whitespace-only
+  /// (e.g. written by an older build) reads back as absent rather than as a
+  /// blank name.
+  Future<String?> displayName() async {
+    final row = await (_db.select(_db.appSettings)
+          ..where((t) => t.key.equals(_displayNameKey)))
+        .getSingleOrNull();
+    final value = row?.value;
+    if (value == null) return null;
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
+  /// Persists [name] as the stored display name, trimmed. A no-op (nothing
+  /// written, any existing stored name left untouched) when the trimmed
+  /// value is empty: whitespace-only is treated as absent, never stored -
+  /// callers that need to be able to clear the name outright would need a
+  /// separate affordance, which this app doesn't have (every caller of this
+  /// method already guards Continue/Save on the trimmed value being
+  /// non-empty). Idempotent upsert otherwise, same reasoning as
+  /// [markOnboardingComplete]/[setStoneStyle].
+  Future<void> setDisplayName(String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    await _db.into(_db.appSettings).insertOnConflictUpdate(
+          AppSettingsCompanion(
+            key: const Value(_displayNameKey),
+            value: Value(trimmed),
           ),
         );
   }

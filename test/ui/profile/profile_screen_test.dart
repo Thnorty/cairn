@@ -6,8 +6,10 @@ import 'package:cairn/src/db/database.dart';
 import 'package:cairn/src/models/proof_verdict.dart';
 import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/completion_repository.dart';
+import 'package:cairn/src/repo/settings_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
+import 'package:cairn/src/ui/onboarding/onboarding_name_screen.dart';
 import 'package:cairn/src/ui/premium/premium_screen.dart';
 import 'package:cairn/src/ui/profile/profile_screen.dart';
 import 'package:cairn/src/ui/stone_style/stone_style_screen.dart';
@@ -409,6 +411,55 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(StoneStyleScreen), findsOneWidget);
+    });
+
+    testProfileWidgets(
+        'renders the Your name row and tapping it opens the onboarding '
+        'name screen in its edit variant, pre-filled with the current name',
+        (tester) async {
+      final db = await pumpProfile(
+        tester,
+        clock: FixedClock(d(2026, 7, 10)),
+        seed: (db, taskRepo) => SettingsRepository(db).setDisplayName('Sam'),
+      );
+      addTearDown(db.close);
+
+      expect(find.text('Your name'), findsOneWidget);
+      expect(find.byType(OnboardingNameScreen), findsNothing);
+
+      await tester.ensureVisible(find.text('Your name'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Your name'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(OnboardingNameScreen), findsOneWidget);
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(field.controller!.text, 'Sam');
+      expect(find.text('Save'), findsOneWidget);
+    });
+
+    testProfileWidgets(
+        'saving from the Your name edit row updates local settings and '
+        'pops back to Profile', (tester) async {
+      final db = await pumpProfile(
+        tester,
+        clock: FixedClock(d(2026, 7, 10)),
+        seed: (db, taskRepo) => SettingsRepository(db).setDisplayName('Sam'),
+      );
+      addTearDown(db.close);
+
+      await tester.ensureVisible(find.text('Your name'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Your name'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'Riley');
+      await tester.pump();
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(OnboardingNameScreen), findsNothing);
+      expect(await SettingsRepository(db).displayName(), 'Riley');
     });
 
     testProfileWidgets(

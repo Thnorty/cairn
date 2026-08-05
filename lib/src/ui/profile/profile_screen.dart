@@ -12,6 +12,7 @@ import '../../services/points_service.dart';
 import '../../services/profile_service.dart';
 import '../account/account_flow.dart';
 import '../account/signed_in_account_row.dart';
+import '../onboarding/onboarding_name_screen.dart';
 import '../premium/premium_screen.dart';
 import '../stone_style/stone_style_screen.dart';
 import '../theme/app_colors.dart';
@@ -906,6 +907,13 @@ class _SettingsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    // Watched here (not read lazily inside the row's own onTap) so the
+    // provider is already resolved by the time the screen is on-screen and
+    // tappable: a bare ref.read on a FutureProvider that has never been
+    // watched yet would only just be starting its future at that exact
+    // synchronous call, returning its still-loading (null) AsyncValue - the
+    // pre-fill would silently come up empty on the very first tap.
+    final currentName = ref.watch(storedDisplayNameProvider).asData?.value;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -951,6 +959,24 @@ class _SettingsSection extends ConsumerWidget {
                 glyph: _GlyphShape.stones,
                 label: l10n.profileStoneStyleRow,
                 onTap: () => openStoneStyleScreen(context),
+              ),
+              const _HairlineDivider(),
+              // The onboarding "Your name" screen's edit variant (see
+              // OnboardingNameScreen's own doc comment): close-X, no page
+              // dots, "Save", pre-filled with [currentName] (the *raw*
+              // stored value watched above, not userDisplayNameProvider's
+              // fallback-guarded one, since an empty field must show
+              // genuinely empty here, not "Friend").
+              _SettingsRow(
+                glyph: _GlyphShape.person,
+                label: l10n.profileYourNameRow,
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                  builder: (_) => OnboardingNameScreen(
+                    initialName: currentName,
+                    onClose: () => Navigator.of(context).pop(),
+                    onSubmit: () => Navigator.of(context).pop(),
+                  ),
+                )),
               ),
             ],
           ),
@@ -1002,7 +1028,7 @@ class _SettingsRow extends StatelessWidget {
 /// Which one-off stroke-icon glyph to paint on this screen. Grouped into one
 /// enum + [CustomPainter] (mirroring `TabBarIcon`'s own pattern) rather than
 /// a separate tiny painter class per icon.
-enum _GlyphShape { clockPending, check, chevronRight, bell, shield, restore, info, stones }
+enum _GlyphShape { clockPending, check, chevronRight, bell, shield, restore, info, stones, person }
 
 class _Glyph extends StatelessWidget {
   const _Glyph({required this.shape, required this.color, this.size = 18});
@@ -1036,6 +1062,7 @@ class _GlyphPainter extends CustomPainter {
         _GlyphShape.restore => 2,
         _GlyphShape.info => 2,
         _GlyphShape.stones => 2,
+        _GlyphShape.person => 2,
       };
 
   @override
@@ -1185,6 +1212,34 @@ class _GlyphPainter extends CustomPainter {
         canvas.drawOval(Rect.fromCenter(center: p(12, 7.4), width: 8 * s, height: 4.4 * s), paint);
         canvas.drawOval(Rect.fromCenter(center: p(12, 12.6), width: 11.5 * s, height: 5 * s), paint);
         canvas.drawOval(Rect.fromCenter(center: p(12, 18.2), width: 15 * s, height: 5.6 * s), paint);
+        break;
+      case _GlyphShape.person:
+        // The "Your name" settings row's icon: the same silhouette as
+        // TabBarIcon's own TabIconShape.you (`<circle cx=12 cy=8 r=3.4/>`
+        // plus `M5.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6`), duplicated
+        // privately here per this screen's own precedent for small one-off
+        // glyphs (e.g. .bell/.shield/.stones above) rather than importing
+        // that file's own private painter.
+        canvas.drawCircle(p(12, 8), 3.4 * s, paint);
+        final shoulders = Path()
+          ..moveTo(p(5.5, 20).dx, p(5.5, 20).dy)
+          ..cubicTo(
+            p(5.5, 16.4).dx,
+            p(5.5, 16.4).dy,
+            p(8.4, 14).dx,
+            p(8.4, 14).dy,
+            p(12, 14).dx,
+            p(12, 14).dy,
+          )
+          ..cubicTo(
+            p(15.6, 14).dx,
+            p(15.6, 14).dy,
+            p(18.5, 16.4).dx,
+            p(18.5, 16.4).dy,
+            p(18.5, 20).dx,
+            p(18.5, 20).dy,
+          );
+        canvas.drawPath(shoulders, paint);
         break;
     }
   }

@@ -908,6 +908,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'A privacy details page is coming soon.';
 
   @override
+  String get onboardingNameTitle => 'What should we call you?';
+
+  @override
+  String get onboardingNameSubhead =>
+      'Just for your greeting and the circle at the top of Today. Stays on this device until you make an account.';
+
+  @override
+  String get onboardingNameFieldLabel => 'Your name';
+
+  @override
+  String get onboardingNameFieldHint => 'Sam';
+
+  @override
+  String get onboardingNameSaveButton => 'Save';
+
+  @override
   String get accountEyebrowLabel => 'ACCOUNT';
 
   @override
@@ -1277,6 +1293,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileStoneStyleRow => 'Stone style';
+
+  @override
+  String get profileYourNameRow => 'Your name';
 
   @override
   String get stoneStyleEyebrow => 'MAKE IT YOURS';

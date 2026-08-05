@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  input { outline: none; }
+</style>
+</helmet>
+
+<!--
+  Onboarding step 3 of 4: "Your name".
+
+  WHY THIS EXISTS. Home's greeting and its avatar circle were built to show
+  the user's own name and initial (`Cairn Home.dc.html` shows "Good morning,
+  Sam" with an "S" avatar), but nothing ever collected a name, so every user
+  saw the fallback word "Friend" and an avatar reading "F" - an initial that
+  looks personal and belongs to nobody. `userDisplayNameProvider` was left a
+  stub returning null with a comment saying Phase 4 would fill it in; Phase 4
+  shipped without doing so.
+
+  WHY ONBOARDING RATHER THAN ACCOUNT CREATION. Cairn works fully
+  anonymously: record sync is free but an account is optional, so a name
+  collected only at account creation would leave every anonymous user on
+  "Friend"/"F" forever, which is most of the problem unfixed. Collecting it
+  here means every user has a name from first launch, with no account
+  required.
+
+  The name lives LOCALLY (drift `AppSettings`) as the source of truth for
+  rendering, so it works with no account at all. When an account is created
+  it is carried up to the auth user's metadata silently: the account screens
+  gain NO name field, because by then the user already has a name and asking
+  twice would be worse than not asking at all. Signing in to an existing
+  account on a second device resolves the same way the trail does, through
+  the existing "Keep which trail" chooser: adopt the account and you take
+  the account's name with its data; keep this device and your local name
+  goes up with it.
+
+  EDIT VARIANT. Profile > SETTINGS > "Your name" reuses this exact screen
+  rather than adding a second design: same avatar preview, headline, field
+  and validation, with three differences - a close-X instead of the back
+  arrow, no page dots, and a "Save" CTA instead of "Continue". It opens
+  pre-filled with the current name.
+
+  WHY THIRD OF FOUR. The order is Welcome, How it works, Your name, then
+  Verification. The camera-permission ask is the highest-friction step in
+  the flow and stays last, immediately before entering the app. Asking for a
+  name before "How it works" would demand something of the user before
+  showing them anything.
+
+  REQUIRED, NOT OPTIONAL. There is no skip affordance, and Continue is
+  disabled while the field is empty (left-hand phone). A skip would
+  reintroduce exactly the "Friend"/"F" case this step exists to remove.
+
+  THE LIVE AVATAR PREVIEW is the point of the screen, not decoration: it is
+  the same circle that sits at the top-right of Home, so the user can see
+  what they are naming and why the initial matters. It updates as they type,
+  and shows the muted placeholder glyph while the field is empty.
+-->
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;gap:34px;flex-wrap:wrap;padding:44px 24px;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 80% at 50% -10%, rgba(140,120,95,.14), transparent 55%), repeating-radial-gradient(circle at 76% 8%, transparent 0 30px, rgba(90,78,58,.045) 30px 31px);">
+
+  <!-- ============ EMPTY: Continue disabled ============ -->
+  <div>
+    <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a8072;margin-bottom:12px;text-align:center;">Empty &middot; Continue disabled</div>
+    <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+      <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;background-image:radial-gradient(135% 48% at 50% -6%, rgba(150,166,120,.26), transparent 62%),radial-gradient(90% 32% at 100% 4%, rgba(178,124,92,.14), transparent 60%);">
+
+        <div style="position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:repeating-radial-gradient(circle at 50% -4%, transparent 0 30px, rgba(90,100,72,.05) 30px 31px);"></div>
+
+        <!-- status bar -->
+        <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 30px 4px;color:#33302b;font-weight:600;font-size:15px;letter-spacing:.3px;">
+          <span>7:12</span>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="display:flex;align-items:flex-end;gap:2px;height:11px;">
+              <div style="width:3px;height:5px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:7px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:9px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:11px;background:#33302b;border-radius:1px;"></div>
+            </div>
+            <div style="width:16px;height:11px;border:1.5px solid #33302b;border-radius:3px;position:relative;padding:1.5px;"><div style="width:70%;height:100%;background:#33302b;border-radius:1px;"></div><div style="position:absolute;right:-3px;top:3px;width:2px;height:4px;background:#33302b;border-radius:0 1px 1px 0;"></div></div>
+          </div>
+        </div>
+
+        <!-- back + page dots (step 3 of 4) -->
+        <div style="position:relative;display:flex;align-items:center;padding:8px 22px 0;">
+          <span style="width:38px;height:38px;border-radius:50%;background:rgba(120,108,88,.13);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5f584c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5L7.5 12l7 7"></path></svg>
+          </span>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;margin-left:-38px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:rgba(120,108,88,.3);"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:rgba(120,108,88,.3);"></span>
+            <span style="width:20px;height:7px;border-radius:4px;background:#6d8056;"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:rgba(120,108,88,.3);"></span>
+          </div>
+        </div>
+
+        <!-- body -->
+        <div style="position:relative;flex:1;padding:0 30px;display:flex;flex-direction:column;">
+
+          <!-- live avatar preview (empty) -->
+          <div style="display:flex;justify-content:center;margin-top:46px;">
+            <div style="width:86px;height:86px;border-radius:50%;background:linear-gradient(150deg,#c9c0b0,#a99f8c);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 16px -8px rgba(60,50,35,.45);display:flex;align-items:center;justify-content:center;">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="rgba(69,63,53,.42)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"></circle><path d="M5 20c0-3.8 3.1-6.4 7-6.4s7 2.6 7 6.4"></path></svg>
+            </div>
+          </div>
+
+          <div style="text-align:center;margin-top:26px;">
+            <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:30px;color:#2c2924;line-height:1.12;">What should we<br>call you?</div>
+            <div style="font-size:14px;color:#5f5647;margin-top:12px;line-height:1.5;">Just for your greeting and the circle at the top of Today. Stays on this device until you make an account.</div>
+          </div>
+
+          <div style="margin-top:30px;">
+            <div style="font-size:12.5px;font-weight:500;color:#6a6153;margin-bottom:8px;">Your name</div>
+            <div style="background:linear-gradient(165deg,#f4efe4,#e6decb);border:1px solid rgba(255,255,255,.4);border-radius:14px;box-shadow:inset 0 2px 5px rgba(80,66,46,.1),0 1px 0 rgba(255,255,255,.6);padding:15px 16px;">
+              <input type="text" placeholder="Sam" style="width:100%;border:none;background:transparent;font-family:'Work Sans',sans-serif;font-size:15px;color:#2c2924;">
+            </div>
+          </div>
+
+        </div>
+
+        <!-- footer: Continue DISABLED -->
+        <div style="position:relative;flex-shrink:0;padding:16px 30px 30px;">
+          <div style="width:100%;text-align:center;background:linear-gradient(155deg,#cfc4b4,#bcae9b);color:#f2ece1;padding:17px;border-radius:26px;font-weight:600;font-size:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.3);">Continue</div>
+        </div>
+
+        <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FILLED ============ -->
+  <div>
+    <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a8072;margin-bottom:12px;text-align:center;">Filled &middot; avatar previews the initial</div>
+    <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+      <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;background-image:radial-gradient(135% 48% at 50% -6%, rgba(150,166,120,.26), transparent 62%),radial-gradient(90% 32% at 100% 4%, rgba(178,124,92,.14), transparent 60%);">
+
+        <div style="position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:repeating-radial-gradient(circle at 50% -4%, transparent 0 30px, rgba(90,100,72,.05) 30px 31px);"></div>
+
+        <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 30px 4px;color:#33302b;font-weight:600;font-size:15px;letter-spacing:.3px;">
+          <span>7:12</span>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="display:flex;align-items:flex-end;gap:2px;height:11px;">
+              <div style="width:3px;height:5px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:7px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:9px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:11px;background:#33302b;border-radius:1px;"></div>
+            </div>
+            <div style="width:16px;height:11px;border:1.5px solid #33302b;border-radius:3px;position:relative;padding:1.5px;"><div style="width:70%;height:100%;background:#33302b;border-radius:1px;"></div><div style="position:absolute;right:-3px;top:3px;width:2px;height:4px;background:#33302b;border-radius:0 1px 1px 0;"></div></div>
+          </div>
+        </div>
+
+        <div style="position:relative;display:flex;align-items:center;padding:8px 22px 0;">
+          <span style="width:38px;height:38px;border-radius:50%;background:rgba(120,108,88,.13);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5f584c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5L7.5 12l7 7"></path></svg>
+          </span>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;margin-left:-38px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:rgba(120,108,88,.3);"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:rgba(120,108,88,.3);"></span>
+            <span style="width:20px;height:7px;border-radius:4px;background:#6d8056;"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:rgba(120,108,88,.3);"></span>
+          </div>
+        </div>
+
+        <div style="position:relative;flex:1;padding:0 30px;display:flex;flex-direction:column;">
+
+          <!-- live avatar preview (filled: shows the initial) -->
+          <div style="display:flex;justify-content:center;margin-top:46px;">
+            <div style="width:86px;height:86px;border-radius:50%;background:linear-gradient(150deg,#c9c0b0,#a99f8c);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 16px -8px rgba(60,50,35,.45);display:flex;align-items:center;justify-content:center;font-family:'Zilla Slab',serif;font-weight:600;font-size:34px;color:#453f35;">S</div>
+          </div>
+
+          <div style="text-align:center;margin-top:26px;">
+            <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:30px;color:#2c2924;line-height:1.12;">What should we<br>call you?</div>
+            <div style="font-size:14px;color:#5f5647;margin-top:12px;line-height:1.5;">Just for your greeting and the circle at the top of Today. Stays on this device until you make an account.</div>
+          </div>
+
+          <div style="margin-top:30px;">
+            <div style="font-size:12.5px;font-weight:500;color:#6a6153;margin-bottom:8px;">Your name</div>
+            <div style="background:linear-gradient(165deg,#f4efe4,#e6decb);border:1px solid rgba(122,141,96,.5);border-radius:14px;box-shadow:inset 0 2px 5px rgba(80,66,46,.1),0 1px 0 rgba(255,255,255,.6);padding:15px 16px;">
+              <input type="text" value="Sam" style="width:100%;border:none;background:transparent;font-family:'Work Sans',sans-serif;font-size:15px;color:#2c2924;">
+            </div>
+          </div>
+
+        </div>
+
+        <div style="position:relative;flex-shrink:0;padding:16px 30px 30px;">
+          <div style="width:100%;text-align:center;background:linear-gradient(155deg,#c07a54,#a6603d);color:#f6efe6;padding:17px;border-radius:26px;font-weight:600;font-size:16px;box-shadow:0 10px 20px -8px rgba(140,74,42,.6),inset 0 1px 0 rgba(255,255,255,.3);">Continue</div>
+        </div>
+
+        <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);"></div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

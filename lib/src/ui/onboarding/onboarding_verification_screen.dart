@@ -16,11 +16,10 @@ import '../widgets/card_surface.dart';
 import '../widgets/message_snack_bar.dart';
 import 'onboarding_header.dart';
 
-/// `Cairn Onboarding Verification.dc.html`: step 3 of 3 (the last) in the
-/// first-launch onboarding flow, reached from
-/// [OnboardingHowItWorksScreen]'s "Continue" button - see
-/// [OnboardingFlow]'s doc comment for how all three steps are hosted on one
-/// nested `Navigator`.
+/// `Cairn Onboarding Verification.dc.html`: step 4 of 4 (the last) in the
+/// first-launch onboarding flow, reached from the "Your name" step's
+/// Continue button - see [OnboardingFlow]'s doc comment for how all four
+/// steps are hosted on one nested `Navigator`.
 class OnboardingVerificationScreen extends ConsumerStatefulWidget {
   const OnboardingVerificationScreen({
     super.key,
@@ -77,7 +76,7 @@ class _OnboardingVerificationScreenState
       contourRingColor: AppColors.premiumContourRing,
       child: Column(
         children: [
-          OnboardingHeader(activeIndex: 2, onBack: widget.onBack),
+          OnboardingHeader(activeIndex: 3, onBack: widget.onBack),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsetsDirectional.fromSTEB(30, 8, 30, 0),

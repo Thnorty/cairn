@@ -2,6 +2,7 @@ import 'package:cairn/src/clock.dart';
 import 'package:cairn/src/db/database.dart';
 import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/completion_repository.dart';
+import 'package:cairn/src/repo/settings_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/account_service.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
@@ -26,6 +27,7 @@ class AccountTestHarness {
     required this.accountService,
     required this.taskRepository,
     required this.completionRepository,
+    required this.settingsRepository,
     required this.clock,
   });
 
@@ -35,6 +37,7 @@ class AccountTestHarness {
   final AccountService accountService;
   final TaskRepository taskRepository;
   final CompletionRepository completionRepository;
+  final SettingsRepository settingsRepository;
   final Clock clock;
 
   /// Provider overrides wiring [accountServiceProvider]/[authServiceProvider]
@@ -56,12 +59,14 @@ AccountTestHarness buildAccountTestHarness({FakeAuthService? auth}) {
   final transport = FakeSyncTransport();
   final taskRepo = TaskRepository(db, clock);
   final completionRepo = CompletionRepository(db, clock, verifier: FakeProofVerifier());
+  final settingsRepo = SettingsRepository(db);
   final sync = SyncService(db, transport);
   final accountService = AccountService(
     auth: fakeAuth,
     sync: sync,
     completions: completionRepo,
     tasks: taskRepo,
+    settings: settingsRepo,
   );
   return AccountTestHarness(
     db: db,
@@ -70,6 +75,7 @@ AccountTestHarness buildAccountTestHarness({FakeAuthService? auth}) {
     accountService: accountService,
     taskRepository: taskRepo,
     completionRepository: completionRepo,
+    settingsRepository: settingsRepo,
     clock: clock,
   );
 }

@@ -4,14 +4,14 @@ import 'package:flutter/widgets.dart';
 import '../theme/app_colors.dart';
 import '../widgets/glyphs.dart';
 
-/// Shared header for the three first-launch onboarding screens (Welcome /
-/// How It Works / Verify - see `onboarding_flow.dart`'s doc comment): a
-/// back-chevron slot on the left, the centered [OnboardingProgressDots]
-/// indicator, and a matching spacer on the right so the indicator stays
-/// visually centered. Extracted from what used to be the verification
-/// screen's own private `_ProgressHeader`/`_BackButton` (the only screen
-/// that showed a progress indicator before this run's 2-\>3-screen split)
-/// so all three steps render this header identically: same insets, same
+/// Shared header for the four first-launch onboarding screens (Welcome /
+/// How It Works / Your Name / Verify - see `onboarding_flow.dart`'s doc
+/// comment): a back-chevron slot on the left, the centered
+/// [OnboardingProgressDots] indicator, and a matching spacer on the right so
+/// the indicator stays visually centered. Extracted from what used to be the
+/// verification screen's own private `_ProgressHeader`/`_BackButton` (the
+/// only screen that showed a progress indicator before this run's 2-\>3-screen
+/// split) so every step renders this header identically: same insets, same
 /// back-chevron slot, same indicator position.
 ///
 /// [onBack] is null on the first step (Welcome has no previous step to
@@ -19,16 +19,29 @@ import '../widgets/glyphs.dart';
 /// there instead of just omitting it, so the indicator lands at the exact
 /// same x position on every screen (this run's spec: "the indicator in the
 /// same position on each").
+///
+/// [dotCount] defaults to 4 (Welcome/How It Works/Your Name/Verify, since
+/// the "Your name" step's addition): extended, rather than hardcoded to a
+/// second literal, exactly per that run's own spec ("find how it is
+/// currently driven and extend it rather than hardcoding a second one").
 class OnboardingHeader extends StatelessWidget {
-  const OnboardingHeader({super.key, required this.activeIndex, this.onBack});
+  const OnboardingHeader({
+    super.key,
+    required this.activeIndex,
+    this.onBack,
+    this.dotCount = 4,
+  });
 
-  /// Which of the three dots is active (0 = Welcome, 1 = How It Works,
-  /// 2 = Verify) - see [OnboardingProgressDots].
+  /// Which dot is active (0 = Welcome, 1 = How It Works, 2 = Your Name,
+  /// 3 = Verify) - see [OnboardingProgressDots].
   final int activeIndex;
 
   /// Pops the onboarding flow's nested Navigator back to the previous step.
   /// Null on the first step (no back control there).
   final VoidCallback? onBack;
+
+  /// Total number of dots rendered - see [OnboardingProgressDots.count].
+  final int dotCount;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +54,7 @@ class OnboardingHeader extends StatelessWidget {
           back != null
               ? _BackButton(onTap: back)
               : const SizedBox(width: 36, height: 36),
-          OnboardingProgressDots(activeIndex: activeIndex),
+          OnboardingProgressDots(activeIndex: activeIndex, count: dotCount),
           const SizedBox(width: 36),
         ],
       ),
@@ -49,11 +62,12 @@ class OnboardingHeader extends StatelessWidget {
   }
 }
 
-/// The literal 3-dot progress indicator: the [activeIndex]-th dot renders
+/// The literal dot-row progress indicator (4 dots for the onboarding flow
+/// today, see [OnboardingHeader.dotCount]): the [activeIndex]-th dot renders
 /// wide/sage, every other dot renders small/faded. Generalised over the
 /// original hand-rolled two-screen version (which only ever had one fixed
-/// "dot 2 is active" state) so all three onboarding steps share one
-/// implementation instead of three near-identical copies.
+/// "dot 2 is active" state) so every onboarding step shares one
+/// implementation instead of near-identical copies per screen.
 class OnboardingProgressDots extends StatelessWidget {
   const OnboardingProgressDots({super.key, required this.activeIndex, this.count = 3});
 

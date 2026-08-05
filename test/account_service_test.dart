@@ -1,6 +1,7 @@
 import 'package:cairn/src/clock.dart';
 import 'package:cairn/src/db/database.dart';
 import 'package:cairn/src/repo/completion_repository.dart';
+import 'package:cairn/src/repo/settings_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/account_error.dart';
 import 'package:cairn/src/services/account_service.dart';
@@ -377,6 +378,253 @@ void main() {
       expect(service.isAnonymous, isTrue);
 
       await db.close();
+    });
+  });
+
+  group('display name carry-up/adoption (Cairn Onboarding Name.dc.html)', () {
+    test('confirmCreateAccount pushes the local stored name up to the new '
+        "account's metadata best-effort", () async {
+      final auth = FakeAuthService();
+      final db = inMemoryDatabase();
+      await SettingsRepository(db).setDisplayName('Sam');
+      final transport = FakeSyncTransport();
+      final clock = FixedClock(d(2026, 7, 10));
+      final service = AccountService(
+        auth: auth,
+        sync: SyncService(db, transport),
+        completions: CompletionRepository(db, clock, verifier: FakeProofVerifier()),
+        tasks: TaskRepository(db, clock),
+        settings: SettingsRepository(db),
+      );
+
+      await service.startCreateAccount(email: 'new@example.com', password: 'held-secret');
+      await service.confirmCreateAccount('123456');
+
+      expect(auth.setDisplayNameCalls, ['Sam']);
+
+      await db.close();
+    });
+
+    test('confirmCreateAccount with no local name never touches '
+        'setDisplayName', () async {
+      final auth = FakeAuthService();
+      final db = inMemoryDatabase();
+      final transport = FakeSyncTransport();
+      final clock = FixedClock(d(2026, 7, 10));
+      final service = AccountService(
+        auth: auth,
+        sync: SyncService(db, transport),
+        completions: CompletionRepository(db, clock, verifier: FakeProofVerifier()),
+        tasks: TaskRepository(db, clock),
+        settings: SettingsRepository(db),
+      );
+
+      await service.startCreateAccount(email: 'new@example.com', password: 'held-secret');
+      await service.confirmCreateAccount('123456');
+
+      expect(auth.setDisplayNameCalls, isEmpty);
+
+      await db.close();
+    });
+
+    test('a setDisplayName failure during confirmCreateAccount is '
+        'best-effort: account creation still succeeds (never fails or '
+        'rolls back)', () async {
+      final auth = FakeAuthService()..setDisplayNameError = Exception('offline');
+      final db = inMemoryDatabase();
+      await SettingsRepository(db).setDisplayName('Sam');
+      final transport = FakeSyncTransport();
+      final clock = FixedClock(d(2026, 7, 10));
+      final service = AccountService(
+        auth: auth,
+        sync: SyncService(db, transport),
+        completions: CompletionRepository(db, clock, verifier: FakeProofVerifier()),
+        tasks: TaskRepository(db, clock),
+        settings: SettingsRepository(db),
+      );
+
+      await service.startCreateAccount(email: 'new@example.com', password: 'held-secret');
+      // Must not throw despite the auth fake being primed to fail
+      // setDisplayName.
+      await service.confirmCreateAccount('123456');
+      expect(auth.setPasswordCalls, ['held-secret']); // account creation itself completed
+
+      await db.close();
+    });
+
+    test('signIn (SignInComplete case: empty local) adopts the account\'s '
+        'stored name into local settings, name included per onboarding '
+        'sign-in', () async {
+      final transport = FakeSyncTransport();
+      final dbA = inMemoryDatabase();
+      final localClock = FixedClock(d(2026, 7, 10));
+      final auth = FakeAuthService(userId: 'anon-user', isAnonymousUser: true);
+      final service = AccountService(
+        auth: auth,
+        sync: SyncService(dbA, transport),
+        completions: CompletionRepository(dbA, localClock, verifier: FakeProofVerifier()),
+        tasks: TaskRepository(dbA, localClock),
+        settings: SettingsRepository(dbA),
+      );
+
+      // signInWithPassword on FakeAuthService doesn't itself set a
+      // displayName; simulate the account already having one in its
+      // metadata by setting it directly, the same shape the real gateway's
+      // currentUserMetadata would already carry once signed in.
+      auth.userDisplayName = 'Alex';
+
+      final outcome = await service.signIn(email: 'a@b.com', password: 'hunter2');
+      expect(outcome, isA<SignInComplete>());
+
+      expect(await SettingsRepository(dbA).displayName(), 'Alex');
+
+      await dbA.close();
+    });
+
+    test('signIn (SignInComplete case) with an older account that has no '
+        'stored name leaves local untouched', () async {
+      final transport = FakeSyncTransport();
+      final dbA = inMemoryDatabase();
+      final localClock = FixedClock(d(2026, 7, 10));
+      final auth = FakeAuthService(userId: 'anon-user', isAnonymousUser: true);
+      final service = AccountService(
+        auth: auth,
+        sync: SyncService(dbA, transport),
+        completions: CompletionRepository(dbA, localClock, verifier: FakeProofVerifier()),
+        tasks: TaskRepository(dbA, localClock),
+        settings: SettingsRepository(dbA),
+      );
+
+      // auth.userDisplayName stays null: an older account with no metadata.
+      final outcome = await service.signIn(email: 'a@b.com', password: 'hunter2');
+      expect(outcome, isA<SignInComplete>());
+
+      expect(await SettingsRepository(dbA).displayName(), isNull);
+
+      await dbA.close();
+    });
+
+    test('keepThisDevice pushes the local stored name up to the account, '
+        'the same "this device wins" direction as the trail data', () async {
+      final transport = FakeSyncTransport();
+      final dbA = inMemoryDatabase();
+      await SettingsRepository(dbA).setDisplayName('Sam');
+      final clock = FixedClock(d(2026, 7, 10), nowMillis: 2000);
+      final taskRepoA = TaskRepository(dbA, clock);
+      await taskRepoA.createTask(
+        title: 'Local task',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      final auth = FakeAuthService();
+      final service = AccountService(
+        auth: auth,
+        sync: SyncService(dbA, transport, clock: clock),
+        completions: CompletionRepository(dbA, clock, verifier: FakeProofVerifier()),
+        tasks: taskRepoA,
+        settings: SettingsRepository(dbA),
+      );
+
+      await service.keepThisDevice();
+
+      expect(auth.setDisplayNameCalls, ['Sam']);
+
+      await dbA.close();
+    });
+
+    test('keepThisDevice with no local name never touches setDisplayName',
+        () async {
+      final transport = FakeSyncTransport();
+      final dbA = inMemoryDatabase();
+      final clock = FixedClock(d(2026, 7, 10), nowMillis: 2000);
+      final taskRepoA = TaskRepository(dbA, clock);
+      await taskRepoA.createTask(
+        title: 'Local task',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      final auth = FakeAuthService();
+      final service = AccountService(
+        auth: auth,
+        sync: SyncService(dbA, transport, clock: clock),
+        completions: CompletionRepository(dbA, clock, verifier: FakeProofVerifier()),
+        tasks: taskRepoA,
+        settings: SettingsRepository(dbA),
+      );
+
+      await service.keepThisDevice();
+
+      expect(auth.setDisplayNameCalls, isEmpty);
+
+      await dbA.close();
+    });
+
+    test('useAccount adopts the account\'s stored name into local settings, '
+        'the same "account wins" direction as the trail data', () async {
+      final transport = FakeSyncTransport();
+      final dbCloud = inMemoryDatabase();
+      final cloudClock = FixedClock(d(2026, 7, 10), nowMillis: 1000);
+      final taskRepoCloud = TaskRepository(dbCloud, cloudClock);
+      await taskRepoCloud.createTask(
+        title: 'Cloud task',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      await SyncService(dbCloud, transport).syncOnce();
+
+      final dbA = inMemoryDatabase();
+      final localClock = FixedClock(d(2026, 7, 10));
+      final auth = FakeAuthService()..userDisplayName = 'Alex';
+      final service = AccountService(
+        auth: auth,
+        sync: SyncService(dbA, transport),
+        completions: CompletionRepository(dbA, localClock, verifier: FakeProofVerifier()),
+        tasks: TaskRepository(dbA, localClock),
+        settings: SettingsRepository(dbA),
+      );
+
+      await service.useAccount();
+
+      expect(await SettingsRepository(dbA).displayName(), 'Alex');
+
+      await dbCloud.close();
+      await dbA.close();
+    });
+
+    test('useAccount with an older account that has no stored name leaves '
+        'local untouched rather than clearing it', () async {
+      final transport = FakeSyncTransport();
+      final dbCloud = inMemoryDatabase();
+      final cloudClock = FixedClock(d(2026, 7, 10), nowMillis: 1000);
+      final taskRepoCloud = TaskRepository(dbCloud, cloudClock);
+      await taskRepoCloud.createTask(
+        title: 'Cloud task',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      await SyncService(dbCloud, transport).syncOnce();
+
+      final dbA = inMemoryDatabase();
+      await SettingsRepository(dbA).setDisplayName('LocalName');
+      final localClock = FixedClock(d(2026, 7, 10));
+      // auth.userDisplayName stays null: an older account with no metadata.
+      final auth = FakeAuthService();
+      final service = AccountService(
+        auth: auth,
+        sync: SyncService(dbA, transport),
+        completions: CompletionRepository(dbA, localClock, verifier: FakeProofVerifier()),
+        tasks: TaskRepository(dbA, localClock),
+        settings: SettingsRepository(dbA),
+      );
+
+      await service.useAccount();
+
+      // Untouched, not cleared - the local name survives even though the
+      // account itself replaced every other piece of local data.
+      expect(await SettingsRepository(dbA).displayName(), 'LocalName');
+
+      await dbCloud.close();
+      await dbA.close();
     });
   });
 }

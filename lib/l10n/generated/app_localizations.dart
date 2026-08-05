@@ -1466,6 +1466,36 @@ abstract class AppLocalizations {
   /// **'A privacy details page is coming soon.'**
   String get onboardingPrivacyComingSoonSnackbar;
 
+  /// Headline on the onboarding 'Your name' screen (Cairn Onboarding Name.dc.html), step 3 of 4 in the first-launch flow. Also the title of this same screen's Profile edit variant (see profileYourNameRow).
+  ///
+  /// In en, this message translates to:
+  /// **'What should we call you?'**
+  String get onboardingNameTitle;
+
+  /// Subhead under the title on the onboarding 'Your name' screen, explaining where the name is used and that it stays local until an account exists.
+  ///
+  /// In en, this message translates to:
+  /// **'Just for your greeting and the circle at the top of Today. Stays on this device until you make an account.'**
+  String get onboardingNameSubhead;
+
+  /// Label above the single-line name text field on the onboarding 'Your name' screen and its Profile edit variant.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name'**
+  String get onboardingNameFieldLabel;
+
+  /// Placeholder text in the empty name field on the onboarding 'Your name' screen, matching the canonical design's own example name. Not a real user's name; the same generic-example convention as fallbackDisplayName's own doc comment (which itself uses 'Sam' as its documented example, not this string).
+  ///
+  /// In en, this message translates to:
+  /// **'Sam'**
+  String get onboardingNameFieldHint;
+
+  /// Primary footer button on the onboarding 'Your name' screen's Profile edit variant, replacing onboardingContinueButton ('Continue') which the first-launch onboarding step uses instead - see profileYourNameRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get onboardingNameSaveButton;
+
   /// All-caps eyebrow label above the title on the Create account / Sign in / Set new password screens (Cairn Account.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
   ///
   /// In en, this message translates to:
@@ -2029,6 +2059,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stone style'**
   String get profileStoneStyleRow;
+
+  /// Row label in the Profile screen's settings list that opens the onboarding 'Your name' screen (Cairn Onboarding Name.dc.html) in its edit variant: close-X instead of back arrow, no page dots, Save instead of Continue, pre-filled with the current name. Identical text to onboardingNameFieldLabel, which labels the field itself rather than a navigational row - kept as a separate key per this catalogue's own convention of not collapsing two different UI roles onto one key even when the literal English happens to match.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name'**
+  String get profileYourNameRow;
 
   /// All-caps eyebrow label above the title on the Stone Style picker screen (Cairn Stone Styles.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
   ///

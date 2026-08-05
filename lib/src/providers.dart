@@ -151,14 +151,34 @@ final completionRepositoryProvider = Provider<CompletionRepository>((ref) {
   );
 });
 
-/// Display name for the Home greeting and its avatar initial. No
-/// account/profile system exists yet (Phase 4 adds real display names via
-/// the optional email/password upgrade over the same anonymous user id);
-/// this resolves to the [AppLocalizations.fallbackDisplayName] stand-in
-/// until then. Kept as its own provider (rather than inlined in the Home
-/// widget) so Phase 4 only has to change this one place once a real name is
-/// available.
-final userDisplayNameProvider = Provider<String?>((ref) => null);
+/// The user's *stored* display name, persisted locally in `AppSettings` via
+/// [SettingsRepository.displayName]/[SettingsRepository.setDisplayName] -
+/// see `Cairn Onboarding Name.dc.html`'s doc comment for the full rationale
+/// (local is always the source of truth for rendering, independent of
+/// whether an account exists). A plain [FutureProvider] +
+/// manual-`ref.invalidate`-on-write, the exact same convention
+/// [storedStoneStyleProvider] already uses for `AppSettings`-backed state:
+/// every writer (the onboarding "Your name" step's Continue, its Profile
+/// edit variant's Save, and the sign-in trail-adoption paths in
+/// [AccountService]) must `ref.invalidate(storedDisplayNameProvider)`
+/// afterward.
+final storedDisplayNameProvider = FutureProvider<String?>((ref) {
+  return ref.watch(settingsRepositoryProvider).displayName();
+});
+
+/// Display name for the Home greeting and its avatar initial: resolves
+/// [storedDisplayNameProvider]'s current value, or null while that first
+/// read is still in flight or once it resolves absent (no name set yet -
+/// a stale existing install that finished onboarding before this feature
+/// existed, per that screen's own "existing installs" decision). Callers
+/// keep consuming this exactly as before this run's change (a plain
+/// `String?`, `?? l10n.fallbackDisplayName` guarding the null case) - only
+/// the resolution mechanism changed, from a hardcoded stub to
+/// [storedDisplayNameProvider]'s live `AppSettings` value, mirroring how
+/// [effectiveStoneStyleProvider] derives from [storedStoneStyleProvider].
+final userDisplayNameProvider = Provider<String?>((ref) {
+  return ref.watch(storedDisplayNameProvider).asData?.value;
+});
 
 final homeServiceProvider = Provider<HomeService>((ref) {
   return HomeService(
@@ -482,6 +502,7 @@ final accountServiceProvider = Provider<AccountService>((ref) {
     completions: ref.watch(completionRepositoryProvider),
     tasks: ref.watch(taskRepositoryProvider),
     premium: ref.watch(premiumServiceProvider),
+    settings: ref.watch(settingsRepositoryProvider),
   );
 });
 

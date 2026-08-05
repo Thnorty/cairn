@@ -9,12 +9,12 @@ import '../widgets/buttons.dart';
 import '../widgets/cairn_stack.dart';
 import 'onboarding_header.dart';
 
-/// `Cairn Onboarding.dc.html`: step 1 of 3 in the first-launch onboarding
-/// flow (Welcome -\> How It Works -\> Verify - see `onboarding_flow.dart`'s
-/// doc comment), hosted (along with the other two steps) inside
-/// [OnboardingFlow]'s own nested `Navigator` - never pushed on the app's
-/// root navigator, so completing onboarding can cleanly swap the whole
-/// subtree for [AppShell] (see that widget's doc comment).
+/// `Cairn Onboarding.dc.html`: step 1 of 4 in the first-launch onboarding
+/// flow (Welcome -\> How It Works -\> Your Name -\> Verify - see
+/// `onboarding_flow.dart`'s doc comment), hosted (along with the other
+/// steps) inside [OnboardingFlow]'s own nested `Navigator` - never pushed on
+/// the app's root navigator, so completing onboarding can cleanly swap the
+/// whole subtree for [AppShell] (see that widget's doc comment).
 ///
 /// The canonical design's single screen originally combined this hero/
 /// headline content with the three "Do the thing / Snap a photo / AI

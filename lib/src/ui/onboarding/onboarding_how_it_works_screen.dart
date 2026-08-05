@@ -11,13 +11,13 @@ import '../widgets/buttons.dart';
 import '../widgets/card_surface.dart';
 import 'onboarding_header.dart';
 
-/// Step 2 of 3 in the first-launch onboarding flow (Welcome -\> How It
-/// Works -\> Verify - see `onboarding_flow.dart`'s doc comment): the three
-/// "Do the thing. / Snap a photo. / AI verifies." step cards, MOVED here
-/// out of [OnboardingWelcomeScreen] (step 1) per this consistency pass, so
-/// each of the three onboarding ideas gets its own short, indicated step
-/// instead of being crowded onto the welcome screen alongside the hero
-/// illustration and headline.
+/// Step 2 of 4 in the first-launch onboarding flow (Welcome -\> How It
+/// Works -\> Your Name -\> Verify - see `onboarding_flow.dart`'s doc
+/// comment): the three "Do the thing. / Snap a photo. / AI verifies." step
+/// cards, MOVED here out of [OnboardingWelcomeScreen] (step 1) per this
+/// consistency pass, so each of the three onboarding ideas gets its own
+/// short, indicated step instead of being crowded onto the welcome screen
+/// alongside the hero illustration and headline.
 ///
 /// There is no dedicated `.dc.html` for this screen: the canonical
 /// `Cairn Onboarding.dc.html` originally carried this exact content (same

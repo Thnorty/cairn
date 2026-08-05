@@ -48,6 +48,27 @@ abstract class AuthService {
   /// session that hasn't upgraded yet). Never throws.
   String? get email;
 
+  /// The current session's stored display name (the `display_name` key in
+  /// Supabase auth's `user_metadata`), or null (no session, or no name has
+  /// ever been pushed to this account's metadata - e.g. an older account
+  /// created before this feature existed). Never throws (mirrors
+  /// [currentUserId]'s contract): resolves to null on any error, same as
+  /// "no session". This is metadata carried FROM the local device (see
+  /// [setDisplayName]), never the source of truth for rendering - that is
+  /// always `SettingsRepository.displayName`'s local, account-independent
+  /// value.
+  String? get displayName;
+
+  /// Best-effort push of [name] into the current session's `user_metadata`
+  /// under the `display_name` key (see [GoTrueGateway.updateUserMetadata]),
+  /// so it syncs to any other device that signs into this same account.
+  /// Throws [AccountException] on failure exactly like every other mutating
+  /// method here (e.g. [setPassword]); callers that want this to never
+  /// block/fail their own flow (account creation, the Profile name-edit
+  /// screen) wrap it in their own best-effort try/catch, the same defensive
+  /// posture `AccountService.signOut` already uses for `PremiumService.logOut`.
+  Future<void> setDisplayName(String name);
+
   /// Create-account flow, step 1: starts attaching [email] to the current
   /// (anonymous) session. With confirm-email on (this project's setting)
   /// this sends a 6-digit OTP to [email] and does not attach it yet -
@@ -153,6 +174,17 @@ class SupabaseAuthService implements AuthService {
   }
 
   @override
+  String? get displayName {
+    try {
+      final metadata = _gateway.currentUserMetadata;
+      final value = metadata?['display_name'];
+      return value is String ? value : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
   Future<void> ensureSignedIn() async {
     try {
       if (_gateway.currentUserId != null) return;
@@ -191,6 +223,10 @@ class SupabaseAuthService implements AuthService {
   @override
   Future<void> setPassword(String password) =>
       _guarded(() => _gateway.updatePassword(password));
+
+  @override
+  Future<void> setDisplayName(String name) =>
+      _guarded(() => _gateway.updateUserMetadata({'display_name': name}));
 
   @override
   Future<void> signInWithPassword({

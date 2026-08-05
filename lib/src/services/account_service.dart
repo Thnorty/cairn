@@ -1,6 +1,7 @@
 import '../models/trail_summary.dart';
 import '../premium/premium_service.dart';
 import '../repo/completion_repository.dart';
+import '../repo/settings_repository.dart';
 import '../repo/task_repository.dart';
 import '../sync/sync_service.dart';
 import 'auth_service.dart';
@@ -56,6 +57,17 @@ class AccountService {
   final TaskRepository _tasks;
   final PremiumService? _premium;
 
+  /// Local display-name settings, used to carry the user's name up to the
+  /// account (create-account, `keepThisDevice`) and down from it
+  /// (`signIn`'s `SignInComplete` case, `useAccount`) - see
+  /// `Cairn Onboarding Name.dc.html`'s doc comment on "carry it to the
+  /// account, with no new account fields". Optional (mirrors [_premium]):
+  /// a caller that builds an [AccountService] without wiring this simply
+  /// skips the display-name step, rather than every existing call site (this
+  /// file's own tests, `providers.dart`'s older call shape) having to be
+  /// touched just to keep constructing.
+  final SettingsRepository? _settings;
+
   /// Held between [startCreateAccount] and [confirmCreateAccount] (never
   /// exposed back to the caller): the create-account flow collects
   /// email+password up front, but the password can only actually be set
@@ -70,11 +82,13 @@ class AccountService {
     required CompletionRepository completions,
     required TaskRepository tasks,
     PremiumService? premium,
+    SettingsRepository? settings,
   })  : _auth = auth,
         _sync = sync,
         _completions = completions,
         _tasks = tasks,
-        _premium = premium;
+        _premium = premium,
+        _settings = settings;
 
   bool get isAnonymous => _auth.isAnonymous;
   String? get email => _auth.email;
@@ -112,6 +126,11 @@ class AccountService {
     await _auth.verifyEmailCode(code);
     await _auth.setPassword(password);
     _heldPassword = null;
+    // Best-effort: carry the local display name (if any) up to the new
+    // account's metadata so it syncs to other devices. A failure here must
+    // never fail or roll back account creation - same defensive posture as
+    // signOut()'s premium?.logOut() below.
+    await _pushLocalDisplayNameIfPresent();
   }
 
   // ---- sign-in flow -----------------------------------------------------
@@ -137,6 +156,11 @@ class AccountService {
     final hasLiveTasks = await _tasks.hasAnyLiveTasks();
     if (local.stones == 0 && !hasLiveTasks) {
       final result = await _sync.replaceLocalWithCloud();
+      // Onboarding sign-in (empty local) adopts the account outright, name
+      // included - see Cairn Onboarding Name.dc.html's doc comment. Older
+      // accounts with no stored name leave local untouched (there's nothing
+      // to adopt yet, and local is empty here anyway).
+      await _adoptRemoteDisplayNameIfPresent();
       return SignInComplete(result);
     }
 
@@ -147,13 +171,57 @@ class AccountService {
   /// User picked "keep this device" on the trail chooser: the account
   /// (cloud) is made to match this device's local live data, tombstoning
   /// whatever the account had that this device doesn't. See
-  /// [SyncService.replaceCloudWithLocal].
-  Future<SyncResult> keepThisDevice() => _sync.replaceCloudWithLocal();
+  /// [SyncService.replaceCloudWithLocal]. The local display name (if any)
+  /// is pushed up to the account's metadata best-effort, the same "this
+  /// device wins" direction as the trail data itself.
+  Future<SyncResult> keepThisDevice() async {
+    final result = await _sync.replaceCloudWithLocal();
+    await _pushLocalDisplayNameIfPresent();
+    return result;
+  }
 
   /// User picked "use the account" on the trail chooser: local data is
   /// discarded in favour of the account's. See
-  /// [SyncService.replaceLocalWithCloud].
-  Future<SyncResult> useAccount() => _sync.replaceLocalWithCloud();
+  /// [SyncService.replaceLocalWithCloud]. The account's stored display name
+  /// (if any) is adopted into local settings, the same "account wins"
+  /// direction as the trail data itself; an older account with no stored
+  /// name leaves the local name untouched rather than clearing it.
+  Future<SyncResult> useAccount() async {
+    final result = await _sync.replaceLocalWithCloud();
+    await _adoptRemoteDisplayNameIfPresent();
+    return result;
+  }
+
+  /// Pushes the local device's stored display name (if any) up to the
+  /// signed-in account's `user_metadata`. Best-effort throughout: a missing
+  /// [_settings] wiring, no local name yet, or an [_auth] failure are all
+  /// silently no-ops - never surfaced to the caller, per this run's spec
+  /// ("a metadata failure must NEVER fail or roll back account creation,
+  /// same defensive posture as signOut()'s premium?.logOut()").
+  Future<void> _pushLocalDisplayNameIfPresent() async {
+    try {
+      final name = await _settings?.displayName();
+      if (name != null) await _auth.setDisplayName(name);
+    } catch (_) {
+      // Best-effort: see this method's doc comment.
+    }
+  }
+
+  /// Adopts the signed-in account's stored display name (if any) into local
+  /// settings. Best-effort (see [_pushLocalDisplayNameIfPresent]'s doc
+  /// comment); an account with no stored name (an older account, created
+  /// before this feature existed) leaves the local name exactly as it was
+  /// rather than clearing it.
+  Future<void> _adoptRemoteDisplayNameIfPresent() async {
+    try {
+      final remoteName = _auth.displayName;
+      if (remoteName != null && remoteName.trim().isNotEmpty) {
+        await _settings?.setDisplayName(remoteName);
+      }
+    } catch (_) {
+      // Best-effort: see _pushLocalDisplayNameIfPresent's doc comment.
+    }
+  }
 
   // ---- password-reset flow -----------------------------------------------
 

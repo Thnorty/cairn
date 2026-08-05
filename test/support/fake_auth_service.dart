@@ -22,6 +22,7 @@ class FakeAuthService implements AuthService {
   String? userId;
   String? userEmail;
   bool isAnonymousUser;
+  String? userDisplayName;
 
   Object? startEmailUpgradeError;
   Object? verifyEmailCodeError;
@@ -29,6 +30,7 @@ class FakeAuthService implements AuthService {
   Object? signInWithPasswordError;
   Object? sendPasswordResetCodeError;
   Object? verifyPasswordResetCodeError;
+  Object? setDisplayNameError;
 
   final List<String> startEmailUpgradeCalls = [];
   final List<String> verifyEmailCodeCalls = [];
@@ -36,6 +38,7 @@ class FakeAuthService implements AuthService {
   final List<RecordedPasswordSignIn> signInWithPasswordCalls = [];
   final List<String> sendPasswordResetCodeCalls = [];
   final List<RecordedResetCodeVerify> verifyPasswordResetCodeCalls = [];
+  final List<String> setDisplayNameCalls = [];
   int signOutCallCount = 0;
   int ensureSignedInCallCount = 0;
 
@@ -43,6 +46,7 @@ class FakeAuthService implements AuthService {
     this.userId = 'anon-user',
     this.userEmail,
     this.isAnonymousUser = true,
+    this.userDisplayName,
   });
 
   @override
@@ -53,6 +57,16 @@ class FakeAuthService implements AuthService {
 
   @override
   String? get email => userEmail;
+
+  @override
+  String? get displayName => userDisplayName;
+
+  @override
+  Future<void> setDisplayName(String name) async {
+    setDisplayNameCalls.add(name);
+    if (setDisplayNameError != null) throw setDisplayNameError!;
+    userDisplayName = name;
+  }
 
   @override
   Future<void> ensureSignedIn() async {

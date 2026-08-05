@@ -623,6 +623,12 @@ abstract final class AppColors {
   /// permission-primer icon-circle background.
   static const Color onboardingPermissionIconBg = Color(0x29B27C5C);
 
+  /// rgba(69,63,53,.42) - the onboarding "Your name" screen's live avatar
+  /// preview: the muted placeholder person glyph shown while the name field
+  /// is still empty. Same r/g/b as [inkDimmed] at a distinct alpha, kept as
+  /// its own token per this file's own precedent (see [achievedTierIconBg]).
+  static const Color onboardingNamePlaceholderGlyph = Color(0x6B453F35);
+
   // ---- Shared wash gradient stops (proof outcome / new habit / daily limit) -
   // Centralized this pass: each hex below was previously re-typed as an
   // inline literal in every screen that used it, rather than shared.

@@ -26,11 +26,11 @@ class _FakeCameraPermissionRequester implements CameraPermissionRequester {
 }
 
 /// Widget tests for the onboarding verification screen
-/// (`Cairn Onboarding Verification.dc.html`, step 3 of 3), exercised
+/// (`Cairn Onboarding Verification.dc.html`, step 4 of 4), exercised
 /// through the real [OnboardingFlow] (see
 /// `onboarding_welcome_screen_test.dart`'s doc comment for why), reached by
-/// tapping "Start climbing" on step 1 then "Continue" on step 2 (How It
-/// Works).
+/// tapping "Start climbing" on step 1, "Continue" on step 2 (How It Works),
+/// then entering a name and tapping "Continue" on step 3 (Your Name).
 void main() {
   Future<(AppDatabase db, _FakeCameraPermissionRequester fakeRequester)> pumpVerification(
     WidgetTester tester,
@@ -59,6 +59,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
+    // Step 3 (Your Name): required, so a name has to be entered before
+    // Continue is enabled.
+    await tester.enterText(find.byType(TextField), 'Sam');
+    await tester.pump();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
 
     return (db, fakeRequester);
   }
@@ -66,8 +72,8 @@ void main() {
   group('content', () {
     testWidgets(
         'renders the title, subhead, all three point cards, the permission '
-        'primer, the Allow camera button, the privacy link, the 3-dot '
-        'indicator with dot 2 active, and the back-chevron', (tester) async {
+        'primer, the Allow camera button, the privacy link, the 4-dot '
+        'indicator with dot 3 active, and the back-chevron', (tester) async {
       await pumpVerification(tester);
 
       expect(find.text('How verification works'), findsOneWidget);
@@ -102,19 +108,20 @@ void main() {
 
       expect(find.byKey(const ValueKey('onboarding-progress-dots')), findsOneWidget);
       final dots = tester.widget<OnboardingProgressDots>(find.byType(OnboardingProgressDots));
-      expect(dots.activeIndex, 2);
+      expect(dots.activeIndex, 3);
+      expect(dots.count, 4);
       expect(find.byKey(const ValueKey('onboarding-back-button')), findsOneWidget);
     });
   });
 
   group('back navigation', () {
-    testWidgets('the back-chevron pops to the How It Works screen (step 2)', (tester) async {
+    testWidgets('the back-chevron pops to the Your Name screen (step 3)', (tester) async {
       await pumpVerification(tester);
 
       await tester.tap(find.byKey(const ValueKey('onboarding-back-button')));
       await tester.pumpAndSettle();
 
-      expect(find.text('How it works'), findsOneWidget);
+      expect(find.text('What should we call you?'), findsOneWidget);
       expect(find.text('How verification works'), findsNothing);
     });
   });

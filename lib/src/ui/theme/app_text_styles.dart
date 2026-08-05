@@ -764,6 +764,18 @@ abstract final class AppTextStyles {
     color: AppColors.inkPrimary,
   );
 
+  /// 30px Zilla Slab 700 - the onboarding "Your name" screen's headline
+  /// ("What should we call you?"). A third size in this family, between
+  /// [onboardingHeadline] (32px) and [onboardingVerificationHeadline]
+  /// (28px), per that screen's own source file.
+  static const TextStyle onboardingNameHeadline = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w700,
+    fontSize: 30,
+    height: 1.12,
+    color: AppColors.inkPrimary,
+  );
+
   /// 14.5px Work Sans 600 - an onboarding verification point card's title
   /// (e.g. "Sent only to be checked").
   static const TextStyle onboardingPointTitle = TextStyle(

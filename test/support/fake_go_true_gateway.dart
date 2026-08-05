@@ -36,6 +36,7 @@ class FakeGoTrueGateway implements GoTrueGateway {
   String? userId;
   String? userEmail;
   bool isAnonymousUser;
+  Map<String, dynamic>? userMetadata;
 
   Object? signInAnonymouslyError;
   Object? updateEmailError;
@@ -44,6 +45,7 @@ class FakeGoTrueGateway implements GoTrueGateway {
   Object? signInWithPasswordError;
   Object? resetPasswordForEmailError;
   Object? signOutError;
+  Object? updateUserMetadataError;
 
   int signInAnonymouslyCallCount = 0;
   int signOutCallCount = 0;
@@ -52,11 +54,13 @@ class FakeGoTrueGateway implements GoTrueGateway {
   final List<String> updatePasswordCalls = [];
   final List<RecordedSignIn> signInWithPasswordCalls = [];
   final List<String> resetPasswordForEmailCalls = [];
+  final List<Map<String, dynamic>> updateUserMetadataCalls = [];
 
   FakeGoTrueGateway({
     this.userId,
     this.userEmail,
     this.isAnonymousUser = false,
+    this.userMetadata,
   });
 
   @override
@@ -67,6 +71,9 @@ class FakeGoTrueGateway implements GoTrueGateway {
 
   @override
   bool get currentIsAnonymous => isAnonymousUser;
+
+  @override
+  Map<String, dynamic>? get currentUserMetadata => userMetadata;
 
   @override
   Future<void> signInAnonymously() async {
@@ -121,6 +128,15 @@ class FakeGoTrueGateway implements GoTrueGateway {
   Future<void> resetPasswordForEmail(String email) async {
     resetPasswordForEmailCalls.add(email);
     if (resetPasswordForEmailError != null) throw resetPasswordForEmailError!;
+  }
+
+  @override
+  Future<void> updateUserMetadata(Map<String, dynamic> data) async {
+    updateUserMetadataCalls.add(data);
+    if (updateUserMetadataError != null) throw updateUserMetadataError!;
+    // Merge, not replace - matches the real GoTrue server's own behaviour
+    // (see GoTrueGateway.updateUserMetadata's doc comment).
+    userMetadata = {...?userMetadata, ...data};
   }
 
   @override

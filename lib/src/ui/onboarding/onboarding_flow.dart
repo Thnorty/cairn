@@ -7,14 +7,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers.dart';
 import '../account/account_flow.dart';
 import 'onboarding_how_it_works_screen.dart';
+import 'onboarding_name_screen.dart';
 import 'onboarding_verification_screen.dart';
 import 'onboarding_welcome_screen.dart';
 
-/// Hosts the three first-launch onboarding screens - Welcome
+/// Hosts the four first-launch onboarding screens - Welcome
 /// ([OnboardingWelcomeScreen]) -\> How It Works
-/// ([OnboardingHowItWorksScreen]) -\> Verify
-/// ([OnboardingVerificationScreen]) - on their OWN nested [Navigator],
-/// rather than pushing them onto the app's root `MaterialApp` navigator.
+/// ([OnboardingHowItWorksScreen]) -\> Your Name ([OnboardingNameScreen]) -\>
+/// Verify ([OnboardingVerificationScreen]) - on their OWN nested
+/// [Navigator], rather than pushing them onto the app's root `MaterialApp`
+/// navigator.
 ///
 /// This matters for [OnboardingGate]: completing onboarding swaps the
 /// gate's `home:` from this widget to [AppShell] by invalidating
@@ -35,6 +37,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
   final _navigatorKey = GlobalKey<NavigatorState>();
 
   static const _howItWorksRoute = '/how-it-works';
+  static const _nameRoute = '/name';
   static const _verificationRoute = '/verification';
 
   /// The "Allow camera" completion path (decision 4 in this run's spec):
@@ -61,12 +64,21 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
             ),
           );
         }
+        if (settings.name == _nameRoute) {
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => OnboardingNameScreen(
+              onBack: () => _navigatorKey.currentState!.pop(),
+              onSubmit: () => _navigatorKey.currentState!.pushNamed(_verificationRoute),
+            ),
+          );
+        }
         if (settings.name == _howItWorksRoute) {
           return MaterialPageRoute<void>(
             settings: settings,
             builder: (_) => OnboardingHowItWorksScreen(
               onBack: () => _navigatorKey.currentState!.pop(),
-              onContinue: () => _navigatorKey.currentState!.pushNamed(_verificationRoute),
+              onContinue: () => _navigatorKey.currentState!.pushNamed(_nameRoute),
             ),
           );
         }

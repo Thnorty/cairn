@@ -249,6 +249,38 @@ void main() {
     });
   });
 
+  group('display name (Cairn Onboarding Name.dc.html)', () {
+    testHomeWidgets(
+        'a stored display name renders in both the greeting and the avatar '
+        'initial', (tester) async {
+      final db = await pumpHomeWithSeed(
+        tester,
+        FixedClock(d(2026, 7, 10)),
+        (db) => SettingsRepository(db).setDisplayName('Sam'),
+      );
+      addTearDown(db.close);
+
+      expect(find.text('Good morning, Sam'), findsOneWidget);
+      expect(find.text('S'), findsOneWidget);
+    });
+
+    testHomeWidgets(
+        'with no stored name yet, the greeting and avatar fall back to '
+        'Friend/F (an existing install that finished onboarding before this '
+        'feature existed - see Cairn Onboarding Name.dc.html\'s "existing '
+        'installs" decision)', (tester) async {
+      final db = await pumpHomeWithSeed(
+        tester,
+        FixedClock(d(2026, 7, 10)),
+        (db) async {},
+      );
+      addTearDown(db.close);
+
+      expect(find.text('Good morning, Friend'), findsOneWidget);
+      expect(find.text('F'), findsOneWidget);
+    });
+  });
+
   group('multiple occurrences', () {
     testHomeWidgets('a task with two due times produces two cards', (
       tester,

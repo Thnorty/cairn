@@ -34,6 +34,11 @@ abstract class GoTrueGateway {
   /// belongs to a real (non-anonymous) account.
   bool get currentIsAnonymous;
 
+  /// The current session's user metadata (`user_metadata`), or null when
+  /// there is no session. Read-only; callers extract whichever key they
+  /// need (e.g. [AuthService.displayName]'s `display_name`).
+  Map<String, dynamic>? get currentUserMetadata;
+
   /// Creates a new anonymous session. No-op contract enforcement here (the
   /// caller decides whether to call this only when there's no session yet);
   /// mirrors `GoTrueClient.signInAnonymously`.
@@ -68,6 +73,13 @@ abstract class GoTrueGateway {
   /// Sends a password-reset OTP to [email].
   Future<void> resetPasswordForEmail(String email);
 
+  /// Merges [data] into the current session's user metadata
+  /// (`user_metadata`), e.g. `{'display_name': name}`. Supabase's own
+  /// `updateUser` merges the given keys into whatever `user_metadata`
+  /// already exists rather than replacing the whole map, so no other stored
+  /// metadata key is disturbed.
+  Future<void> updateUserMetadata(Map<String, dynamic> data);
+
   /// Signs out the current session. Note: `GoTrueClient.signOut` clears the
   /// local session *before* attempting the (best-effort) server-side token
   /// revoke, so the local session is gone even if this throws (e.g.
@@ -95,6 +107,10 @@ class SupabaseGoTrueGateway implements GoTrueGateway {
   @override
   bool get currentIsAnonymous =>
       _client.auth.currentSession?.user.isAnonymous ?? false;
+
+  @override
+  Map<String, dynamic>? get currentUserMetadata =>
+      _client.auth.currentSession?.user.userMetadata;
 
   @override
   Future<void> signInAnonymously() async {
@@ -131,6 +147,11 @@ class SupabaseGoTrueGateway implements GoTrueGateway {
   @override
   Future<void> resetPasswordForEmail(String email) async {
     await _client.auth.resetPasswordForEmail(email);
+  }
+
+  @override
+  Future<void> updateUserMetadata(Map<String, dynamic> data) async {
+    await _client.auth.updateUser(UserAttributes(data: data));
   }
 
   @override
