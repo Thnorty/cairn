@@ -47,11 +47,14 @@ class NewHabitScreen extends ConsumerStatefulWidget {
 class _NewHabitScreenState extends ConsumerState<NewHabitScreen> {
   final _titleController = TextEditingController();
 
-  // Defaults to Daily: the only recurrence type with no extra required
-  // fields, so the form starts in an always-valid state regardless of
-  // which variant the base design file happens to illustrate (that file
-  // shows Weekly selected purely to demonstrate the weekly picker itself).
-  RecurrenceType _recurrenceType = RecurrenceType.daily;
+  // Defaults to Once (user decision, 2026-08-06). Like Daily it starts in an
+  // always-valid state - `_onceDate` is seeded to today in [initState], so
+  // there is no required field left empty - but unlike Daily it commits the
+  // user to nothing recurring, which is the gentler default for a habit
+  // tracker whose whole premise is a daily obligation. The base design file
+  // shows Weekly selected purely to demonstrate the weekly picker, and is not
+  // a statement about the default.
+  RecurrenceType _recurrenceType = RecurrenceType.once;
 
   final Set<int> _weeklyDays = {};
 

@@ -66,18 +66,34 @@ void main() {
   }
 
   group('recurrence variants swap controls', () {
-    testNewHabitWidgets('defaults to Daily with no extra recurrence panel', (tester) async {
+    testNewHabitWidgets('defaults to Once, showing its date row', (tester) async {
       final db = inMemoryDatabase();
       addTearDown(db.close);
       await pumpPushed(tester, db, FixedClock(d(2026, 7, 10)));
 
       expect(find.text('New habit'), findsOneWidget);
-      expect(find.text('Daily'), findsOneWidget);
+      expect(find.text('Once'), findsOneWidget);
+      // Once's own panel, and none of the other variants'.
+      expect(find.text('On this date'), findsOneWidget);
       expect(find.text('On these days'), findsNothing);
       expect(find.text('Day of the month'), findsNothing);
+      // Once is capped at a single slot, so it uses the singular label.
+      expect(find.text('TIME OF DAY'), findsOneWidget);
+      expect(find.text('TIMES OF DAY'), findsNothing);
+    });
+
+    testNewHabitWidgets('switching to Daily drops the Once date row', (tester) async {
+      final db = inMemoryDatabase();
+      addTearDown(db.close);
+      await pumpPushed(tester, db, FixedClock(d(2026, 7, 10)));
+
+      await tester.tap(find.text('Daily'));
+      await tester.pumpAndSettle();
+
       expect(find.text('On this date'), findsNothing);
+      expect(find.text('On these days'), findsNothing);
+      expect(find.text('Day of the month'), findsNothing);
       expect(find.text('TIMES OF DAY'), findsOneWidget);
-      expect(find.text('TIME OF DAY'), findsNothing);
     });
 
     testNewHabitWidgets('switching to Weekly shows the day-of-week picker only', (tester) async {
@@ -171,7 +187,9 @@ void main() {
   });
 
   group('valid submissions call TaskRepository.createTask correctly', () {
-    testNewHabitWidgets('Daily: title + startDate = today, no recurrence fields', (tester) async {
+    testNewHabitWidgets(
+        'Daily (selected explicitly, since Once is now the default): title + '
+        'startDate = today, no recurrence fields', (tester) async {
       final clock = FixedClock(d(2026, 7, 10));
       final db = inMemoryDatabase();
       addTearDown(db.close);
@@ -179,6 +197,8 @@ void main() {
 
       await tester.enterText(find.byType(TextField), 'Meditate 10 min');
       await tester.pump();
+      await tester.tap(find.text('Daily'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Create habit'));
       await tester.pumpAndSettle();
 
@@ -194,6 +214,30 @@ void main() {
       expect(task.monthlyMode, isNull);
       expect(task.dueDate, isNull);
       expect(task.dueTimes, isEmpty);
+    });
+
+    testNewHabitWidgets(
+        'the DEFAULT (untouched form) creates a Once task dated today',
+        (tester) async {
+      final clock = FixedClock(d(2026, 7, 10));
+      final db = inMemoryDatabase();
+      addTearDown(db.close);
+      await pumpPushed(tester, db, clock);
+
+      // Title only - nothing else touched, so this pins what the form does
+      // straight out of the box.
+      await tester.enterText(find.byType(TextField), 'Book the dentist');
+      await tester.pump();
+      await tester.tap(find.text('Create habit'));
+      await tester.pumpAndSettle();
+
+      final tasks = await TaskRepository(db, clock).activeTasks();
+      final task = tasks.single;
+      expect(task.recurrenceType, RecurrenceType.once);
+      expect(task.dueDate, d(2026, 7, 10));
+      expect(task.startDate, d(2026, 7, 10));
+      expect(task.weeklyDays, isNull);
+      expect(task.monthlyMode, isNull);
     });
 
     testNewHabitWidgets('Weekly: submits the selected ISO weekdays, sorted', (tester) async {

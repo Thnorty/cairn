@@ -931,4 +931,17 @@ abstract final class AppColors {
 
   /// rgba(179,84,58,.18) - background of trash icon circle in warning banner.
   static const Color deleteWarningIconBg = Color(0x2EB3543A);
+
+  // ---- Verifying overlay tokens --------------------------------------------
+
+  /// rgba(26,30,20,.62) - dark dimming barrier overlay behind the verifying prompt.
+  static const Color verifyingBarrierBg = Color(0x9E1A1E14);
+
+  /// rgba(122,141,96,.5) - static background glow disc behind the verifying
+  /// cairn glyph on [CameraCaptureScreen].
+  static const Color verifyingGlowStart = Color(0x807A8D60);
+
+  /// `#c8d0b6` - verifying overlay subtitle text color.
+  static const Color verifyingSubtitleText = Color(0xFFC8D0B6);
 }
+

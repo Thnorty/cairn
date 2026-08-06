@@ -301,10 +301,10 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
               child: IgnorePointer(child: _FramingCorners()),
             ),
           if (_phase == _CameraPhase.verifying)
-            const DecoratedBox(decoration: BoxDecoration(color: Color(0x9E1A1E14))),
+            const DecoratedBox(decoration: BoxDecoration(color: AppColors.verifyingBarrierBg)),
           if (_phase != _CameraPhase.verifying) _buildChrome(l10n),
           if (_phase == _CameraPhase.verifying)
-            Center(child: _VerifyingOverlay(taskTitle: widget.taskTitle)),
+            Center(child: VerifyingOverlay(taskTitle: widget.taskTitle)),
         ],
       ),
     );
@@ -529,29 +529,32 @@ class _ShutterButton extends StatelessWidget {
 }
 
 /// The "Verifying…" overlay (state 2 of `Cairn Camera Capture.dc.html`): a
-/// pulsing sage ring behind a small cairn glyph, the verifying title, and a
-/// subtitle naming the task. Runs a repeating animation (matching the
-/// design's `cairnPulse` CSS keyframe) - callers/tests must not
-/// `pumpAndSettle()` while this is on screen, since a repeating
-/// [AnimationController] never settles.
-class _VerifyingOverlay extends StatefulWidget {
-  const _VerifyingOverlay({required this.taskTitle});
+/// travelling sage highlight across the stones of a small cairn glyph, the
+/// verifying title, and a subtitle naming the task.
+///
+/// Runs a repeating animation (a smooth bottom-to-top travelling highlight on a
+/// 2400ms controller) - callers/tests must not `pumpAndSettle()` while this is
+/// on screen, since a repeating [AnimationController] never settles.
+class VerifyingOverlay extends StatefulWidget {
+  const VerifyingOverlay({super.key, required this.taskTitle});
 
   final String taskTitle;
 
   @override
-  State<_VerifyingOverlay> createState() => _VerifyingOverlayState();
+  State<VerifyingOverlay> createState() => _VerifyingOverlayState();
 }
 
-class _VerifyingOverlayState extends State<_VerifyingOverlay>
+class _VerifyingOverlayState extends State<VerifyingOverlay>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1800))
-      ..repeat();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat();
   }
 
   @override
@@ -563,37 +566,38 @@ class _VerifyingOverlayState extends State<_VerifyingOverlay>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
           width: 96,
           height: 96,
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              final pulse = (math.sin(_controller.value * 2 * math.pi) + 1) / 2;
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  Opacity(
-                    opacity: 0.55 + pulse * 0.35,
-                    child: Transform.scale(
-                      scale: 1.0 + pulse * 0.12,
-                      child: const DecoratedBox(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [Color(0x807A8D60), AppColors.sageGlowEnd],
-                          ),
-                        ),
-                      ),
-                    ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.verifyingGlowStart,
+                      AppColors.sageGlowEnd,
+                    ],
                   ),
-                  const _MiniCairnGlyph(),
-                ],
-              );
-            },
+                ),
+              ),
+              if (reduceMotion)
+                const MiniCairnGlyph()
+              else
+                AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return MiniCairnGlyph(progress: _controller.value);
+                  },
+                ),
+            ],
           ),
         ),
         const SizedBox(height: 22),
@@ -611,34 +615,87 @@ class _VerifyingOverlayState extends State<_VerifyingOverlay>
         Text(
           l10n.verifyingSubtitle(widget.taskTitle),
           textAlign: TextAlign.center,
-          style: const TextStyle(fontFamily: 'Work Sans', fontSize: 13, color: Color(0xFFC8D0B6)),
+          style: const TextStyle(
+            fontFamily: 'Work Sans',
+            fontSize: 13,
+            color: AppColors.verifyingSubtitleText,
+          ),
         ),
       ],
     );
   }
 }
 
-/// The tiny 3-stone sage cairn glyph inside the verifying pulse ring.
-class _MiniCairnGlyph extends StatelessWidget {
-  const _MiniCairnGlyph();
+/// The tiny 3-stone sage cairn glyph inside the verifying overlay.
+///
+/// Highlights stones one at a time, bottom to top (index 0 = bottom,
+/// index 1 = middle, index 2 = top), in a continuous loop driven by
+/// [progress] (0.0 to 1.0). When [progress] is null (e.g. reduced motion),
+/// all stones render in their static base appearance.
+class MiniCairnGlyph extends StatelessWidget {
+  const MiniCairnGlyph({
+    super.key,
+    this.progress,
+  });
+
+  /// Loop progress from 0.0 to 1.0. Null when animations are disabled.
+  final double? progress;
+
+  /// Highlighted stone index (0 = bottom, 1 = middle, 2 = top), or null if
+  /// animations are disabled.
+  int? get highlightedIndex {
+    final p = progress;
+    if (p == null) return null;
+    return (p * 3.0).floor() % 3;
+  }
 
   static const _bars = [
-    (width: 14.0, color: AppColors.heroLabelSage),
-    (width: 22.0, color: AppColors.miniCairnMid),
-    (width: 30.0, color: AppColors.miniCairnDark),
+    (key: ValueKey('verifying-stone-top'), width: 14.0, color: AppColors.heroLabelSage, index: 2),
+    (key: ValueKey('verifying-stone-mid'), width: 22.0, color: AppColors.miniCairnMid, index: 1),
+    (key: ValueKey('verifying-stone-bottom'), width: 30.0, color: AppColors.miniCairnDark, index: 0),
   ];
+
+  /// How lit stone [index] is at loop position [p], from 1.0 (fully
+  /// highlighted) to 0.0 (base appearance).
+  ///
+  /// Each stone owns a window of width 1/3 centred on its own turn, and falls
+  /// off as a raised cosine across it. The `3.0` coefficient is load-bearing:
+  /// it is what makes the cosine complete exactly HALF a period over the
+  /// window (`cos(0) = 1` at the centre, `cos(pi) = -1` at the edge), so the
+  /// stone peaks once and decays monotonically. A larger coefficient packs
+  /// extra periods into the same window and the stone flashes bright, dark,
+  /// bright again on a single pass - it shipped as `9.0` and read as a
+  /// flicker rather than a highlight travelling up the stack.
+  ///
+  /// [d] wraps around the loop (`min(diff, 1 - diff)`) so the bottom stone is
+  /// already brightening as the cycle restarts, rather than snapping on.
+  static double _stoneIntensity(int index, double p) {
+    final center = index / 3.0;
+    final diff = (p - center).abs();
+    final d = math.min(diff, 1.0 - diff);
+    if (d >= 1.0 / 3.0) return 0.0;
+    return 0.5 + 0.5 * math.cos(3.0 * math.pi * d);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final p = progress;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         for (final bar in _bars)
-          Container(
-            width: bar.width,
-            height: 8,
-            margin: const EdgeInsets.only(bottom: 1),
-            decoration: BoxDecoration(color: bar.color, borderRadius: BorderRadius.circular(4)),
+          Opacity(
+            opacity: p == null ? 1.0 : (0.35 + 0.65 * _stoneIntensity(bar.index, p)),
+            child: Container(
+              key: bar.key,
+              width: bar.width,
+              height: 8,
+              margin: const EdgeInsets.only(bottom: 1),
+              decoration: BoxDecoration(
+                color: bar.color,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
           ),
       ],
     );
