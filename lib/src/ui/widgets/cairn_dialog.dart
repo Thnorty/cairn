@@ -12,7 +12,19 @@ import '../theme/app_text_styles.dart';
 /// [sage] is the default tone for ordinary or affirmative confirmations;
 /// [clay] is the terracotta tone for destructive actions or evident alerts
 /// (e.g. Profile Sign out).
-enum CairnDialogTone { sage, clay }
+/// Which colour family a [CairnDialog] wears.
+///
+/// [clay] is the ordinary "are you sure?" tone: a clay icon circle over the
+/// app's normal terracotta confirm button. Sign-out uses it, and sign-out is
+/// cheap and reversible.
+///
+/// [destructive] is for actions that cannot be undone (today: deleting the
+/// account). It keeps the same clay icon circle but swaps the confirm button
+/// to the deeper, redder clay so an irreversible action never wears the same
+/// button as an ordinary yes-please. It exists as its OWN tone rather than as
+/// a change to [clay] precisely so that giving delete a scarier button does
+/// not silently make sign-out look destructive too.
+enum CairnDialogTone { sage, clay, destructive }
 
 /// Reusable Cairn-styled confirmation dialog card matching `Cairn Dialog.dc.html`.
 ///
@@ -167,12 +179,20 @@ class _DialogButton extends StatelessWidget {
         color: AppColors.textMuted,
       );
     } else {
-      final gradient = tone == CairnDialogTone.sage
-          ? AppGradients.sageButton
-          : AppGradients.terracottaButton;
-      final shadows = tone == CairnDialogTone.sage
-          ? AppShadows.sageButtonSmall
-          : AppShadows.buttonSmall;
+      final (gradient, shadows) = switch (tone) {
+        CairnDialogTone.sage => (
+            AppGradients.sageButton,
+            AppShadows.sageButtonSmall,
+          ),
+        CairnDialogTone.clay => (
+            AppGradients.terracottaButton,
+            AppShadows.buttonSmall,
+          ),
+        CairnDialogTone.destructive => (
+            AppGradients.deleteButton,
+            AppShadows.deleteButtonSmall,
+          ),
+      };
       decoration = BoxDecoration(
         gradient: gradient,
         borderRadius: BorderRadius.circular(14),

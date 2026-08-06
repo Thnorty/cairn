@@ -19,13 +19,12 @@ enum PrimaryButtonSize { large, medium, small }
 /// Which gradient fill [PrimaryButton] paints. Terracotta is the app's
 /// default primary-action colour everywhere; sage is the Phase 4b
 /// account-flow screens' own CTA colour (Create account / Sign in / Verify
-/// / Save password / Keep this device's trail), added as an opt-in variant
-/// on this one shared widget rather than a forked button class, per this
-/// run's spec ("consistent styles, minimal repeated code").
-enum PrimaryButtonColor { terracotta, sage }
+/// / Save password / Keep this device's trail); delete is the deeper clay
+/// CTA colour for destructive account deletion.
+enum PrimaryButtonColor { terracotta, sage, delete }
 
 /// The gradient primary action button. One widget, three sizes (see
-/// [PrimaryButtonSize]) and two colours (see [PrimaryButtonColor]); [icon],
+/// [PrimaryButtonSize]) and three colours (see [PrimaryButtonColor]); [icon],
 /// when given, is laid out before [label] the way every gradient button in
 /// the designs pairs a small glyph with its text.
 class PrimaryButton extends StatelessWidget {
@@ -76,12 +75,19 @@ class PrimaryButton extends StatelessWidget {
     }
 
     final isSmall = size == PrimaryButtonSize.small;
-    final shadows = color == PrimaryButtonColor.sage
-        ? (isSmall ? AppShadows.sageButtonSmall : AppShadows.sageButtonLarge)
-        : (isSmall ? AppShadows.buttonSmall : AppShadows.buttonLarge);
-    final gradient = color == PrimaryButtonColor.sage
-        ? AppGradients.sageButton
-        : AppGradients.terracottaButton;
+    final shadows = switch (color) {
+      PrimaryButtonColor.sage =>
+        isSmall ? AppShadows.sageButtonSmall : AppShadows.sageButtonLarge,
+      PrimaryButtonColor.delete =>
+        isSmall ? AppShadows.deleteButtonSmall : AppShadows.deleteButtonLarge,
+      PrimaryButtonColor.terracotta =>
+        isSmall ? AppShadows.buttonSmall : AppShadows.buttonLarge,
+    };
+    final gradient = switch (color) {
+      PrimaryButtonColor.sage => AppGradients.sageButton,
+      PrimaryButtonColor.delete => AppGradients.deleteButton,
+      PrimaryButtonColor.terracotta => AppGradients.terracottaButton,
+    };
 
     final content = Row(
       mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,

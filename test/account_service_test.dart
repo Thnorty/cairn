@@ -10,6 +10,7 @@ import 'package:cairn/src/sync/sync_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers.dart';
+import 'support/fake_account_deleter.dart';
 import 'support/fake_auth_service.dart';
 import 'support/fake_premium_service.dart';
 import 'support/fake_sync_transport.dart';
@@ -625,6 +626,174 @@ void main() {
 
       await dbCloud.close();
       await dbA.close();
+    });
+  });
+
+  group('delete-account flow', () {
+    test('aborts on a wrong password and destroys nothing', () async {
+      final auth = FakeAuthService(
+        userId: 'user-123',
+        userEmail: 'ada@example.com',
+        isAnonymousUser: false,
+      )..signInWithPasswordError =
+          const AccountException(AccountError.invalidCredentials);
+      final db = inMemoryDatabase();
+      final clock = FixedClock(d(2026, 7, 10));
+      final taskRepo = TaskRepository(db, clock);
+      final completionRepo = CompletionRepository(
+        db,
+        clock,
+        verifier: FakeProofVerifier(),
+      );
+      final task = await taskRepo.createTask(
+        title: 'My task',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+        userId: 'user-123',
+      );
+      await completionRepo.completeOccurrence(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+      );
+      await completionRepo.backfillUserId('user-123');
+
+      final deleter = FakeAccountDeleter();
+      final service = AccountService(
+        auth: auth,
+        sync: SyncService(db, FakeSyncTransport()),
+        completions: completionRepo,
+        tasks: taskRepo,
+        deleter: deleter,
+      );
+
+      await expectLater(
+        service.deleteAccount('wrong-password'),
+        throwsA(
+          isA<AccountException>().having(
+            (e) => e.error,
+            'error',
+            AccountError.invalidCredentials,
+          ),
+        ),
+      );
+
+      expect(deleter.callCount, 0);
+
+      // Verify local user_id was untouched
+      final taskRow = await (db.select(db.tasks)..where((t) => t.id.equals(task.id))).getSingle();
+      expect(taskRow.userId, 'user-123');
+
+      final completionRows = await db.select(db.completions).get();
+      expect(completionRows.single.userId, 'user-123');
+
+      await db.close();
+    });
+
+    test('aborts if the remote delete throws, leaving local user_id untouched', () async {
+      final auth = FakeAuthService(
+        userId: 'user-123',
+        userEmail: 'ada@example.com',
+        isAnonymousUser: false,
+      );
+      final db = inMemoryDatabase();
+      final clock = FixedClock(d(2026, 7, 10));
+      final taskRepo = TaskRepository(db, clock);
+      final completionRepo = CompletionRepository(
+        db,
+        clock,
+        verifier: FakeProofVerifier(),
+      );
+      final task = await taskRepo.createTask(
+        title: 'My task',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+        userId: 'user-123',
+      );
+      await completionRepo.completeOccurrence(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+      );
+      await completionRepo.backfillUserId('user-123');
+
+      final deleter = FakeAccountDeleter()..errorToThrow = Exception('Server error');
+      final service = AccountService(
+        auth: auth,
+        sync: SyncService(db, FakeSyncTransport()),
+        completions: completionRepo,
+        tasks: taskRepo,
+        deleter: deleter,
+      );
+
+      await expectLater(
+        service.deleteAccount('valid-password'),
+        throwsA(isA<Exception>()),
+      );
+
+      expect(deleter.callCount, 1);
+      expect(auth.signOutCallCount, 0); // Not signed out on failure
+
+      // Verify local user_id remains untouched
+      final taskRow = await (db.select(db.tasks)..where((t) => t.id.equals(task.id))).getSingle();
+      expect(taskRow.userId, 'user-123');
+
+      final completionRows = await db.select(db.completions).get();
+      expect(completionRows.single.userId, 'user-123');
+
+      await db.close();
+    });
+
+    test('on success, local tasks/completions survive AND their user_id is NULL afterwards', () async {
+      final auth = FakeAuthService(
+        userId: 'user-123',
+        userEmail: 'ada@example.com',
+        isAnonymousUser: false,
+      );
+      final fakePremium = FakePremiumService(isPremium: true);
+      final db = inMemoryDatabase();
+      final clock = FixedClock(d(2026, 7, 10));
+      final taskRepo = TaskRepository(db, clock);
+      final completionRepo = CompletionRepository(
+        db,
+        clock,
+        verifier: FakeProofVerifier(),
+      );
+      final task = await taskRepo.createTask(
+        title: 'My task',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+        userId: 'user-123',
+      );
+      await completionRepo.completeOccurrence(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 10),
+      );
+      await completionRepo.backfillUserId('user-123');
+
+      final deleter = FakeAccountDeleter();
+      final service = AccountService(
+        auth: auth,
+        sync: SyncService(db, FakeSyncTransport()),
+        completions: completionRepo,
+        tasks: taskRepo,
+        premium: fakePremium,
+        deleter: deleter,
+      );
+
+      await service.deleteAccount('valid-password');
+
+      expect(deleter.callCount, 1);
+      expect(fakePremium.logOutCount, 1);
+
+      // Verify task and completion survived and user_id IS NULL
+      final tasks = await db.select(db.tasks).get();
+      expect(tasks, hasLength(1));
+      expect(tasks.single.userId, isNull);
+
+      final completions = await db.select(db.completions).get();
+      expect(completions, hasLength(1));
+      expect(completions.single.userId, isNull);
+
+      await db.close();
     });
   });
 }

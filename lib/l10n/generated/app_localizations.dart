@@ -2293,6 +2293,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your {streakDays, plural, one{1-day} other{{streakDays}-day}} streak on \"{taskTitle}\" breaks tonight if it goes unproven.'**
   String notificationStreakWarningBody(num streakDays, String taskTitle);
+
+  /// Destructive row label at the bottom of Profile's Settings list for initiating account deletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get accountDeleteRow;
+
+  /// Title on the Delete account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get accountDeleteTitle;
+
+  /// Subhead on the Delete account screen showing the signed-in email address.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as {email}'**
+  String accountDeleteSignedInAs(String email);
+
+  /// Title of the clay warning banner on the Delete account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be undone'**
+  String get accountDeleteCannotBeUndoneTitle;
+
+  /// Body of the clay warning banner on the Delete account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account and the email on it are permanently deleted, along with everything backed up under it. You will not be able to sign in again, and other devices signed into this account will stop syncing.'**
+  String get accountDeleteCannotBeUndoneBody;
+
+  /// Title of the sage reassurance banner on the Delete account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your trail stays on this phone'**
+  String get accountDeleteTrailStaysTitle;
+
+  /// Body of the sage reassurance banner on the Delete account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Every habit, stone and metre you have earned stays exactly as it is now. You simply carry on climbing signed out.'**
+  String get accountDeleteTrailStaysBody;
+
+  /// Label above the password confirmation field on the Delete account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your password'**
+  String get accountDeleteConfirmPasswordLabel;
+
+  /// Placeholder text in the password confirmation field on the Delete account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password'**
+  String get accountDeletePasswordHint;
+
+  /// Primary CTA button label on the Delete account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get accountDeleteButton;
+
+  /// In-flight button label while account deletion is processing.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting...'**
+  String get accountDeletingLoading;
+
+  /// Small footer notice under the primary CTA on the Delete account screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting is immediate. There is no recovery period.'**
+  String get accountDeleteFooterNotice;
+
+  /// Title of the final confirmation CairnDialog when deleting an account.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this account?'**
+  String get accountDeleteDialogTitle;
+
+  /// Body copy of the final confirmation CairnDialog when deleting an account.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account and cloud backup will be erased for good. Your habits and stones will stay on this phone.'**
+  String get accountDeleteDialogBody;
+
+  /// Confirm button label on the final confirmation CairnDialog for account deletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get accountDeleteDialogConfirm;
+
+  /// Success snackbar message shown on Profile after account deletion completes.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted. Your trail stays on this phone.'**
+  String get accountDeleteSuccessSnackbar;
+
+  /// Snackbar message shown when account deletion fails due to a network or server error.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete account. Please try again.'**
+  String get accountDeleteFailedSnackbar;
 }
 
 class _AppLocalizationsDelegate

@@ -903,5 +903,32 @@ abstract final class AppColors {
   /// `#a19785` - the chevron on a settings row that opens a picker. A shade
   /// lighter than [textFaint]'s `#8a8072`.
   static const Color rowChevron = Color(0xFFA19785);
-}
 
+  // ---- Delete account screen ----------------------------------------------
+
+  /// `#c2604a` / `#a8452c` - the destructive delete button gradient (155deg):
+  /// deeper clay family used by the delete account button and final confirmation dialog.
+  static const Color deleteButtonLight = Color(0xFFC2604A);
+  static const Color deleteButtonDark = Color(0xFFA8452C);
+
+  /// rgba(150,58,34,.6) - the delete button's drop shadow.
+  static const Color deleteButtonShadow = Color(0x99963A22);
+
+  /// `#8f3d24` - "This cannot be undone" banner title.
+  static const Color deleteWarningTitle = Color(0xFF8F3D24);
+
+  /// `#7a5540` - "This cannot be undone" banner body.
+  static const Color deleteWarningBody = Color(0xFF7A5540);
+
+  /// `#a8452c` - stroke color for the trash icon on the warning banner / dialog.
+  static const Color deleteIconStroke = Color(0xFFA8452C);
+
+  /// rgba(179,84,58,.12) - background of "This cannot be undone" warning banner.
+  static const Color deleteWarningBannerBg = Color(0x1FB3543A);
+
+  /// rgba(179,84,58,.28) - border of "This cannot be undone" warning banner.
+  static const Color deleteWarningBannerBorder = Color(0x47B3543A);
+
+  /// rgba(179,84,58,.18) - background of trash icon circle in warning banner.
+  static const Color deleteWarningIconBg = Color(0x2EB3543A);
+}

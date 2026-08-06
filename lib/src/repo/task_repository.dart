@@ -350,4 +350,16 @@ class TaskRepository {
       ),
     );
   }
+
+  /// Releases local ownership of all tasks by setting `user_id = NULL`.
+  /// Used during account deletion so local data survives on device.
+  Future<int> clearUserId() {
+    return (_db.update(_db.tasks)).write(
+      TasksCompanion(
+        userId: const Value(null),
+        updatedAt: Value(_clock.nowEpochMillis()),
+        dirty: const Value(true),
+      ),
+    );
+  }
 }

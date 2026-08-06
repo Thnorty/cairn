@@ -15,6 +15,7 @@ import '../../services/account_service.dart';
 import '../../services/points_service.dart';
 import '../../services/profile_service.dart';
 import '../account/account_flow.dart';
+import '../account/delete_account_screen.dart';
 import '../account/signed_in_account_row.dart';
 import '../onboarding/onboarding_name_screen.dart';
 import '../premium/premium_screen.dart';
@@ -872,6 +873,11 @@ class _SettingsSection extends ConsumerWidget {
     // synchronous call, returning its still-loading (null) AsyncValue - the
     // pre-fill would silently come up empty on the very first tap.
     final currentName = ref.watch(storedDisplayNameProvider).asData?.value;
+    final accountState = ref.watch(accountStateProvider).asData?.value;
+    final signedInEmail =
+        (accountState != null && !accountState.isAnonymous)
+            ? accountState.email
+            : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -946,6 +952,30 @@ class _SettingsSection extends ConsumerWidget {
                 label: l10n.profileRestorePurchaseRow,
                 onTap: () => _handleRestore(context, ref),
               ),
+              if (signedInEmail != null) ...[
+                const HairlineDivider(),
+                _SettingsRow(
+                  glyph: _GlyphShape.trash,
+                  label: l10n.accountDeleteRow,
+                  isDestructive: true,
+                  // Pushed and popped on the SAME navigator. The first cut
+                  // pushed with `rootNavigator: true` but popped without it;
+                  // both happen to resolve to the root today (nothing nests a
+                  // Navigator around AppShell), so it worked by luck and would
+                  // have broken quietly the moment one did.
+                  onTap: () {
+                    final navigator = Navigator.of(context, rootNavigator: true);
+                    navigator.push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => DeleteAccountScreen(
+                          email: signedInEmail,
+                          onClose: navigator.pop,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ],
           ),
         ),
@@ -955,14 +985,27 @@ class _SettingsSection extends ConsumerWidget {
 }
 
 class _SettingsRow extends StatelessWidget {
-  const _SettingsRow({required this.glyph, required this.label, required this.onTap});
+  const _SettingsRow({
+    required this.glyph,
+    required this.label,
+    required this.onTap,
+    this.isDestructive = false,
+  });
 
   final _GlyphShape glyph;
   final String label;
   final VoidCallback onTap;
+  final bool isDestructive;
 
   @override
   Widget build(BuildContext context) {
+    final textColor = isDestructive
+        ? AppColors.accountFieldErrorIcon
+        : AppColors.inkPrimary;
+    final glyphColor = isDestructive
+        ? AppColors.accountFieldErrorIcon
+        : AppColors.textMuted;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -973,9 +1016,16 @@ class _SettingsRow extends StatelessWidget {
           padding: const EdgeInsetsDirectional.symmetric(vertical: 15),
           child: Row(
             children: [
-              _Glyph(shape: glyph, color: AppColors.textMuted, size: 19),
+              _Glyph(shape: glyph, color: glyphColor, size: 19),
               const SizedBox(width: 14),
-              Expanded(child: Text(label, style: AppTextStyles.settingsRowLabel)),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTextStyles.settingsRowLabel.copyWith(
+                    color: textColor,
+                  ),
+                ),
+              ),
               const _Glyph(
                 shape: _GlyphShape.chevronRight,
                 color: AppColors.textInactive,
@@ -996,7 +1046,18 @@ class _SettingsRow extends StatelessWidget {
 /// Which one-off stroke-icon glyph to paint on this screen. Grouped into one
 /// enum + [CustomPainter] (mirroring `TabBarIcon`'s own pattern) rather than
 /// a separate tiny painter class per icon.
-enum _GlyphShape { clockPending, check, chevronRight, bell, shield, restore, info, stones, person }
+enum _GlyphShape {
+  clockPending,
+  check,
+  chevronRight,
+  bell,
+  shield,
+  restore,
+  info,
+  stones,
+  person,
+  trash,
+}
 
 class _Glyph extends StatelessWidget {
   const _Glyph({required this.shape, required this.color, this.size = 18});
@@ -1031,6 +1092,7 @@ class _GlyphPainter extends CustomPainter {
         _GlyphShape.info => 2,
         _GlyphShape.stones => 2,
         _GlyphShape.person => 2,
+        _GlyphShape.trash => 2,
       };
 
   @override
@@ -1208,6 +1270,25 @@ class _GlyphPainter extends CustomPainter {
             p(18.5, 20).dy,
           );
         canvas.drawPath(shoulders, paint);
+        break;
+      case _GlyphShape.trash:
+        canvas.drawLine(p(4, 7), p(20, 7), paint);
+        final lid = Path()
+          ..moveTo(p(9.5, 7).dx, p(9.5, 7).dy)
+          ..lineTo(p(9.5, 5.2).dx, p(9.5, 5.2).dy)
+          ..arcToPoint(p(10.7, 4), radius: Radius.circular(1.2 * s))
+          ..lineTo(p(13.3, 4).dx, p(13.3, 4).dy)
+          ..arcToPoint(p(14.5, 5.2), radius: Radius.circular(1.2 * s))
+          ..lineTo(p(14.5, 7).dx, p(14.5, 7).dy);
+        canvas.drawPath(lid, paint);
+        final bin = Path()
+          ..moveTo(p(6.4, 7).dx, p(6.4, 7).dy)
+          ..lineTo(p(7.3, 19).dx, p(7.3, 19).dy)
+          ..arcToPoint(p(8.9, 20.5), radius: Radius.circular(1.6 * s))
+          ..lineTo(p(15.1, 20.5).dx, p(15.1, 20.5).dy)
+          ..arcToPoint(p(16.7, 19), radius: Radius.circular(1.6 * s))
+          ..lineTo(p(17.6, 7).dx, p(17.6, 7).dy);
+        canvas.drawPath(bin, paint);
         break;
     }
   }

@@ -527,6 +527,51 @@ void main() {
     });
 
     testProfileWidgets(
+        'renders the Delete account row when signed in with an email account, '
+        'and hides it when anonymous', (tester) async {
+      final dbAnon = inMemoryDatabase();
+      addTearDown(dbAnon.close);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(dbAnon),
+            clockProvider.overrideWithValue(FixedClock(d(2026, 7, 10))),
+            authServiceProvider.overrideWithValue(
+              FakeAuthService(userId: 'anon-user', isAnonymousUser: true),
+            ),
+          ],
+          child: wrap(const ProfileScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Delete account'), findsNothing);
+
+      final dbSignedIn = inMemoryDatabase();
+      addTearDown(dbSignedIn.close);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(dbSignedIn),
+            clockProvider.overrideWithValue(FixedClock(d(2026, 7, 10))),
+            authServiceProvider.overrideWithValue(
+              FakeAuthService(
+                userId: 'real-user',
+                userEmail: 'me@example.com',
+                isAnonymousUser: false,
+              ),
+            ),
+          ],
+          child: wrap(const ProfileScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Delete account'));
+      expect(find.text('Delete account'), findsOneWidget);
+    });
+
+    testProfileWidgets(
         'hides the account entry entirely when no live Supabase project is '
         'configured', (tester) async {
       final db = inMemoryDatabase();

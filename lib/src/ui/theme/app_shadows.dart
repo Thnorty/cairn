@@ -242,5 +242,25 @@ abstract final class AppShadows {
       spreadRadius: -14,
     ),
   ];
+
+  /// Large delete CTA button: `0 10px 20px -8px rgba(150,58,34,.6)`.
+  static const List<BoxShadow> deleteButtonLarge = [
+    BoxShadow(
+      color: AppColors.deleteButtonShadow,
+      offset: Offset(0, 10),
+      blurRadius: 20,
+      spreadRadius: -8,
+    ),
+  ];
+
+  /// Small inline delete CTA button.
+  static const List<BoxShadow> deleteButtonSmall = [
+    BoxShadow(
+      color: AppColors.deleteButtonShadow,
+      offset: Offset(0, 6),
+      blurRadius: 13,
+      spreadRadius: -5,
+    ),
+  ];
 }
 

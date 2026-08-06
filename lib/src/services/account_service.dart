@@ -4,6 +4,8 @@ import '../repo/completion_repository.dart';
 import '../repo/settings_repository.dart';
 import '../repo/task_repository.dart';
 import '../sync/sync_service.dart';
+import 'account_deleter.dart';
+import 'account_error.dart';
 import 'auth_service.dart';
 
 /// Outcome of [AccountService.signIn]: either the switch to the account's
@@ -56,6 +58,7 @@ class AccountService {
   final CompletionRepository _completions;
   final TaskRepository _tasks;
   final PremiumService? _premium;
+  final AccountDeleter? _deleter;
 
   /// Local display-name settings, used to carry the user's name up to the
   /// account (create-account, `keepThisDevice`) and down from it
@@ -83,12 +86,14 @@ class AccountService {
     required TaskRepository tasks,
     PremiumService? premium,
     SettingsRepository? settings,
+    AccountDeleter? deleter,
   })  : _auth = auth,
         _sync = sync,
         _completions = completions,
         _tasks = tasks,
         _premium = premium,
-        _settings = settings;
+        _settings = settings,
+        _deleter = deleter;
 
   bool get isAnonymous => _auth.isAnonymous;
   String? get email => _auth.email;
@@ -251,6 +256,53 @@ class AccountService {
     } catch (_) {
       // Best-effort: see above.
     }
+    await _auth.signOut();
+  }
+
+  // ---- delete-account -----------------------------------------------------
+
+  /// Deletes the signed-in user's account and cloud data, while preserving
+  /// all local habit data on the device.
+  ///
+  /// Order of operations:
+  /// 1. Re-authenticates with the current email + [password]. Surfaces typed
+  ///    [AccountError.invalidCredentials] on wrong password and aborts.
+  /// 2. Releases billing identity best-effort.
+  /// 3. Deletes remotely via [AccountDeleter]. If this throws, aborts before
+  ///    touching local data.
+  /// 4. Releases local ownership (`user_id = NULL` on tasks, completions, attempts).
+  /// 5. Signs out, reverting to a fresh anonymous session.
+  Future<void> deleteAccount(String password) async {
+    final currentEmail = _auth.email;
+    if (currentEmail == null) {
+      throw const AccountException(
+        AccountError.unknown,
+        'No email user signed in to delete',
+      );
+    }
+
+    // Step 1: Re-authenticate with current email + password.
+    await _auth.signInWithPassword(email: currentEmail, password: password);
+
+    // Step 2: Release billing identity (best-effort).
+    try {
+      await _premium?.logOut();
+    } catch (_) {
+      // Best-effort: see signOut() rationale.
+    }
+
+    // Step 3: Delete remotely via AccountDeleter.
+    final deleter = _deleter;
+    if (deleter == null) {
+      throw StateError('deleteAccount called with no AccountDeleter configured');
+    }
+    await deleter.deleteRemoteAccount();
+
+    // Step 4: Release local ownership.
+    await _tasks.clearUserId();
+    await _completions.clearUserId();
+
+    // Step 5: Sign out (reverts to fresh anonymous session).
     await _auth.signOut();
   }
 }

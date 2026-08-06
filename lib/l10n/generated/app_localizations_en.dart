@@ -1431,4 +1431,63 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return 'Your $_temp0 streak on \"$taskTitle\" breaks tonight if it goes unproven.';
   }
+
+  @override
+  String get accountDeleteRow => 'Delete account';
+
+  @override
+  String get accountDeleteTitle => 'Delete account';
+
+  @override
+  String accountDeleteSignedInAs(String email) {
+    return 'Signed in as $email';
+  }
+
+  @override
+  String get accountDeleteCannotBeUndoneTitle => 'This cannot be undone';
+
+  @override
+  String get accountDeleteCannotBeUndoneBody =>
+      'Your account and the email on it are permanently deleted, along with everything backed up under it. You will not be able to sign in again, and other devices signed into this account will stop syncing.';
+
+  @override
+  String get accountDeleteTrailStaysTitle => 'Your trail stays on this phone';
+
+  @override
+  String get accountDeleteTrailStaysBody =>
+      'Every habit, stone and metre you have earned stays exactly as it is now. You simply carry on climbing signed out.';
+
+  @override
+  String get accountDeleteConfirmPasswordLabel => 'Confirm your password';
+
+  @override
+  String get accountDeletePasswordHint => 'Your password';
+
+  @override
+  String get accountDeleteButton => 'Delete account';
+
+  @override
+  String get accountDeletingLoading => 'Deleting...';
+
+  @override
+  String get accountDeleteFooterNotice =>
+      'Deleting is immediate. There is no recovery period.';
+
+  @override
+  String get accountDeleteDialogTitle => 'Delete this account?';
+
+  @override
+  String get accountDeleteDialogBody =>
+      'Your account and cloud backup will be erased for good. Your habits and stones will stay on this phone.';
+
+  @override
+  String get accountDeleteDialogConfirm => 'Delete';
+
+  @override
+  String get accountDeleteSuccessSnackbar =>
+      'Account deleted. Your trail stays on this phone.';
+
+  @override
+  String get accountDeleteFailedSnackbar =>
+      'Couldn\'t delete account. Please try again.';
 }

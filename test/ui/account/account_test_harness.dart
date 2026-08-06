@@ -4,6 +4,7 @@ import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/completion_repository.dart';
 import 'package:cairn/src/repo/settings_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
+import 'package:cairn/src/services/account_deleter.dart';
 import 'package:cairn/src/services/account_service.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
 import 'package:cairn/src/sync/sync_service.dart';
@@ -52,7 +53,10 @@ class AccountTestHarness {
       ];
 }
 
-AccountTestHarness buildAccountTestHarness({FakeAuthService? auth}) {
+AccountTestHarness buildAccountTestHarness({
+  FakeAuthService? auth,
+  AccountDeleter? accountDeleter,
+}) {
   final db = inMemoryDatabase();
   final clock = FixedClock(d(2026, 7, 10));
   final fakeAuth = auth ?? FakeAuthService();
@@ -67,6 +71,7 @@ AccountTestHarness buildAccountTestHarness({FakeAuthService? auth}) {
     completions: completionRepo,
     tasks: taskRepo,
     settings: settingsRepo,
+    deleter: accountDeleter,
   );
   return AccountTestHarness(
     db: db,

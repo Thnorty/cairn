@@ -13,3 +13,13 @@ enabled = true
 # calls `auth.getUser()` for defense in depth and to recover the caller's
 # id for rate limiting; see index.ts.
 verify_jwt = true
+
+[functions.delete-account]
+enabled = true
+# The Supabase gateway verifies the caller's JWT and returns 401 before this
+# function ever runs when the token is missing or invalid. Anonymous users
+# are legitimate callers: this only rejects a request that isn't carrying a
+# *valid* session JWT at all. The function itself additionally calls
+# `auth.getUser()` to resolve the caller's user id; see index.ts.
+verify_jwt = true
+

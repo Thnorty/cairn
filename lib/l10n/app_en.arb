@@ -1955,5 +1955,76 @@
       "streakDays": { "type": "num", "example": "5" },
       "taskTitle": { "type": "String", "example": "Push-ups" }
     }
+  },
+  "accountDeleteRow": "Delete account",
+  "@accountDeleteRow": {
+    "description": "Destructive row label at the bottom of Profile's Settings list for initiating account deletion."
+  },
+  "accountDeleteTitle": "Delete account",
+  "@accountDeleteTitle": {
+    "description": "Title on the Delete account screen."
+  },
+  "accountDeleteSignedInAs": "Signed in as {email}",
+  "@accountDeleteSignedInAs": {
+    "description": "Subhead on the Delete account screen showing the signed-in email address.",
+    "placeholders": {
+      "email": { "type": "String", "example": "ada@example.com" }
+    }
+  },
+  "accountDeleteCannotBeUndoneTitle": "This cannot be undone",
+  "@accountDeleteCannotBeUndoneTitle": {
+    "description": "Title of the clay warning banner on the Delete account screen."
+  },
+  "accountDeleteCannotBeUndoneBody": "Your account and the email on it are permanently deleted, along with everything backed up under it. You will not be able to sign in again, and other devices signed into this account will stop syncing.",
+  "@accountDeleteCannotBeUndoneBody": {
+    "description": "Body of the clay warning banner on the Delete account screen."
+  },
+  "accountDeleteTrailStaysTitle": "Your trail stays on this phone",
+  "@accountDeleteTrailStaysTitle": {
+    "description": "Title of the sage reassurance banner on the Delete account screen."
+  },
+  "accountDeleteTrailStaysBody": "Every habit, stone and metre you have earned stays exactly as it is now. You simply carry on climbing signed out.",
+  "@accountDeleteTrailStaysBody": {
+    "description": "Body of the sage reassurance banner on the Delete account screen."
+  },
+  "accountDeleteConfirmPasswordLabel": "Confirm your password",
+  "@accountDeleteConfirmPasswordLabel": {
+    "description": "Label above the password confirmation field on the Delete account screen."
+  },
+  "accountDeletePasswordHint": "Your password",
+  "@accountDeletePasswordHint": {
+    "description": "Placeholder text in the password confirmation field on the Delete account screen."
+  },
+  "accountDeleteButton": "Delete account",
+  "@accountDeleteButton": {
+    "description": "Primary CTA button label on the Delete account screen."
+  },
+  "accountDeletingLoading": "Deleting...",
+  "@accountDeletingLoading": {
+    "description": "In-flight button label while account deletion is processing."
+  },
+  "accountDeleteFooterNotice": "Deleting is immediate. There is no recovery period.",
+  "@accountDeleteFooterNotice": {
+    "description": "Small footer notice under the primary CTA on the Delete account screen."
+  },
+  "accountDeleteDialogTitle": "Delete this account?",
+  "@accountDeleteDialogTitle": {
+    "description": "Title of the final confirmation CairnDialog when deleting an account."
+  },
+  "accountDeleteDialogBody": "Your account and cloud backup will be erased for good. Your habits and stones will stay on this phone.",
+  "@accountDeleteDialogBody": {
+    "description": "Body copy of the final confirmation CairnDialog when deleting an account."
+  },
+  "accountDeleteDialogConfirm": "Delete",
+  "@accountDeleteDialogConfirm": {
+    "description": "Confirm button label on the final confirmation CairnDialog for account deletion."
+  },
+  "accountDeleteSuccessSnackbar": "Account deleted. Your trail stays on this phone.",
+  "@accountDeleteSuccessSnackbar": {
+    "description": "Success snackbar message shown on Profile after account deletion completes."
+  },
+  "accountDeleteFailedSnackbar": "Couldn't delete account. Please try again.",
+  "@accountDeleteFailedSnackbar": {
+    "description": "Snackbar message shown when account deletion fails due to a network or server error."
   }
 }

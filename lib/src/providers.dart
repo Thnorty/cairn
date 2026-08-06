@@ -22,6 +22,7 @@ import 'premium/unconfigured_premium_service.dart';
 import 'repo/completion_repository.dart';
 import 'repo/settings_repository.dart';
 import 'repo/task_repository.dart';
+import 'services/account_deleter.dart';
 import 'services/account_service.dart';
 import 'services/app_settings_opener.dart';
 import 'services/auth_service.dart';
@@ -503,6 +504,12 @@ final syncTriggerProvider = Provider<SyncTrigger>((ref) {
 final accountFeatureAvailableProvider =
     Provider<bool>((ref) => AppConfig.isConfigured);
 
+/// Seam for account deletion (WO: in-app account deletion).
+final accountDeleterProvider = Provider<AccountDeleter>((ref) {
+  if (!AppConfig.isConfigured) return const UnconfiguredAccountDeleter();
+  return SupabaseAccountDeleter();
+});
+
 /// Orchestrates the account-upgrade flows (see [AccountService]'s doc
 /// comment) on top of the existing auth/sync/completions providers.
 final accountServiceProvider = Provider<AccountService>((ref) {
@@ -513,6 +520,7 @@ final accountServiceProvider = Provider<AccountService>((ref) {
     tasks: ref.watch(taskRepositoryProvider),
     premium: ref.watch(premiumServiceProvider),
     settings: ref.watch(settingsRepositoryProvider),
+    deleter: ref.watch(accountDeleterProvider),
   );
 });
 

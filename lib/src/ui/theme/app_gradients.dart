@@ -238,4 +238,18 @@ abstract final class AppGradients {
     ],
     stops: [0, 0.3, 0.6, 1.0],
   );
+
+  /// Delete account CTA gradient, 155deg (see
+  /// [AppColors.deleteButtonLight]/[AppColors.deleteButtonDark]).
+  static LinearGradient get deleteButton {
+    final (begin, end) = cssGradientAlignment(155);
+    return LinearGradient(
+      begin: begin,
+      end: end,
+      colors: const [
+        AppColors.deleteButtonLight,
+        AppColors.deleteButtonDark,
+      ],
+    );
+  }
 }

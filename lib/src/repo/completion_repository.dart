@@ -877,4 +877,26 @@ class CompletionRepository {
       return completionsUpdated;
     });
   }
+
+  /// Releases local ownership of all completions and verification attempts by
+  /// setting `user_id = NULL`. Used during account deletion so local data
+  /// survives on device.
+  Future<int> clearUserId() {
+    return _db.transaction<int>(() async {
+      final now = _clock.nowEpochMillis();
+      final completionsUpdated =
+          await (_db.update(_db.completions)).write(CompletionsCompanion(
+        userId: const Value(null),
+        updatedAt: Value(now),
+        dirty: const Value(true),
+      ));
+      await (_db.update(_db.verificationAttempts))
+          .write(VerificationAttemptsCompanion(
+        userId: const Value(null),
+        updatedAt: Value(now),
+        dirty: const Value(true),
+      ));
+      return completionsUpdated;
+    });
+  }
 }

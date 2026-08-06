@@ -1,4 +1,5 @@
 import 'package:cairn/l10n/generated/app_localizations.dart';
+import 'package:cairn/src/ui/theme/app_gradients.dart';
 import 'package:cairn/src/ui/widgets/cairn_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -134,5 +135,57 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(dialogResult, isFalse);
+  });
+
+  group('confirm-button tone', () {
+    // Regression guard. The delete-account flow needs a scarier confirm
+    // button than sign-out, and the first implementation got it by changing
+    // what CairnDialogTone.clay renders - which silently repainted the
+    // SIGN-OUT dialog destructive too, because both used `clay`. Nothing
+    // caught it: no test asserted a dialog button's gradient. These do.
+    Future<BoxDecoration> confirmDecoration(
+      WidgetTester tester,
+      CairnDialogTone tone,
+    ) async {
+      await tester.pumpWidget(
+        buildApp(
+          CairnDialog(
+            title: 'Title',
+            body: 'Body',
+            cancelLabel: 'Cancel',
+            confirmLabel: 'Confirm',
+            tone: tone,
+          ),
+        ),
+      );
+      final box = tester.widget<DecoratedBox>(
+        find
+            .ancestor(
+              of: find.text('Confirm'),
+              matching: find.byType(DecoratedBox),
+            )
+            .first,
+      );
+      return box.decoration as BoxDecoration;
+    }
+
+    testWidgets('clay keeps the ordinary terracotta button (sign-out)',
+        (tester) async {
+      final decoration = await confirmDecoration(tester, CairnDialogTone.clay);
+      expect(decoration.gradient, AppGradients.terracottaButton);
+      expect(decoration.gradient, isNot(AppGradients.deleteButton));
+    });
+
+    testWidgets('destructive uses the deeper delete button (delete account)',
+        (tester) async {
+      final decoration =
+          await confirmDecoration(tester, CairnDialogTone.destructive);
+      expect(decoration.gradient, AppGradients.deleteButton);
+    });
+
+    testWidgets('sage is unaffected by either', (tester) async {
+      final decoration = await confirmDecoration(tester, CairnDialogTone.sage);
+      expect(decoration.gradient, AppGradients.sageButton);
+    });
   });
 }
