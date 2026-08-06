@@ -538,6 +538,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trailHeaderEyebrow => 'TRAIL OF';
 
   @override
+  String get trailEmptyHeaderEyebrow => 'TRAIL';
+
+  @override
+  String get trailEmptyHeaderTitle => 'Your trail';
+
+  @override
   String trailRankMetresLabel(String metres) {
     return '$metres m';
   }

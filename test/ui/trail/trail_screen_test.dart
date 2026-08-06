@@ -5,11 +5,13 @@ import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/completion_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
 import 'package:cairn/src/services/proof_verifier.dart';
+import 'package:cairn/src/ui/home/empty_today_view.dart';
 import 'package:cairn/src/ui/new_habit/new_habit_screen.dart';
 import 'package:cairn/src/ui/theme/app_text_styles.dart';
 import 'package:cairn/src/ui/trail/trail_screen.dart';
 import 'package:cairn/src/ui/widgets/cairn_stack.dart';
 import 'package:cairn/src/ui/widgets/ghost_cairn.dart';
+import 'package:cairn/src/ui/widgets/screen_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -75,19 +77,45 @@ void main() {
 
   group('empty states', () {
     testTrailWidgets(
-        'no active tasks at all shows the calm empty state with a New '
-        'habit CTA', (tester) async {
+        'with no tasks, renders the new eyebrow and title AND the empty '
+        'illustration/copy', (tester) async {
       final db = await pumpTrail(tester, FixedClock(d(2026, 7, 20)), (db) async {});
       addTearDown(db.close);
 
+      expect(find.text('TRAIL'), findsOneWidget);
+      expect(find.text('Your trail'), findsOneWidget);
       expect(find.text('Your first stone is waiting'), findsOneWidget);
       expect(
         find.text('Add a habit, prove it once, and watch your cairn begin to rise.'),
         findsOneWidget,
       );
       expect(find.text('New habit'), findsOneWidget);
-      // No header/chips without any tasks.
       expect(find.text('TRAIL OF'), findsNothing);
+    });
+
+    testTrailWidgets('with no tasks, no rank pill is rendered', (tester) async {
+      final db = await pumpTrail(tester, FixedClock(d(2026, 7, 20)), (db) async {});
+      addTearDown(db.close);
+
+      expect(
+        find.byWidgetPredicate((w) => w is ScreenHeader && w.trailing == null),
+        findsOneWidget,
+      );
+    });
+
+    testTrailWidgets(
+        'regression guard: with no tasks, EmptyTodayView is beneath an Expanded',
+        (tester) async {
+      final db = await pumpTrail(tester, FixedClock(d(2026, 7, 20)), (db) async {});
+      addTearDown(db.close);
+
+      expect(
+        find.ancestor(
+          of: find.byType(EmptyTodayView),
+          matching: find.byType(Expanded),
+        ),
+        findsOneWidget,
+      );
     });
 
     testTrailWidgets(

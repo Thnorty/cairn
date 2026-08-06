@@ -796,6 +796,16 @@
     "description": "Small all-caps eyebrow label above the selected task's title on the Trail screen (Cairn Trail.dc.html), e.g. 'TRAIL OF' above 'Read 20 pages'. Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
   },
 
+  "trailEmptyHeaderEyebrow": "TRAIL",
+  "@trailEmptyHeaderEyebrow": {
+    "description": "Small all-caps eyebrow label above the title on the Trail screen when no habits exist anywhere in the app (Cairn Trail.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime."
+  },
+
+  "trailEmptyHeaderTitle": "Your trail",
+  "@trailEmptyHeaderTitle": {
+    "description": "Screen header title on the Trail screen when no habits exist anywhere in the app (Cairn Trail.dc.html)."
+  },
+
   "trailRankMetresLabel": "{metres} m",
   "@trailRankMetresLabel": {
     "description": "Bare metres line under the tier name in the Trail screen's per-task rank pill, e.g. '840 m'. Distinct from profileMetresGainedLabel ('840 m gained'): the Trail rank pill's canonical design shows just the bare number. metres is pre-formatted by the caller via NumberFormat (formatMetresNumber).",

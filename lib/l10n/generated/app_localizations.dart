@@ -866,6 +866,18 @@ abstract class AppLocalizations {
   /// **'TRAIL OF'**
   String get trailHeaderEyebrow;
 
+  /// Small all-caps eyebrow label above the title on the Trail screen when no habits exist anywhere in the app (Cairn Trail.dc.html). Stored already uppercased for the same Turkish dotted-i reason as todaySectionLabel; do not uppercase at runtime.
+  ///
+  /// In en, this message translates to:
+  /// **'TRAIL'**
+  String get trailEmptyHeaderEyebrow;
+
+  /// Screen header title on the Trail screen when no habits exist anywhere in the app (Cairn Trail.dc.html).
+  ///
+  /// In en, this message translates to:
+  /// **'Your trail'**
+  String get trailEmptyHeaderTitle;
+
   /// Bare metres line under the tier name in the Trail screen's per-task rank pill, e.g. '840 m'. Distinct from profileMetresGainedLabel ('840 m gained'): the Trail rank pill's canonical design shows just the bare number. metres is pre-formatted by the caller via NumberFormat (formatMetresNumber).
   ///
   /// In en, this message translates to:

@@ -81,12 +81,23 @@ class TrailScreen extends ConsumerWidget {
       child: snapshotAsync.when(
         data: (snapshot) {
           if (snapshot.chips.isEmpty) {
-            // No tasks at all, anywhere in the app: the same empty-state
-            // illustration/copy Home shows for the identical condition
-            // (see this run's spec: "reuse Empty Today's visual
-            // language").
-            return EmptyTodayView(
-              onNewHabit: () => _openNewHabitScreen(context),
+            final l10n = AppLocalizations.of(context)!;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: kScreenEdgePadding,
+                  child: ScreenHeader(
+                    eyebrow: l10n.trailEmptyHeaderEyebrow,
+                    title: l10n.trailEmptyHeaderTitle,
+                  ),
+                ),
+                Expanded(
+                  child: EmptyTodayView(
+                    onNewHabit: () => _openNewHabitScreen(context),
+                  ),
+                ),
+              ],
             );
           }
           return _TrailScreenBody(snapshot: snapshot, ref: ref);
