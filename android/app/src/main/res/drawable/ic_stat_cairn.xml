@@ -1,0 +1,40 @@
+<!-- Notification small icon (status bar + notification shade).
+
+     MUST be a solid shape on a TRANSPARENT background. Android ignores the
+     colours of a small icon entirely and rebuilds it from the alpha channel
+     as a silhouette, then tints that silhouette itself. Pointing this at
+     @mipmap/ic_launcher (as the first cut did) therefore rendered a solid
+     white square, because the launcher icon is fully opaque edge to edge:
+     its alpha channel has no shape in it to extract.
+
+     Same four stacked river-stones as ic_launcher_monochrome.xml, and kept in
+     lock-step with it, but scaled up to 1.15 (rather than the launcher's 0.86
+     safe-zone inset) and nudged up 4 units to centre the stack: a small icon
+     is rendered at 24dp with no adaptive-icon mask eating its edges, so the
+     launcher's safe zone does not apply and the extra fill is what keeps the
+     cairn legible at status-bar size. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="1.15"
+        android:scaleY="1.15"
+        android:translateY="-4">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M29,79 a25,11.5 0 1,0 50,0 a25,11.5 0 1,0 -50,0 Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M37,61.5 a19.5,10 0 1,0 39,0 a19.5,10 0 1,0 -39,0 Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M37,46 a14.5,8.5 0 1,0 29,0 a14.5,8.5 0 1,0 -29,0 Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M45.5,32.5 a9.5,7.2 0 1,0 19,0 a9.5,7.2 0 1,0 -19,0 Z" />
+    </group>
+</vector>

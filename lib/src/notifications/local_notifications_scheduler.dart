@@ -79,10 +79,40 @@ class LocalNotificationsScheduler implements NotificationScheduler {
 
     await _plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        // NOT @mipmap/ic_launcher. Android rebuilds a notification's small
+        // icon from its ALPHA CHANNEL as a silhouette and tints that itself,
+        // so a fully-opaque launcher icon renders as a solid white square -
+        // which is exactly what the first device run showed. `ic_stat_cairn`
+        // is the cairn shape on a transparent background, built for this.
+        android: AndroidInitializationSettings('@drawable/ic_stat_cairn'),
       ),
       onDidReceiveNotificationResponse: _handleResponse,
     );
+
+    // Create BOTH channels up front rather than letting the plugin create
+    // each one lazily when its first notification is posted.
+    //
+    // Lazy creation makes the two-channel split a promise the app does not
+    // keep: the streak-warning channel would not exist in Android's own
+    // per-app notification settings until a streak warning actually fired,
+    // which for a new user can be weeks away (it needs a live streak *and* an
+    // unproven day). A user who goes looking for the OS-level control the
+    // in-app "Streak warnings" switch implies would simply not find it. Both
+    // channels existing from first launch is the whole point of splitting
+    // them - see PendingNotification.kind. Verified on device: before this,
+    // only `cairn_reminders` was present.
+    try {
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (android != null) {
+        for (final kind in NotificationKind.values) {
+          await android.createNotificationChannel(_channelFor(kind));
+        }
+      }
+    } catch (_) {
+      // Non-fatal: posting a notification creates its channel anyway, so the
+      // worst case here is a return to the old lazy behaviour.
+    }
 
     // The cold-start path: the app was launched *by* a notification tap, so
     // there was no live callback to receive - the process did not exist yet.
@@ -173,25 +203,51 @@ class LocalNotificationsScheduler implements NotificationScheduler {
   /// Releases the tap controller. Wired to the provider's `onDispose`.
   Future<void> dispose() => _taps.close();
 
-  NotificationDetails _detailsFor(NotificationKind kind) => switch (kind) {
-        NotificationKind.reminder => const NotificationDetails(
-            android: AndroidNotificationDetails(
-              reminderChannelId,
-              'Habit reminders',
-              channelDescription: 'A nudge when a habit is due.',
-              importance: Importance.defaultImportance,
-              priority: Priority.defaultPriority,
-            ),
-          ),
-        NotificationKind.streakWarning => const NotificationDetails(
-            android: AndroidNotificationDetails(
-              streakWarningChannelId,
-              'Streak warnings',
-              channelDescription:
-                  'One evening heads-up before a streak breaks.',
-              importance: Importance.defaultImportance,
-              priority: Priority.defaultPriority,
-            ),
-          ),
+  /// The one place each channel's id, name and description are defined, so
+  /// [_channelFor] (which creates it) and [_detailsFor] (which posts to it)
+  /// can never drift apart into two channels that differ only by a typo.
+  static const ({String id, String name, String description}) _reminderChannel =
+      (
+    id: reminderChannelId,
+    name: 'Habit reminders',
+    description: 'A nudge when a habit is due.',
+  );
+
+  static const ({String id, String name, String description})
+      _streakWarningChannel = (
+    id: streakWarningChannelId,
+    name: 'Streak warnings',
+    description: 'One evening heads-up before a streak breaks.',
+  );
+
+  static ({String id, String name, String description}) _specFor(
+    NotificationKind kind,
+  ) =>
+      switch (kind) {
+        NotificationKind.reminder => _reminderChannel,
+        NotificationKind.streakWarning => _streakWarningChannel,
       };
+
+  AndroidNotificationChannel _channelFor(NotificationKind kind) {
+    final spec = _specFor(kind);
+    return AndroidNotificationChannel(
+      spec.id,
+      spec.name,
+      description: spec.description,
+      importance: Importance.defaultImportance,
+    );
+  }
+
+  NotificationDetails _detailsFor(NotificationKind kind) {
+    final spec = _specFor(kind);
+    return NotificationDetails(
+      android: AndroidNotificationDetails(
+        spec.id,
+        spec.name,
+        channelDescription: spec.description,
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+      ),
+    );
+  }
 }
