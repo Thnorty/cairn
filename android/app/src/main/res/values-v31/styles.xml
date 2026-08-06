@@ -14,12 +14,25 @@
 <resources>
     <!-- Theme applied to the Android Window while the process is starting on Android 12+ (API 31+) -->
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <!-- Opt OUT of the platform's automatic dark theming (API 29+).
+             Without this, a device with system dark mode on runs force-dark
+             over this window's background, which is a View-layer drawable:
+             measured on device it pulled the parchment from #E9E1D3 down to
+             (159,155,146) AND lifted the charcoal cairn from #33302B up to
+             (75,72,67) - contrast squeezed toward grey from both directions,
+             which is force-dark's signature, not a wrong colour.
+             Only the splash was affected because Flutter renders to its own
+             surface that force-dark cannot reach, so the app itself was
+             already correct and the seam showed only at launch.
+             Ignored on API < 29, which is why it can live in values/. -->
+        <item name="android:forceDarkAllowed">false</item>
         <item name="android:windowSplashScreenBackground">@color/splash_background</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_cairn</item>
         <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started. -->
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:forceDarkAllowed">false</item>
         <item name="android:windowBackground">@color/splash_background</item>
     </style>
 </resources>
