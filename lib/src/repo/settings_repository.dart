@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../db/database.dart';
 import '../models/stone_style.dart';
+import '../models/occurrence.dart' show timeOfDayFromHHmm;
 
 /// Reads and writes device-local UI settings ([AppSettings], a simple
 /// key/value table - see that table's own doc comment for why it is
@@ -20,8 +21,17 @@ class SettingsRepository {
 
   static const _onboardingCompleteKey = 'onboarding_complete';
   static const _trueValue = 'true';
+  static const _falseValue = 'false';
   static const _stoneStyleKey = 'stone_style';
   static const _displayNameKey = 'display_name';
+  static const _remindersEnabledKey = 'reminders_enabled';
+  static const _defaultReminderTimeKey = 'default_reminder_time';
+  static const _streakWarningsEnabledKey = 'streak_warnings_enabled';
+
+  /// Fallback default reminder time (24-hour "HH:mm") when nothing valid is
+  /// stored - the untimed slot 0's reminder time until the user picks their
+  /// own.
+  static const String defaultReminderTimeFallback = '09:00';
 
   /// Whether the first-launch onboarding flow has already been completed.
   /// False for a fresh database (no row yet) or any stored value other than
@@ -102,6 +112,100 @@ class SettingsRepository {
           AppSettingsCompanion(
             key: const Value(_displayNameKey),
             value: Value(trimmed),
+          ),
+        );
+  }
+
+  /// Whether per-occurrence reminders and streak-at-risk warnings are
+  /// enabled at all. False for a fresh database (no row yet) or any stored
+  /// value other than the exact sentinel [_trueValue] - nothing fires until
+  /// the user opts in (see the notification planner's own doc comment).
+  Future<bool> remindersEnabled() async {
+    final row = await (_db.select(_db.appSettings)
+          ..where((t) => t.key.equals(_remindersEnabledKey)))
+        .getSingleOrNull();
+    return row?.value == _trueValue;
+  }
+
+  /// Persists whether reminders are enabled. Idempotent upsert, same
+  /// reasoning as [markOnboardingComplete]/[setStoneStyle].
+  Future<void> setRemindersEnabled(bool enabled) async {
+    await _db.into(_db.appSettings).insertOnConflictUpdate(
+          AppSettingsCompanion(
+            key: const Value(_remindersEnabledKey),
+            value: Value(enabled ? _trueValue : _falseValue),
+          ),
+        );
+  }
+
+  /// True iff [value] parses as a valid 24-hour "HH:mm" time via
+  /// [timeOfDayFromHHmm] - reused rather than writing a second HH:mm parser,
+  /// per that function's own doc comment. [timeOfDayFromHHmm] normalizes an
+  /// out-of-range hour/minute (e.g. "99:99") via [DateTime]'s own overflow
+  /// rollover rather than throwing, so this only actually rejects values
+  /// that aren't even numeric "H:M"-shaped strings (missing colon,
+  /// non-numeric parts, absent altogether); accepted as a known, narrow gap
+  /// since every real caller of [setDefaultReminderTime] is expected to be a
+  /// time-picker UI (a later work order) that can only ever produce a
+  /// genuinely valid 0-23/0-59 pair in the first place.
+  bool _isValidHHmm(String value) {
+    try {
+      timeOfDayFromHHmm(value);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// The stored default reminder time (24-hour "HH:mm") used for a task's
+  /// untimed slot 0 (empty `due_times`) when reminders are enabled.
+  /// [defaultReminderTimeFallback] for a fresh database (no row yet) or any
+  /// stored value that fails [_isValidHHmm] - never throws.
+  Future<String> defaultReminderTime() async {
+    final row = await (_db.select(_db.appSettings)
+          ..where((t) => t.key.equals(_defaultReminderTimeKey)))
+        .getSingleOrNull();
+    final stored = row?.value;
+    if (stored == null || !_isValidHHmm(stored)) {
+      return defaultReminderTimeFallback;
+    }
+    return stored;
+  }
+
+  /// Persists [hhmm] as the stored default reminder time. A no-op (nothing
+  /// written, any existing stored value left untouched) when [hhmm] fails
+  /// [_isValidHHmm] - same "make invalid input hard to persist" principle as
+  /// [setDisplayName]'s whitespace-only guard.
+  Future<void> setDefaultReminderTime(String hhmm) async {
+    if (!_isValidHHmm(hhmm)) return;
+    await _db.into(_db.appSettings).insertOnConflictUpdate(
+          AppSettingsCompanion(
+            key: const Value(_defaultReminderTimeKey),
+            value: Value(hhmm),
+          ),
+        );
+  }
+
+  /// Whether the evening "streak at risk" warning is enabled - only
+  /// meaningful when [remindersEnabled] is also true. True for a fresh
+  /// database (no row yet, opt-out rather than opt-in once reminders
+  /// themselves are on) or any stored value other than the exact sentinel
+  /// [_falseValue].
+  Future<bool> streakWarningsEnabled() async {
+    final row = await (_db.select(_db.appSettings)
+          ..where((t) => t.key.equals(_streakWarningsEnabledKey)))
+        .getSingleOrNull();
+    if (row == null) return true;
+    return row.value != _falseValue;
+  }
+
+  /// Persists whether streak-at-risk warnings are enabled. Idempotent
+  /// upsert, same reasoning as [markOnboardingComplete]/[setStoneStyle].
+  Future<void> setStreakWarningsEnabled(bool enabled) async {
+    await _db.into(_db.appSettings).insertOnConflictUpdate(
+          AppSettingsCompanion(
+            key: const Value(_streakWarningsEnabledKey),
+            value: Value(enabled ? _trueValue : _falseValue),
           ),
         );
   }

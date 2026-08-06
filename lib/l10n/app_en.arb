@@ -541,8 +541,8 @@
     "description": "Button label that opens the photo gallery picker: the Camera Unavailable screen's primary footer action, and also its own fallback body button shown in place of the recent-photos grid when the photo library can't be read or has no photos."
   },
 
-  "openCameraSettingsButton": "Open camera settings",
-  "@openCameraSettingsButton": {
+  "openAppSettingsButton": "Open camera settings",
+  "@openAppSettingsButton": {
     "description": "Secondary footer button on the Camera Unavailable screen that opens the OS app-settings screen so the user can grant camera permission."
   },
 
@@ -1853,5 +1853,107 @@
   "stoneStyleEntitledFooterCaption": "Applies to every cairn, everywhere.",
   "@stoneStyleEntitledFooterCaption": {
     "description": "Entitled-state footer caption on the Stone Style picker, under the Apply button."
+  },
+
+  "onboardingNotificationsTitle": "Never miss a stone",
+  "@onboardingNotificationsTitle": {
+    "description": "Headline on the onboarding Notifications screen (Cairn Onboarding Notifications.dc.html), step 5 of 5 - the last step in the first-launch flow."
+  },
+  "onboardingNotificationsSubhead": "Two reminders, and nothing else. You can change or silence them any time.",
+  "@onboardingNotificationsSubhead": {
+    "description": "Subhead under the headline on the onboarding Notifications screen."
+  },
+  "onboardingNotificationsPoint1Title": "When a habit is due",
+  "@onboardingNotificationsPoint1Title": {
+    "description": "Title of the first explanatory card on the onboarding Notifications screen."
+  },
+  "onboardingNotificationsPoint1Body": "At the times you set, or 9:00 if you set none. Tap it to go straight to the camera.",
+  "@onboardingNotificationsPoint1Body": {
+    "description": "Body of the first explanatory card on the onboarding Notifications screen."
+  },
+  "onboardingNotificationsPoint2Title": "Before a streak breaks",
+  "@onboardingNotificationsPoint2Title": {
+    "description": "Title of the second explanatory card on the onboarding Notifications screen."
+  },
+  "onboardingNotificationsPoint2Body": "One quiet warning in the evening, while there is still time to prove it.",
+  "@onboardingNotificationsPoint2Body": {
+    "description": "Body of the second explanatory card on the onboarding Notifications screen."
+  },
+  "onboardingAllowNotificationsButton": "Allow notifications",
+  "@onboardingAllowNotificationsButton": {
+    "description": "Primary footer CTA on the onboarding Notifications screen; fires the OS notification-permission prompt and enables reminders, then completes onboarding regardless of the prompt's outcome (see OnboardingFlow's doc comment on the camera step's identical pattern)."
+  },
+  "onboardingNotNowButton": "Not now",
+  "@onboardingNotNowButton": {
+    "description": "Secondary, full-width footer button on the onboarding Notifications screen; completes onboarding without requesting the permission or enabling reminders."
+  },
+
+  "notificationsScreenTitle": "Notifications",
+  "@notificationsScreenTitle": {
+    "description": "Title of the Notifications settings screen (Cairn Notifications.dc.html), under the SETTINGS eyebrow. Kept separate from profileNotificationsRow (the row that opens it) so the two can be translated independently."
+  },
+  "notificationsMasterRowTitle": "Habit reminders",
+  "@notificationsMasterRowTitle": {
+    "description": "Title of the master on/off row on the Notifications settings screen (Cairn Notifications.dc.html)."
+  },
+  "notificationsMasterRowSubtitle": "A nudge when a habit is due.",
+  "@notificationsMasterRowSubtitle": {
+    "description": "Subtitle under notificationsMasterRowTitle."
+  },
+  "notificationsDefaultTimeRowTitle": "Default time",
+  "@notificationsDefaultTimeRowTitle": {
+    "description": "Title of the default-reminder-time row on the Notifications settings screen."
+  },
+  "notificationsDefaultTimeRowSubtitle": "For habits with no set time of their own.",
+  "@notificationsDefaultTimeRowSubtitle": {
+    "description": "Subtitle under notificationsDefaultTimeRowTitle."
+  },
+  "notificationsStreakRowTitle": "Streak warnings",
+  "@notificationsStreakRowTitle": {
+    "description": "Title of the streak-warnings on/off row on the Notifications settings screen."
+  },
+  "notificationsStreakRowSubtitle": "One evening heads-up before a streak breaks.",
+  "@notificationsStreakRowSubtitle": {
+    "description": "Subtitle under notificationsStreakRowTitle."
+  },
+  "notificationsFooterCaption": "Habits with their own times are reminded at those times. Change them on the habit itself.",
+  "@notificationsFooterCaption": {
+    "description": "Small caption under the settings panel on the Notifications settings screen, explaining why per-habit times aren't set here."
+  },
+  "notificationsBlockedTitle": "Android is blocking these",
+  "@notificationsBlockedTitle": {
+    "description": "Title of the clay notice shown on the Notifications settings screen when the OS notification permission is denied."
+  },
+  "notificationsBlockedBody": "Your choices below are saved, but nothing can be delivered until notifications are allowed for Cairn in system settings.",
+  "@notificationsBlockedBody": {
+    "description": "Body of the clay notice shown on the Notifications settings screen when the OS notification permission is denied."
+  },
+  "notificationsOpenSystemSettingsButton": "Open system settings",
+  "@notificationsOpenSystemSettingsButton": {
+    "description": "Button inside the clay notice on the Notifications settings screen; opens the OS per-app settings page."
+  },
+
+  "notificationReminderTitle": "Cairn reminder",
+  "@notificationReminderTitle": {
+    "description": "Title of the local push notification reminding the user a specific habit is due right now. Tapping it opens the camera for that exact occurrence."
+  },
+  "notificationReminderBody": "Time to prove \"{taskTitle}\".",
+  "@notificationReminderBody": {
+    "description": "Body of the habit-due reminder notification, naming the task.",
+    "placeholders": {
+      "taskTitle": { "type": "String", "example": "Push-ups" }
+    }
+  },
+  "notificationStreakWarningTitle": "Streak at risk",
+  "@notificationStreakWarningTitle": {
+    "description": "Title of the evening local push notification warning that a habit's streak will break tonight unless it's proven."
+  },
+  "notificationStreakWarningBody": "Your {streakDays, plural, one{1-day} other{{streakDays}-day}} streak on \"{taskTitle}\" breaks tonight if it goes unproven.",
+  "@notificationStreakWarningBody": {
+    "description": "Body of the streak-at-risk warning notification, naming the task and its current streak length in days.",
+    "placeholders": {
+      "streakDays": { "type": "num", "example": "5" },
+      "taskTitle": { "type": "String", "example": "Push-ups" }
+    }
   }
 }

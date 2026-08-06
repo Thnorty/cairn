@@ -8,15 +8,23 @@ import '../../providers.dart';
 import '../account/account_flow.dart';
 import 'onboarding_how_it_works_screen.dart';
 import 'onboarding_name_screen.dart';
+import 'onboarding_notifications_screen.dart';
 import 'onboarding_verification_screen.dart';
 import 'onboarding_welcome_screen.dart';
 
-/// Hosts the four first-launch onboarding screens - Welcome
+/// Hosts the five first-launch onboarding screens - Welcome
 /// ([OnboardingWelcomeScreen]) -\> How It Works
 /// ([OnboardingHowItWorksScreen]) -\> Your Name ([OnboardingNameScreen]) -\>
-/// Verify ([OnboardingVerificationScreen]) - on their OWN nested
-/// [Navigator], rather than pushing them onto the app's root `MaterialApp`
-/// navigator.
+/// Verify ([OnboardingVerificationScreen]) -\> Reminders
+/// ([OnboardingNotificationsScreen]) - on their OWN nested [Navigator],
+/// rather than pushing them onto the app's root `MaterialApp` navigator.
+///
+/// The two permission asks are deliberately separate steps in this order:
+/// the camera grant is load-bearing (without it the app cannot do its one
+/// job) and is framed by "how verification works", while reminders are
+/// genuinely optional. Camera first also means the more important grant is
+/// asked for while attention is freshest. See
+/// `Cairn Onboarding Notifications.dc.html`'s header comment.
 ///
 /// This matters for [OnboardingGate]: completing onboarding swaps the
 /// gate's `home:` from this widget to [AppShell] by invalidating
@@ -39,12 +47,14 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
   static const _howItWorksRoute = '/how-it-works';
   static const _nameRoute = '/name';
   static const _verificationRoute = '/verification';
+  static const _notificationsRoute = '/notifications';
 
-  /// The "Allow camera" completion path (decision 4 in this run's spec):
-  /// entry is never gated on the OS permission prompt's outcome, only on it
-  /// having resolved at all - marks onboarding complete, then invalidates
+  /// Completing the flow: marks onboarding complete, then invalidates
   /// [onboardingCompleteProvider] so [OnboardingGate] rebuilds into
   /// [AppShell], unmounting this whole flow.
+  ///
+  /// Neither permission step gates entry on its prompt's outcome, only on it
+  /// having resolved (or been skipped) - see each screen's own doc comment.
   Future<void> _completeOnboarding() async {
     await ref.read(settingsRepositoryProvider).markOnboardingComplete();
     ref.invalidate(onboardingCompleteProvider);
@@ -55,12 +65,22 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
     return Navigator(
       key: _navigatorKey,
       onGenerateRoute: (settings) {
+        if (settings.name == _notificationsRoute) {
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => OnboardingNotificationsScreen(
+              onBack: () => _navigatorKey.currentState!.pop(),
+              onComplete: () => unawaited(_completeOnboarding()),
+            ),
+          );
+        }
         if (settings.name == _verificationRoute) {
           return MaterialPageRoute<void>(
             settings: settings,
             builder: (_) => OnboardingVerificationScreen(
               onBack: () => _navigatorKey.currentState!.pop(),
-              onAllowCameraComplete: () => unawaited(_completeOnboarding()),
+              onCameraPermissionResolved: () =>
+                  _navigatorKey.currentState!.pushNamed(_notificationsRoute),
             ),
           );
         }

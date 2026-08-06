@@ -1,4 +1,5 @@
 import 'package:cairn/src/l10n/date_number_formatting.dart';
+import 'package:cairn/src/models/occurrence.dart' show timeOfDayFromHHmm;
 import 'package:cairn/src/ui/new_habit/new_habit_times_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

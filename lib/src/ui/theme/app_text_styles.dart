@@ -825,6 +825,18 @@ abstract final class AppTextStyles {
     color: AppColors.textMuted,
   );
 
+  /// 14.5px Work Sans 600 - the reminders step's "Not now" skip, sized to
+  /// read as a real choice beside the primary CTA rather than as fine print
+  /// (see `Cairn Onboarding Notifications.dc.html`'s header comment). Half a
+  /// point larger than [onboardingPrivacyLinkLabel], which is genuinely
+  /// secondary.
+  static const TextStyle onboardingNotNowLabel = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 14.5,
+    color: AppColors.textMuted,
+  );
+
   // ---- Cairn Complete / How Cairns Work -------------------------------
 
   /// 28px Zilla Slab 600 - the Cairn Complete celebration screen's
@@ -1021,6 +1033,68 @@ abstract final class AppTextStyles {
     fontWeight: FontWeight.w400,
     fontSize: 11.5,
     color: AppColors.textMuted,
+  );
+
+  // ---- Notifications settings (Cairn Notifications.dc.html) ---------------
+
+  /// 15px Work Sans 500 - a Notifications settings row's title ("Habit
+  /// reminders", "Default time", "Streak warnings"). Half a weight heavier
+  /// than Profile's own [settingsRowLabel], which the source files really do
+  /// differ on: Profile's rows are navigational labels, these carry a
+  /// control.
+  static const TextStyle notificationsRowTitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w500,
+    fontSize: 15,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 12px Work Sans 400 - the explanatory line under a
+  /// [notificationsRowTitle].
+  static const TextStyle notificationsRowSubtitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: AppColors.textFaint,
+  );
+
+  /// 17px Zilla Slab 600 - the default reminder time itself ("09:00") on its
+  /// row, set in the display serif like every other number this app treats as
+  /// data rather than copy.
+  static const TextStyle notificationsRowValue = TextStyle(
+    fontFamily: AppFontFamilies.zillaSlab,
+    fontWeight: FontWeight.w600,
+    fontSize: 17,
+    color: AppColors.inkPrimary,
+  );
+
+  /// 11.5px Work Sans 400 - the caption under the preferences panel
+  /// explaining that per-habit times live on the habit. [statsResetCaption]
+  /// at the same size and colour but with the design's own 1.5 line-height,
+  /// since this one wraps to two lines.
+  static const TextStyle notificationsFooterCaption = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 11.5,
+    height: 1.5,
+    color: AppColors.labelGrey,
+  );
+
+  /// 14.5px Work Sans 600 - the "Android is blocking these" notice heading.
+  static const TextStyle notificationsBlockedTitle = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w600,
+    fontSize: 14.5,
+    color: AppColors.notificationsBlockedHeading,
+  );
+
+  /// 12.5px Work Sans 400 - that notice's body copy.
+  static const TextStyle notificationsBlockedBody = TextStyle(
+    fontFamily: AppFontFamilies.workSans,
+    fontWeight: FontWeight.w400,
+    fontSize: 12.5,
+    height: 1.45,
+    color: AppColors.notificationsBlockedBody,
   );
 }
 

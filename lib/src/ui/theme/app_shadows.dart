@@ -186,6 +186,19 @@ abstract final class AppShadows {
     ),
   ];
 
+  /// [CairnSwitch]'s ON track: `0 2px 5px -2px rgba(70,88,50,.5)`. The same
+  /// sage-tinted shadow colour as [sageButtonLarge]/[sageButtonSmall] at a
+  /// literally different opacity (.5 rather than .55), so it gets its own
+  /// token rather than reusing [AppColors.accountSageButtonShadow].
+  static const List<BoxShadow> switchTrackOn = [
+    BoxShadow(
+      color: Color(0x80465832),
+      offset: Offset(0, 2),
+      blurRadius: 5,
+      spreadRadius: -2,
+    ),
+  ];
+
   /// Account screens' sage CTA button, small variant, mirroring
   /// [buttonSmall]'s shape with a sage-tinted colour.
   static const List<BoxShadow> sageButtonSmall = [

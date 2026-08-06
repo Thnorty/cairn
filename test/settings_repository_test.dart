@@ -126,4 +126,121 @@ void main() {
       expect(await repo.displayName(), isNull);
     });
   });
+
+  group('reminders enabled', () {
+    test('a fresh database has reminders disabled', () async {
+      expect(await repo.remindersEnabled(), isFalse);
+    });
+
+    test('setRemindersEnabled(true) then remindersEnabled round-trips',
+        () async {
+      await repo.setRemindersEnabled(true);
+
+      expect(await repo.remindersEnabled(), isTrue);
+    });
+
+    test('setRemindersEnabled(false) after true round-trips back off',
+        () async {
+      await repo.setRemindersEnabled(true);
+      await repo.setRemindersEnabled(false);
+
+      expect(await repo.remindersEnabled(), isFalse);
+    });
+
+    test('an unrecognised value written directly to the row reads back as '
+        'false rather than throwing', () async {
+      await db.into(db.appSettings).insertOnConflictUpdate(
+            const AppSettingsCompanion(
+              key: Value('reminders_enabled'),
+              value: Value('yes'),
+            ),
+          );
+
+      expect(await repo.remindersEnabled(), isFalse);
+    });
+  });
+
+  group('default reminder time', () {
+    test('a fresh database defaults to 09:00', () async {
+      expect(await repo.defaultReminderTime(), '09:00');
+      expect(SettingsRepository.defaultReminderTimeFallback, '09:00');
+    });
+
+    test('setDefaultReminderTime then defaultReminderTime round-trips',
+        () async {
+      await repo.setDefaultReminderTime('07:30');
+
+      expect(await repo.defaultReminderTime(), '07:30');
+    });
+
+    test('setDefaultReminderTime is idempotent (safe to call twice, an '
+        'upsert not an insert) and the later call wins', () async {
+      await repo.setDefaultReminderTime('07:30');
+      await repo.setDefaultReminderTime('18:15');
+
+      expect(await repo.defaultReminderTime(), '18:15');
+    });
+
+    test('setDefaultReminderTime with a malformed value is a no-op: any '
+        'existing stored time is left untouched', () async {
+      await repo.setDefaultReminderTime('07:30');
+      await repo.setDefaultReminderTime('not a time');
+
+      expect(await repo.defaultReminderTime(), '07:30');
+    });
+
+    test('setDefaultReminderTime with a malformed value on a fresh '
+        'database writes nothing: defaultReminderTime still resolves to '
+        'the fallback', () async {
+      await repo.setDefaultReminderTime('not a time');
+
+      expect(await repo.defaultReminderTime(), '09:00');
+    });
+
+    test('a malformed value written directly to the row (bypassing '
+        'setDefaultReminderTime) reads back as the fallback, not thrown',
+        () async {
+      await db.into(db.appSettings).insertOnConflictUpdate(
+            const AppSettingsCompanion(
+              key: Value('default_reminder_time'),
+              value: Value('nope'),
+            ),
+          );
+
+      expect(await repo.defaultReminderTime(), '09:00');
+    });
+  });
+
+  group('streak warnings enabled', () {
+    test('a fresh database has streak warnings enabled', () async {
+      expect(await repo.streakWarningsEnabled(), isTrue);
+    });
+
+    test('setStreakWarningsEnabled(false) then streakWarningsEnabled '
+        'round-trips', () async {
+      await repo.setStreakWarningsEnabled(false);
+
+      expect(await repo.streakWarningsEnabled(), isFalse);
+    });
+
+    test('setStreakWarningsEnabled(true) after false round-trips back on',
+        () async {
+      await repo.setStreakWarningsEnabled(false);
+      await repo.setStreakWarningsEnabled(true);
+
+      expect(await repo.streakWarningsEnabled(), isTrue);
+    });
+
+    test('an unrecognised value written directly to the row reads back as '
+        'true (the default) rather than throwing', () async {
+      await db.into(db.appSettings).insertOnConflictUpdate(
+            const AppSettingsCompanion(
+              key: Value('streak_warnings_enabled'),
+              value: Value('maybe'),
+            ),
+          );
+
+      expect(await repo.streakWarningsEnabled(), isTrue);
+    });
+  });
 }

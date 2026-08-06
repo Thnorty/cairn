@@ -1,14 +1,21 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/widgets.dart' show Locale, WidgetsBinding;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import '../l10n/generated/app_localizations.dart';
 import 'clock.dart';
 import 'config.dart';
 import 'db/database.dart';
 import 'models/proof_verdict.dart';
 import 'models/stone_style.dart';
+import 'notifications/local_notifications_scheduler.dart';
+import 'notifications/notification_scheduler.dart';
+import 'notifications/notification_trigger.dart';
+import 'notifications/pending_notification.dart';
 import 'premium/premium_service.dart';
 import 'premium/revenuecat_premium_service.dart';
 import 'premium/unconfigured_premium_service.dart';
@@ -22,6 +29,9 @@ import 'services/camera_permission_requester.dart';
 import 'services/camera_session.dart';
 import 'services/home_service.dart';
 import 'services/insights_service.dart';
+import 'services/notification_permission_requester.dart';
+import 'services/notification_planner.dart';
+import 'services/notification_strings.dart';
 import 'services/occurrence_generator.dart';
 import 'services/photo_capture.dart';
 import 'services/points_service.dart';
@@ -598,5 +608,163 @@ final effectiveStoneStyleProvider = Provider<StoneStyle>((ref) {
     return StoneStyle.river;
   }
   return stored;
+});
+
+// -----------------------------------------------------------------------------
+// Notifications
+// -----------------------------------------------------------------------------
+
+/// The locale the notification copy is built in.
+///
+/// Notifications are composed outside the widget tree (see
+/// [NotificationStrings]), so there is no `Localizations` inherited widget to
+/// resolve against - this matches the platform locale against
+/// [AppLocalizations.supportedLocales] by language code, exactly the
+/// narrowing `MaterialApp`'s own default resolution does, and falls back to
+/// the first supported locale.
+///
+/// Reading `WidgetsBinding.instance` is guarded because a plain
+/// (non-`testWidgets`) unit test that happens to build this provider would
+/// otherwise fail on uninitialized bindings rather than on anything it was
+/// actually asserting.
+Locale _resolveNotificationLocale() {
+  const supported = AppLocalizations.supportedLocales;
+  try {
+    final device = WidgetsBinding.instance.platformDispatcher.locale;
+    for (final locale in supported) {
+      if (locale.languageCode == device.languageCode) return locale;
+    }
+  } catch (_) {
+    // Falls through to the default below.
+  }
+  return supported.first;
+}
+
+/// The localized copy [NotificationPlanner] stamps onto each planned
+/// notification, bound straight to the generated `AppLocalizations` methods
+/// (the streak body is an ICU plural, so it must go through the generated
+/// method rather than string interpolation).
+final notificationStringsProvider = Provider<NotificationStrings>((ref) {
+  final l10n = lookupAppLocalizations(_resolveNotificationLocale());
+  return NotificationStrings(
+    reminderTitle: l10n.notificationReminderTitle,
+    reminderBody: l10n.notificationReminderBody,
+    streakWarningTitle: l10n.notificationStreakWarningTitle,
+    streakWarningBody: (taskTitle, streakDays) =>
+        l10n.notificationStreakWarningBody(streakDays, taskTitle),
+  );
+});
+
+/// The pure scheduling-decision service: computes the current
+/// [PendingNotification] plan from the repositories/[Clock], with no plugin
+/// calls of its own.
+final notificationPlannerProvider = Provider<NotificationPlanner>((ref) {
+  return NotificationPlanner(
+    ref.watch(taskRepositoryProvider),
+    ref.watch(completionRepositoryProvider),
+    ref.watch(settingsRepositoryProvider),
+    ref.watch(occurrenceGeneratorProvider),
+    ref.watch(streakServiceProvider),
+    ref.watch(clockProvider),
+    ref.watch(notificationStringsProvider),
+  );
+});
+
+/// Whether this build actually has the notification feature wired.
+///
+/// Only the two mobile targets do: `flutter_local_notifications` needs the
+/// Android manifest receivers (declared in
+/// `android/app/src/main/AndroidManifest.xml`) and the platform's own
+/// notification service, neither of which the desktop targets in this repo
+/// have set up. Nothing configurable is involved - unlike
+/// [syncTransportProvider]/[premiumServiceProvider] there are no keys and no
+/// backend, local notifications work offline on any phone.
+///
+/// This is deliberately the HOST platform (`dart:io`), not
+/// `defaultTargetPlatform`, and that distinction is load-bearing for the test
+/// suite: `flutter test` reports `defaultTargetPlatform == android` while
+/// actually running on the developer's desktop VM with no platform channels
+/// at all. Keying off `dart:io` means every widget test that pumps
+/// [AppShell] gets the inert scheduler for free, instead of each one having
+/// to remember to override this provider before the plugin is touched.
+bool get _notificationsSupported => Platform.isAndroid || Platform.isIOS;
+
+/// Posts OS-level notifications and surfaces taps on them - the real
+/// [LocalNotificationsScheduler] on mobile, and the inert
+/// [UnconfiguredNotificationScheduler] everywhere else (see
+/// [_notificationsSupported]).
+///
+/// Held for the life of the container (a plain [Provider], so Riverpod
+/// caches the single instance) because its tap stream and its memoised
+/// plugin initialization are both per-instance state: rebuilding it would
+/// re-run `initialize` and orphan any live subscription.
+final notificationSchedulerProvider = Provider<NotificationScheduler>((ref) {
+  if (!_notificationsSupported) return const UnconfiguredNotificationScheduler();
+  final scheduler = LocalNotificationsScheduler();
+  ref.onDispose(scheduler.dispose);
+  return scheduler;
+});
+
+/// Notification taps, decoded to the exact occurrence to open the camera
+/// for. Watched by [NotificationTapListener], which does the routing.
+final notificationTapsProvider = StreamProvider<NotificationPayload>(
+  (ref) => ref.watch(notificationSchedulerProvider).taps,
+);
+
+/// Backs onboarding step 5's "Allow notifications" and the Notifications
+/// settings screen's master switch / blocked-state notice. A widget test
+/// overrides this with a fake, so no widget test touches
+/// `permission_handler`'s platform channel for this path either.
+final notificationPermissionRequesterProvider =
+    Provider<NotificationPermissionRequester>(
+  (ref) => const PermissionHandlerNotificationPermissionRequester(),
+);
+
+/// Whether the OS currently lets Cairn deliver notifications at all.
+/// Invalidated after a permission request or a return from system settings,
+/// so the Notifications screen's blocked notice reflects reality.
+final notificationPermissionGrantedProvider = FutureProvider<bool>(
+  (ref) => ref.watch(notificationPermissionRequesterProvider).isGranted(),
+);
+
+/// The three `AppSettings`-backed notification preferences, each following
+/// the same write-then-`ref.invalidate` convention as
+/// [storedStoneStyleProvider] (see its doc comment).
+final remindersEnabledProvider = FutureProvider<bool>(
+  (ref) => ref.watch(settingsRepositoryProvider).remindersEnabled(),
+);
+
+final defaultReminderTimeProvider = FutureProvider<String>(
+  (ref) => ref.watch(settingsRepositoryProvider).defaultReminderTime(),
+);
+
+final streakWarningsEnabledProvider = FutureProvider<bool>(
+  (ref) => ref.watch(settingsRepositoryProvider).streakWarningsEnabled(),
+);
+
+/// Wires [NotificationTrigger] into the app lifecycle, the same lazy-factory
+/// pattern as [proofRetryTriggerProvider]/[syncTriggerProvider]: resolves
+/// [notificationPlannerProvider]/[notificationSchedulerProvider] via
+/// `ref.read` inside factories rather than `ref.watch`, so this provider has
+/// no build-time dependency edge on either (or anything either depends on)
+/// and is built once, for the life of the app, with its lifecycle
+/// listener/database subscription started exactly once. Nothing constructs
+/// the trigger until something watches this provider, so the app root must
+/// watch it once at startup.
+///
+/// The trigger only covers the `tasks`/`completions` writes it subscribes to
+/// and app foreground. A change to the notification *settings* themselves
+/// (either switch, or the default time) touches neither, so the
+/// Notifications settings screen re-plans explicitly via
+/// `runOnce()` after each write.
+final notificationTriggerProvider = Provider<NotificationTrigger>((ref) {
+  final trigger = NotificationTrigger(
+    ref.watch(databaseProvider),
+    () => ref.read(notificationPlannerProvider),
+    () => ref.read(notificationSchedulerProvider),
+  );
+  trigger.start();
+  ref.onDispose(trigger.dispose);
+  return trigger;
 });
 

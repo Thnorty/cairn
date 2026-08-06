@@ -582,7 +582,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Open camera settings'**
-  String get openCameraSettingsButton;
+  String get openAppSettingsButton;
 
   /// Header title on the New Habit screen (Cairn New Habit.dc.html and its Once/Monthly variants). Distinct from newHabitButton ('New habit'), which is a button label paired with a '+' icon in a different context (Home's app bar / Empty Today CTA) - same pattern as proveItButton vs proveItHeaderLabel elsewhere in this catalogue, kept separate in case a translation ever needs to phrase a screen title differently from a button that opens it.
   ///
@@ -2155,6 +2155,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Applies to every cairn, everywhere.'**
   String get stoneStyleEntitledFooterCaption;
+
+  /// Headline on the onboarding Notifications screen (Cairn Onboarding Notifications.dc.html), step 5 of 5 - the last step in the first-launch flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Never miss a stone'**
+  String get onboardingNotificationsTitle;
+
+  /// Subhead under the headline on the onboarding Notifications screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Two reminders, and nothing else. You can change or silence them any time.'**
+  String get onboardingNotificationsSubhead;
+
+  /// Title of the first explanatory card on the onboarding Notifications screen.
+  ///
+  /// In en, this message translates to:
+  /// **'When a habit is due'**
+  String get onboardingNotificationsPoint1Title;
+
+  /// Body of the first explanatory card on the onboarding Notifications screen.
+  ///
+  /// In en, this message translates to:
+  /// **'At the times you set, or 9:00 if you set none. Tap it to go straight to the camera.'**
+  String get onboardingNotificationsPoint1Body;
+
+  /// Title of the second explanatory card on the onboarding Notifications screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Before a streak breaks'**
+  String get onboardingNotificationsPoint2Title;
+
+  /// Body of the second explanatory card on the onboarding Notifications screen.
+  ///
+  /// In en, this message translates to:
+  /// **'One quiet warning in the evening, while there is still time to prove it.'**
+  String get onboardingNotificationsPoint2Body;
+
+  /// Primary footer CTA on the onboarding Notifications screen; fires the OS notification-permission prompt and enables reminders, then completes onboarding regardless of the prompt's outcome (see OnboardingFlow's doc comment on the camera step's identical pattern).
+  ///
+  /// In en, this message translates to:
+  /// **'Allow notifications'**
+  String get onboardingAllowNotificationsButton;
+
+  /// Secondary, full-width footer button on the onboarding Notifications screen; completes onboarding without requesting the permission or enabling reminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get onboardingNotNowButton;
+
+  /// Title of the Notifications settings screen (Cairn Notifications.dc.html), under the SETTINGS eyebrow. Kept separate from profileNotificationsRow (the row that opens it) so the two can be translated independently.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsScreenTitle;
+
+  /// Title of the master on/off row on the Notifications settings screen (Cairn Notifications.dc.html).
+  ///
+  /// In en, this message translates to:
+  /// **'Habit reminders'**
+  String get notificationsMasterRowTitle;
+
+  /// Subtitle under notificationsMasterRowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A nudge when a habit is due.'**
+  String get notificationsMasterRowSubtitle;
+
+  /// Title of the default-reminder-time row on the Notifications settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Default time'**
+  String get notificationsDefaultTimeRowTitle;
+
+  /// Subtitle under notificationsDefaultTimeRowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'For habits with no set time of their own.'**
+  String get notificationsDefaultTimeRowSubtitle;
+
+  /// Title of the streak-warnings on/off row on the Notifications settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak warnings'**
+  String get notificationsStreakRowTitle;
+
+  /// Subtitle under notificationsStreakRowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'One evening heads-up before a streak breaks.'**
+  String get notificationsStreakRowSubtitle;
+
+  /// Small caption under the settings panel on the Notifications settings screen, explaining why per-habit times aren't set here.
+  ///
+  /// In en, this message translates to:
+  /// **'Habits with their own times are reminded at those times. Change them on the habit itself.'**
+  String get notificationsFooterCaption;
+
+  /// Title of the clay notice shown on the Notifications settings screen when the OS notification permission is denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Android is blocking these'**
+  String get notificationsBlockedTitle;
+
+  /// Body of the clay notice shown on the Notifications settings screen when the OS notification permission is denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Your choices below are saved, but nothing can be delivered until notifications are allowed for Cairn in system settings.'**
+  String get notificationsBlockedBody;
+
+  /// Button inside the clay notice on the Notifications settings screen; opens the OS per-app settings page.
+  ///
+  /// In en, this message translates to:
+  /// **'Open system settings'**
+  String get notificationsOpenSystemSettingsButton;
+
+  /// Title of the local push notification reminding the user a specific habit is due right now. Tapping it opens the camera for that exact occurrence.
+  ///
+  /// In en, this message translates to:
+  /// **'Cairn reminder'**
+  String get notificationReminderTitle;
+
+  /// Body of the habit-due reminder notification, naming the task.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to prove \"{taskTitle}\".'**
+  String notificationReminderBody(String taskTitle);
+
+  /// Title of the evening local push notification warning that a habit's streak will break tonight unless it's proven.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak at risk'**
+  String get notificationStreakWarningTitle;
+
+  /// Body of the streak-at-risk warning notification, naming the task and its current streak length in days.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {streakDays, plural, one{1-day} other{{streakDays}-day}} streak on \"{taskTitle}\" breaks tonight if it goes unproven.'**
+  String notificationStreakWarningBody(num streakDays, String taskTitle);
 }
 
 class _AppLocalizationsDelegate

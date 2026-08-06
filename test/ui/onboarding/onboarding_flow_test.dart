@@ -43,10 +43,10 @@ void main() {
   }
 
   testWidgets(
-      'the four steps run in order (Welcome -> How It Works -> Your Name -> '
-      'Verification) and Your Name cannot be skipped: Continue stays '
-      'disabled and no tap can reach Verification/AppShell until a name is '
-      'entered', (tester) async {
+      'the five steps run in order (Welcome -> How It Works -> Your Name -> '
+      'Verification -> Reminders) and Your Name cannot be skipped: Continue '
+      'stays disabled and no tap can reach Verification/AppShell until a '
+      'name is entered', (tester) async {
     final db = inMemoryDatabase();
     addTearDown(db.close);
 
@@ -93,7 +93,17 @@ void main() {
     await tester.tap(find.text('Allow camera'));
     await tester.pumpAndSettle();
 
+    // Step 5 (Reminders): skippable, and "Not now" completes onboarding
+    // without asking for the notification permission at all.
+    expect(find.text('Never miss a stone'), findsOneWidget);
+    expect(await SettingsRepository(db).isOnboardingComplete(), isFalse);
+
+    await tester.tap(find.text('Not now'));
+    await tester.pumpAndSettle();
+
     expect(await SettingsRepository(db).isOnboardingComplete(), isTrue);
+    // "Not now" writes nothing, so reminders stay at their default (off).
+    expect(await SettingsRepository(db).remindersEnabled(), isFalse);
     expect(find.byType(AppShell), findsOneWidget);
     expect(find.byType(OnboardingFlow), findsNothing);
     // Home renders the just-entered name, no manual refresh needed.

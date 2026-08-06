@@ -55,6 +55,8 @@ dependencies:
   permission_handler: ^11.3.1
   purchases_flutter: ^10.4.3
   url_launcher: ^6.3.1
+  flutter_local_notifications: ^20.1.0
+  flutter_timezone: ^5.1.0
 
 dev_dependencies:
   flutter_test:

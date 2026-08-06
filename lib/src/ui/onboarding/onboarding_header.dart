@@ -4,9 +4,10 @@ import 'package:flutter/widgets.dart';
 import '../theme/app_colors.dart';
 import '../widgets/glyphs.dart';
 
-/// Shared header for the four first-launch onboarding screens (Welcome /
-/// How It Works / Your Name / Verify - see `onboarding_flow.dart`'s doc
-/// comment): a back-chevron slot on the left, the centered
+/// Shared header for the five first-launch onboarding screens (Welcome /
+/// How It Works / Your Name / Verify / Reminders - see
+/// `onboarding_flow.dart`'s doc comment): a back-chevron slot on the left,
+/// the centered
 /// [OnboardingProgressDots] indicator, and a matching spacer on the right so
 /// the indicator stays visually centered. Extracted from what used to be the
 /// verification screen's own private `_ProgressHeader`/`_BackButton` (the
@@ -20,20 +21,20 @@ import '../widgets/glyphs.dart';
 /// same x position on every screen (this run's spec: "the indicator in the
 /// same position on each").
 ///
-/// [dotCount] defaults to 4 (Welcome/How It Works/Your Name/Verify, since
-/// the "Your name" step's addition): extended, rather than hardcoded to a
-/// second literal, exactly per that run's own spec ("find how it is
-/// currently driven and extend it rather than hardcoding a second one").
+/// [dotCount] defaults to 5 (Welcome/How It Works/Your Name/Verify/
+/// Reminders): extended each time a step is added, rather than hardcoded to
+/// a second literal per screen, so every step's indicator stays in agreement
+/// about how long the flow is.
 class OnboardingHeader extends StatelessWidget {
   const OnboardingHeader({
     super.key,
     required this.activeIndex,
     this.onBack,
-    this.dotCount = 4,
+    this.dotCount = 5,
   });
 
   /// Which dot is active (0 = Welcome, 1 = How It Works, 2 = Your Name,
-  /// 3 = Verify) - see [OnboardingProgressDots].
+  /// 3 = Verify, 4 = Reminders) - see [OnboardingProgressDots].
   final int activeIndex;
 
   /// Pops the onboarding flow's nested Navigator back to the previous step.
@@ -62,7 +63,7 @@ class OnboardingHeader extends StatelessWidget {
   }
 }
 
-/// The literal dot-row progress indicator (4 dots for the onboarding flow
+/// The literal dot-row progress indicator (5 dots for the onboarding flow
 /// today, see [OnboardingHeader.dotCount]): the [activeIndex]-th dot renders
 /// wide/sage, every other dot renders small/faded. Generalised over the
 /// original hand-rolled two-screen version (which only ever had one fixed

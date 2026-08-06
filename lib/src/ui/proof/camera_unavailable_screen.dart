@@ -280,8 +280,8 @@ class _CameraUnavailableScreenState extends ConsumerState<CameraUnavailableScree
               ),
               Center(
                 child: TextGhostButton(
-                  label: l10n.openCameraSettingsButton,
-                  onPressed: () => ref.read(appSettingsOpenerProvider).openCameraSettings(),
+                  label: l10n.openAppSettingsButton,
+                  onPressed: () => ref.read(appSettingsOpenerProvider).openAppSettings(),
                 ),
               ),
             ],

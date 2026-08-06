@@ -853,5 +853,55 @@ abstract final class AppColors {
   /// [cardGradientDark] an unlocked or selected tile uses.
   static const Color stoneStyleLockedTileLight = Color(0xFFEEE9DE);
   static const Color stoneStyleLockedTileDark = Color(0xFFE0D8C7);
+
+  // ---- Onboarding step 5, Reminders (Cairn Onboarding Notifications) -------
+
+  /// rgba(122,141,96,.14) - the sage disc behind the bell emblem, mirroring
+  /// the verification step's shield emblem at the same 78px size. Slightly
+  /// lighter than [sageChipBg]'s .16.
+  static const Color onboardingBellEmblemBg = Color(0x247A8D60);
+
+  /// rgba(178,124,92,.16) - the clay icon circle on the streak-warning point
+  /// card, the one card on either permission step that is not sage (it
+  /// matches the warning glyph inside it). Same hue as
+  /// [notificationsBlockedIconBg] at a different opacity.
+  static const Color onboardingClayPointIconBg = Color(0x29B27C5C);
+
+  // ---- On/off switch (Cairn Notifications.dc.html) -------------------------
+
+  /// `#7d9159` / `#5f7444` - the ON track's gradient (155deg). Sage, because
+  /// in this design language sage means "on / yours / live" (the design file's
+  /// own header comment says exactly that). Close to but distinct from
+  /// [accountSageButtonLight]/[accountSageButtonDark]'s `#7a8d60`/`#5f7a45`,
+  /// and kept as its own token per this file's precedent of preserving
+  /// literal per-source distinctions (see [trailWhereYouStartedText]).
+  static const Color switchTrackOnLight = Color(0xFF7D9159);
+  static const Color switchTrackOnDark = Color(0xFF5F7444);
+
+  /// rgba(120,108,88,.25) - the OFF track's flat recessed fill.
+  static const Color switchTrackOff = Color(0x40786C58);
+
+  /// `#f6f2e8` - the parchment knob, in both states. Distinct from
+  /// [richCream]'s `#f2efe6`.
+  static const Color switchKnob = Color(0xFFF6F2E8);
+
+  // ---- Notifications settings: "Android is blocking these" notice ---------
+
+  /// The clay notice's surface: rgba(178,124,92,.13) fill,
+  /// rgba(178,124,92,.28) border, rgba(178,124,92,.18) icon circle. The same
+  /// clay hue as [accountStatusBg]/[accountStatusBorder] at different
+  /// opacities, kept separate per this file's literal-per-source precedent.
+  static const Color notificationsBlockedBg = Color(0x21B27C5C);
+  static const Color notificationsBlockedBorder = Color(0x47B27C5C);
+  static const Color notificationsBlockedIconBg = Color(0x2EB27C5C);
+
+  /// `#8a4a28` / `#7a5540` - the notice's heading and body copy. Both are
+  /// darker/warmer than [clayHeading]'s `#8f5636` and [clayText]'s `#6b4a34`.
+  static const Color notificationsBlockedHeading = Color(0xFF8A4A28);
+  static const Color notificationsBlockedBody = Color(0xFF7A5540);
+
+  /// `#a19785` - the chevron on a settings row that opens a picker. A shade
+  /// lighter than [textFaint]'s `#8a8072`.
+  static const Color rowChevron = Color(0xFFA19785);
 }
 

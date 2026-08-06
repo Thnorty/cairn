@@ -61,7 +61,7 @@ void main() {
 
       final dots = tester.widget<OnboardingProgressDots>(find.byType(OnboardingProgressDots));
       expect(dots.activeIndex, 1);
-      expect(dots.count, 4);
+      expect(dots.count, 5);
       expect(find.byKey(const ValueKey('onboarding-back-button')), findsOneWidget);
     });
   });

@@ -25,6 +25,13 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // Required by flutter_local_notifications 10+ (Phase 6's habit
+        // reminders): it uses java.time to schedule notifications with
+        // backwards compatibility on older Android versions, and the plugin's
+        // AAR metadata fails the build outright without this - even for an
+        // app that schedules nothing. See the plugin's own "Gradle setup"
+        // README section.
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -39,6 +46,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Desugaring pushes the method count up; multidex is what the plugin's
+        // README pairs with it, and it is a no-op on the API 21+ devices this
+        // app targets (they support multidex natively).
+        multiDexEnabled = true
     }
 
     signingConfigs {
@@ -64,6 +75,14 @@ android {
             }
         }
     }
+}
+
+dependencies {
+    // The desugaring runtime enabled by `isCoreLibraryDesugaringEnabled`
+    // above. Version pinned to what flutter_local_notifications 20.x's README
+    // specifies; it has to be bumped alongside that plugin, not
+    // independently.
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 flutter {

@@ -12,6 +12,7 @@ import 'package:cairn/src/services/proof_verifier.dart';
 import 'package:cairn/src/ui/onboarding/onboarding_name_screen.dart';
 import 'package:cairn/src/ui/premium/premium_screen.dart';
 import 'package:cairn/src/ui/profile/profile_screen.dart';
+import 'package:cairn/src/ui/settings/notifications_screen.dart';
 import 'package:cairn/src/ui/stone_style/stone_style_screen.dart';
 import 'package:cairn/src/ui/trail/how_cairns_work_screen.dart';
 import 'package:drift/drift.dart' show Value;
@@ -338,8 +339,8 @@ void main() {
     });
 
     testProfileWidgets(
-        'renders the settings rows and tapping each is a safe no-op (no '
-        'snackbar, no navigation)', (tester) async {
+        'renders the settings rows and tapping the still-unwired ones is a '
+        'safe no-op (no snackbar, no navigation)', (tester) async {
       final db = await pumpProfile(
         tester,
         clock: FixedClock(d(2026, 7, 10)),
@@ -350,12 +351,6 @@ void main() {
       expect(find.text('Notifications'), findsOneWidget);
       expect(find.text('Privacy'), findsOneWidget);
       expect(find.text('Restore purchase'), findsOneWidget);
-
-      await tester.ensureVisible(find.text('Notifications'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Notifications'));
-      await tester.pumpAndSettle();
-      expect(find.text('Coming soon'), findsNothing);
 
       await tester.ensureVisible(find.text('Privacy'));
       await tester.pumpAndSettle();
@@ -368,6 +363,25 @@ void main() {
       await tester.tap(find.text('Restore purchase'));
       await tester.pumpAndSettle();
       expect(find.text('Coming soon'), findsNothing);
+    });
+
+    testProfileWidgets(
+        'tapping the Notifications row navigates to NotificationsScreen',
+        (tester) async {
+      final db = await pumpProfile(
+        tester,
+        clock: FixedClock(d(2026, 7, 10)),
+        seed: (db, taskRepo) async {},
+      );
+      addTearDown(db.close);
+
+      await tester.ensureVisible(find.text('Notifications'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Notifications'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(NotificationsScreen), findsOneWidget);
+      expect(find.text('Habit reminders'), findsOneWidget);
     });
 
     testProfileWidgets(

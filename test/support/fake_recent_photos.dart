@@ -43,7 +43,7 @@ class FakeAppSettingsOpener implements AppSettingsOpener {
   int openCalls = 0;
 
   @override
-  Future<void> openCameraSettings() async {
+  Future<void> openAppSettings() async {
     openCalls++;
   }
 }

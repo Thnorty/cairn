@@ -8,6 +8,16 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <!-- Cairn Camera Capture.dc.html's custom in-app camera (camera package). -->
     <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Habit reminders / streak warnings (flutter_local_notifications). Runtime
+         prompt on Android 13+ (API 33+); a no-op permission on older versions.
+         Already implied transitively by the plugin's own manifest, but declared
+         here too so it's visible as an intentional part of THIS app rather than
+         an implicit merge. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- So a scheduled reminder/streak-warning survives a device reboot instead
+         of silently vanishing until the app is next opened (see the boot
+         receiver declared below, between <application> tags). -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- required="false": a device/emulator with no camera hardware must
          still be able to install the app, since the gallery path is always
          available as a fallback for every task (see CameraCaptureScreen's
@@ -39,6 +49,20 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- flutter_local_notifications: the receiver that actually fires a
+             scheduled notification (required for zonedSchedule to work at all),
+             plus the boot receiver that reschedules everything after a reboot/
+             app update (RECEIVE_BOOT_COMPLETED above is what lets Android wake
+             it). Both are exported="false": only the OS/this app can invoke them. -->
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"/>
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

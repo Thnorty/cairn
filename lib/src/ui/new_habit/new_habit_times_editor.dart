@@ -2,22 +2,12 @@ import 'package:flutter/material.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 
 import '../../l10n/date_number_formatting.dart';
+import '../../models/occurrence.dart' show timeOfDayFromHHmm;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/card_surface.dart';
 import '../widgets/plus_glyph.dart';
 import '../widgets/status_chip.dart' show CloseGlyph;
-
-/// Builds a "HH:mm" 24-hour string into a throwaway [DateTime] purely so
-/// [formatTimeOfDay] (which formats a `DateTime`'s time-of-day component)
-/// can render it in the locale's preferred 12/24-hour convention. Only the
-/// hour/minute are meaningful; the date fields are arbitrary and unused -
-/// the same technique `home_occurrence_card.dart`'s private `_timeOfDay`
-/// helper uses for the same reason.
-DateTime timeOfDayFromHHmm(String hhmm) {
-  final parts = hhmm.split(':');
-  return DateTime(2000, 1, 1, int.parse(parts[0]), int.parse(parts[1]));
-}
 
 /// Adds [hhmm] to [times], deduped and kept sorted ascending. Lexical
 /// sorting of zero-padded 24-hour "HH:mm" strings is equivalent to

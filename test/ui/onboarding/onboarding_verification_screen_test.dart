@@ -26,7 +26,7 @@ class _FakeCameraPermissionRequester implements CameraPermissionRequester {
 }
 
 /// Widget tests for the onboarding verification screen
-/// (`Cairn Onboarding Verification.dc.html`, step 4 of 4), exercised
+/// (`Cairn Onboarding Verification.dc.html`, step 4 of 5), exercised
 /// through the real [OnboardingFlow] (see
 /// `onboarding_welcome_screen_test.dart`'s doc comment for why), reached by
 /// tapping "Start climbing" on step 1, "Continue" on step 2 (How It Works),
@@ -72,8 +72,8 @@ void main() {
   group('content', () {
     testWidgets(
         'renders the title, subhead, all three point cards, the permission '
-        'primer, the Allow camera button, the privacy link, the 4-dot '
-        'indicator with dot 3 active, and the back-chevron', (tester) async {
+        'primer, the Allow camera button, the privacy link, the 5-dot '
+        'indicator with dot 4 active, and the back-chevron', (tester) async {
       await pumpVerification(tester);
 
       expect(find.text('How verification works'), findsOneWidget);
@@ -109,7 +109,7 @@ void main() {
       expect(find.byKey(const ValueKey('onboarding-progress-dots')), findsOneWidget);
       final dots = tester.widget<OnboardingProgressDots>(find.byType(OnboardingProgressDots));
       expect(dots.activeIndex, 3);
-      expect(dots.count, 4);
+      expect(dots.count, 5);
       expect(find.byKey(const ValueKey('onboarding-back-button')), findsOneWidget);
     });
   });
@@ -128,8 +128,8 @@ void main() {
 
   group('allow camera', () {
     testWidgets(
-        'calls the camera-permission requester and marks onboarding complete',
-        (tester) async {
+        'calls the camera-permission requester and advances to the Reminders '
+        'step, which is now what completes onboarding', (tester) async {
       final (db, fakeRequester) = await pumpVerification(tester);
 
       expect(fakeRequester.callCount, 0);
@@ -139,7 +139,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(fakeRequester.callCount, 1);
-      expect(await SettingsRepository(db).isOnboardingComplete(), isTrue);
+      expect(find.text('Never miss a stone'), findsOneWidget);
+      // Deliberately still false: the camera ask no longer ends the flow.
+      expect(await SettingsRepository(db).isOnboardingComplete(), isFalse);
     });
   });
 

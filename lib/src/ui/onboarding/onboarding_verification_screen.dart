@@ -12,19 +12,19 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
-import '../widgets/card_surface.dart';
 import '../widgets/message_snack_bar.dart';
 import 'onboarding_header.dart';
+import 'onboarding_point_card.dart';
 
-/// `Cairn Onboarding Verification.dc.html`: step 4 of 4 (the last) in the
-/// first-launch onboarding flow, reached from the "Your name" step's
-/// Continue button - see [OnboardingFlow]'s doc comment for how all four
-/// steps are hosted on one nested `Navigator`.
+/// `Cairn Onboarding Verification.dc.html`: step 4 of 5 in the first-launch
+/// onboarding flow, reached from the "Your name" step's Continue button and
+/// leading on to the Reminders step - see [OnboardingFlow]'s doc comment for
+/// how all five steps are hosted on one nested `Navigator`.
 class OnboardingVerificationScreen extends ConsumerStatefulWidget {
   const OnboardingVerificationScreen({
     super.key,
     required this.onBack,
-    required this.onAllowCameraComplete,
+    required this.onCameraPermissionResolved,
   });
 
   /// Pops back to the welcome screen on [OnboardingFlow]'s nested Navigator.
@@ -33,8 +33,8 @@ class OnboardingVerificationScreen extends ConsumerStatefulWidget {
   /// Called after the OS camera-permission prompt resolves (allowed OR
   /// denied - see [CameraPermissionRequester]'s doc comment on why this
   /// screen never branches on the result). [OnboardingFlow] wires this to
-  /// marking onboarding complete and entering the app.
-  final VoidCallback onAllowCameraComplete;
+  /// advancing to the Reminders step, which is what completes onboarding.
+  final VoidCallback onCameraPermissionResolved;
 
   @override
   ConsumerState<OnboardingVerificationScreen> createState() =>
@@ -50,7 +50,7 @@ class _OnboardingVerificationScreenState
     setState(() => _busy = true);
     try {
       await ref.read(cameraPermissionRequesterProvider).request();
-      widget.onAllowCameraComplete();
+      widget.onCameraPermissionResolved();
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -98,19 +98,19 @@ class _OnboardingVerificationScreenState
                     style: AppTextStyles.emptyStateBody,
                   ),
                   const SizedBox(height: 24),
-                  _PointCard(
+                  OnboardingPointCard(
                     icon: const SealCheckmarkIcon(size: 17, color: AppColors.sageText),
                     title: l10n.onboardingPoint1Title,
                     body: l10n.onboardingPoint1Body,
                   ),
                   const SizedBox(height: 11),
-                  _PointCard(
+                  OnboardingPointCard(
                     icon: const _PointGlyph(shape: _PointGlyphShape.lock),
                     title: l10n.onboardingPoint2Title,
                     body: l10n.onboardingPoint2Body,
                   ),
                   const SizedBox(height: 11),
-                  _PointCard(
+                  OnboardingPointCard(
                     icon: const _PointGlyph(shape: _PointGlyphShape.cloud),
                     title: l10n.onboardingPoint3Title,
                     body: l10n.onboardingPoint3Body,
@@ -332,45 +332,6 @@ class _CameraBadgePainter extends CustomPainter {
 // ---------------------------------------------------------------------------
 // Point cards
 // ---------------------------------------------------------------------------
-
-class _PointCard extends StatelessWidget {
-  const _PointCard({required this.icon, required this.title, required this.body});
-
-  final Widget icon;
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    return ParchmentPill(
-      radius: 22,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: const BoxDecoration(color: AppColors.sageChipBg, shape: BoxShape.circle),
-            alignment: Alignment.center,
-            child: icon,
-          ),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(title, style: AppTextStyles.onboardingPointTitle),
-                const SizedBox(height: 2),
-                Text(body, style: AppTextStyles.onboardingPointBody),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 enum _PointGlyphShape { lock, cloud }
 

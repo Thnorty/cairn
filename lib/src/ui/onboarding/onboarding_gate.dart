@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers.dart';
 import '../shell/app_shell.dart';
+import '../shell/notification_tap_listener.dart';
 import '../theme/app_colors.dart';
 import 'onboarding_flow.dart';
 
@@ -21,12 +22,23 @@ class OnboardingGate extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final onboardingComplete = ref.watch(onboardingCompleteProvider);
     return onboardingComplete.when(
-      data: (done) => done ? const AppShell() : const OnboardingFlow(),
+      data: (done) => done ? const _Shell() : const OnboardingFlow(),
       loading: () => const ColoredBox(
         color: AppColors.screenBackground,
         child: SizedBox.expand(),
       ),
-      error: (_, __) => const AppShell(),
+      error: (_, __) => const _Shell(),
     );
   }
+}
+
+/// [AppShell] plus the notification-tap route, which is deliberately mounted
+/// only here on the post-onboarding branch - see [NotificationTapListener]'s
+/// own doc comment.
+class _Shell extends StatelessWidget {
+  const _Shell();
+
+  @override
+  Widget build(BuildContext context) =>
+      const NotificationTapListener(child: AppShell());
 }

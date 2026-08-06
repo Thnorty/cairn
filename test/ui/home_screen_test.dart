@@ -637,9 +637,10 @@ void main() {
 /// one line of Stone Styles wiring (watch `effectiveStoneStyleProvider`,
 /// install a `StoneStyleScope` fed from it) around a real screen - without
 /// the entangled `proofRetryTriggerProvider`/`authBootstrapProvider`/
-/// `syncTriggerProvider` watches `CairnApp` itself also carries, which touch
-/// platform channels `CairnApp` is deliberately never pumped directly in
-/// tests to avoid (see its own doc comment).
+/// `syncTriggerProvider`/`notificationTriggerProvider` watches `CairnApp`
+/// itself also carries, which touch platform channels `CairnApp` is
+/// deliberately never pumped directly in tests to avoid (see its own doc
+/// comment).
 class _ThemedHomeAppStandin extends ConsumerWidget {
   const _ThemedHomeAppStandin();
 

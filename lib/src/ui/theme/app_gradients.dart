@@ -210,6 +210,21 @@ abstract final class AppGradients {
     );
   }
 
+  /// [CairnSwitch]'s ON track, 155deg (see [AppColors.switchTrackOnLight]/
+  /// [AppColors.switchTrackOnDark]) - the same angle as [sageButton] but a
+  /// literally different sage pair, per that pair's own doc comment.
+  static LinearGradient get switchTrackOn {
+    final (begin, end) = cssGradientAlignment(155);
+    return LinearGradient(
+      begin: begin,
+      end: end,
+      colors: const [
+        AppColors.switchTrackOnLight,
+        AppColors.switchTrackOnDark,
+      ],
+    );
+  }
+
   /// Trail screen's scrollable-body background wash, 180deg (top to
   /// bottom) `#e9e1d3 0% -> #e7e4d4 30% -> #e8e6d6 60% -> #e6ddcd 100%`.
   static const LinearGradient trailBackground = LinearGradient(

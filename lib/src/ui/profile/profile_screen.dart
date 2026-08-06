@@ -14,6 +14,7 @@ import '../account/account_flow.dart';
 import '../account/signed_in_account_row.dart';
 import '../onboarding/onboarding_name_screen.dart';
 import '../premium/premium_screen.dart';
+import '../settings/notifications_screen.dart';
 import '../stone_style/stone_style_screen.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
@@ -25,6 +26,7 @@ import '../widgets/app_scaffold.dart';
 import '../widgets/glyphs.dart';
 import '../widgets/message_snack_bar.dart';
 import '../widgets/screen_header.dart';
+import '../widgets/settings_panel.dart';
 import '../widgets/tab_icons.dart';
 
 /// The Profile ("You") screen (`Cairn Profile.dc.html`): the user's rank
@@ -433,7 +435,7 @@ class _RankLadderPanel extends StatelessWidget {
     final tiers = RankTier.values;
     final currentIndex = tiers.indexOf(rank.tier);
 
-    return _PanelSurface(
+    return SettingsPanel(
       child: Column(
         children: [
           for (var i = 0; i < tiers.length; i++)
@@ -644,53 +646,6 @@ class _TierNode extends StatelessWidget {
   }
 }
 
-class _HairlineDivider extends StatelessWidget {
-  const _HairlineDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(height: 1, child: ColoredBox(color: AppColors.hairlineDivider));
-  }
-}
-
-/// The gradient/border/top-highlight/radius recipe shared by the rank
-/// ladder and the settings list - a uniform-radius parchment panel distinct
-/// from [CardSurface]'s deliberately irregular per-corner shape (neither of
-/// these two panels uses that shape in the source file).
-class _PanelSurface extends StatelessWidget {
-  const _PanelSurface({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(AppRadii.listPanel);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: AppGradients.card,
-        borderRadius: radius,
-        border: Border.all(color: AppColors.panelBorder),
-      ),
-      child: ClipRRect(
-        borderRadius: radius,
-        child: Stack(
-          children: [
-            const Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: SizedBox(height: 1.5, child: ColoredBox(color: AppColors.panelTopHighlight)),
-            ),
-            Padding(
-              padding: const EdgeInsetsDirectional.symmetric(horizontal: 18, vertical: 4),
-              child: child,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Account status ("Climbing anonymously")
@@ -919,48 +874,23 @@ class _SettingsSection extends ConsumerWidget {
       children: [
         Text(l10n.profileSettingsSectionLabel, style: AppTextStyles.formSectionLabel),
         const SizedBox(height: 11),
-        _PanelSurface(
+        SettingsPanel(
           child: Column(
             children: [
+              // Row order is the one `Cairn Profile.dc.html` now shows, and
+              // is deliberate rather than the append-as-built order this
+              // list previously grew in: the rows you change about yourself
+              // (notifications, name, stone style) come first, the one you
+              // read (how cairns work) next, and the two you almost never
+              // touch (privacy, restore purchase) last.
+              // Phase 6's notification feature: opens NotificationsScreen
+              // (`Cairn Notifications.dc.html`).
               _SettingsRow(
                 glyph: _GlyphShape.bell,
                 label: l10n.profileNotificationsRow,
-                onTap: _noOp,
+                onTap: () => openNotificationsScreen(context),
               ),
-              const _HairlineDivider(),
-              _SettingsRow(
-                glyph: _GlyphShape.shield,
-                label: l10n.profilePrivacyRow,
-                onTap: _noOp,
-              ),
-              const _HairlineDivider(),
-              _SettingsRow(
-                glyph: _GlyphShape.restore,
-                label: l10n.profileRestorePurchaseRow,
-                onTap: () => _handleRestore(context, ref),
-              ),
-              const _HairlineDivider(),
-              // Moved here from the Trail screen header's "?" info button
-              // per this consistency pass (see trail_screen.dart's own doc
-              // comment on the removal) - same HowCairnsWorkScreen
-              // destination, real navigation rather than a no-op.
-              _SettingsRow(
-                glyph: _GlyphShape.info,
-                label: l10n.profileHowCairnsWorkRow,
-                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
-                  builder: (_) => const HowCairnsWorkScreen(),
-                )),
-              ),
-              const _HairlineDivider(),
-              // Phase 5's Stone Styles feature: opens StoneStyleScreen
-              // (Cairn Stone Styles.dc.html), the last (newest) row per this
-              // list's existing append-in-order precedent.
-              _SettingsRow(
-                glyph: _GlyphShape.stones,
-                label: l10n.profileStoneStyleRow,
-                onTap: () => openStoneStyleScreen(context),
-              ),
-              const _HairlineDivider(),
+              const HairlineDivider(),
               // The onboarding "Your name" screen's edit variant (see
               // OnboardingNameScreen's own doc comment): close-X, no page
               // dots, "Save", pre-filled with [currentName] (the *raw*
@@ -977,6 +907,38 @@ class _SettingsSection extends ConsumerWidget {
                     onSubmit: () => Navigator.of(context).pop(),
                   ),
                 )),
+              ),
+              const HairlineDivider(),
+              // Phase 5's Stone Styles feature: opens StoneStyleScreen
+              // (`Cairn Stone Styles.dc.html`).
+              _SettingsRow(
+                glyph: _GlyphShape.stones,
+                label: l10n.profileStoneStyleRow,
+                onTap: () => openStoneStyleScreen(context),
+              ),
+              const HairlineDivider(),
+              // Moved here from the Trail screen header's "?" info button
+              // per an earlier consistency pass (see trail_screen.dart's own
+              // doc comment on the removal) - same HowCairnsWorkScreen
+              // destination, real navigation rather than a no-op.
+              _SettingsRow(
+                glyph: _GlyphShape.info,
+                label: l10n.profileHowCairnsWorkRow,
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                  builder: (_) => const HowCairnsWorkScreen(),
+                )),
+              ),
+              const HairlineDivider(),
+              _SettingsRow(
+                glyph: _GlyphShape.shield,
+                label: l10n.profilePrivacyRow,
+                onTap: _noOp,
+              ),
+              const HairlineDivider(),
+              _SettingsRow(
+                glyph: _GlyphShape.restore,
+                label: l10n.profileRestorePurchaseRow,
+                onTap: () => _handleRestore(context, ref),
               ),
             ],
           ),

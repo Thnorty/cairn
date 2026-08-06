@@ -42,12 +42,19 @@ Future<void> main() async {
 }
 
 /// App root. A [ConsumerWidget] so it can watch [proofRetryTriggerProvider],
-/// [authBootstrapProvider], and [syncTriggerProvider]: all three are lazy
-/// [Provider]s, so nothing constructs the pending-verification retry
-/// trigger or the sync trigger (and starts their lifecycle
-/// listener/connectivity subscriptions), nor kicks off anonymous sign-in and
-/// the user_id backfill, until something watches them. The app root is the
-/// one place guaranteed to build for the whole lifetime of the running app.
+/// [authBootstrapProvider], [syncTriggerProvider], and
+/// [notificationTriggerProvider]: all four are lazy [Provider]s, so nothing
+/// constructs the pending-verification retry trigger, the sync trigger, or
+/// the notification-replan trigger (and starts their lifecycle
+/// listener/connectivity/database subscriptions), nor kicks off anonymous
+/// sign-in and the user_id backfill, until something watches them. The app
+/// root is the one place guaranteed to build for the whole lifetime of the
+/// running app.
+///
+/// The notification-tap route is deliberately NOT wired here: it hangs off
+/// [OnboardingGate]'s post-onboarding branch instead, so a tap can never
+/// drop a first-launch user into the camera mid-onboarding (see
+/// [NotificationTapListener]).
 ///
 /// Deliberately not wired into `test/widget_test.dart`: that test pumps
 /// `MaterialApp(home: DebugScreen())` directly rather than [CairnApp], so
@@ -68,6 +75,7 @@ class CairnApp extends ConsumerWidget {
     ref.watch(proofRetryTriggerProvider);
     ref.watch(authBootstrapProvider);
     ref.watch(syncTriggerProvider);
+    ref.watch(notificationTriggerProvider);
     final stoneStyle = ref.watch(effectiveStoneStyleProvider);
     return StoneStyleScope(
       style: stoneStyle,

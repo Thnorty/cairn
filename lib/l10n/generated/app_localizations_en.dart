@@ -375,7 +375,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chooseFromGalleryButton => 'Choose from gallery';
 
   @override
-  String get openCameraSettingsButton => 'Open camera settings';
+  String get openAppSettingsButton => 'Open camera settings';
 
   @override
   String get newHabitScreenTitle => 'New habit';
@@ -1345,4 +1345,90 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get stoneStyleEntitledFooterCaption =>
       'Applies to every cairn, everywhere.';
+
+  @override
+  String get onboardingNotificationsTitle => 'Never miss a stone';
+
+  @override
+  String get onboardingNotificationsSubhead =>
+      'Two reminders, and nothing else. You can change or silence them any time.';
+
+  @override
+  String get onboardingNotificationsPoint1Title => 'When a habit is due';
+
+  @override
+  String get onboardingNotificationsPoint1Body =>
+      'At the times you set, or 9:00 if you set none. Tap it to go straight to the camera.';
+
+  @override
+  String get onboardingNotificationsPoint2Title => 'Before a streak breaks';
+
+  @override
+  String get onboardingNotificationsPoint2Body =>
+      'One quiet warning in the evening, while there is still time to prove it.';
+
+  @override
+  String get onboardingAllowNotificationsButton => 'Allow notifications';
+
+  @override
+  String get onboardingNotNowButton => 'Not now';
+
+  @override
+  String get notificationsScreenTitle => 'Notifications';
+
+  @override
+  String get notificationsMasterRowTitle => 'Habit reminders';
+
+  @override
+  String get notificationsMasterRowSubtitle => 'A nudge when a habit is due.';
+
+  @override
+  String get notificationsDefaultTimeRowTitle => 'Default time';
+
+  @override
+  String get notificationsDefaultTimeRowSubtitle =>
+      'For habits with no set time of their own.';
+
+  @override
+  String get notificationsStreakRowTitle => 'Streak warnings';
+
+  @override
+  String get notificationsStreakRowSubtitle =>
+      'One evening heads-up before a streak breaks.';
+
+  @override
+  String get notificationsFooterCaption =>
+      'Habits with their own times are reminded at those times. Change them on the habit itself.';
+
+  @override
+  String get notificationsBlockedTitle => 'Android is blocking these';
+
+  @override
+  String get notificationsBlockedBody =>
+      'Your choices below are saved, but nothing can be delivered until notifications are allowed for Cairn in system settings.';
+
+  @override
+  String get notificationsOpenSystemSettingsButton => 'Open system settings';
+
+  @override
+  String get notificationReminderTitle => 'Cairn reminder';
+
+  @override
+  String notificationReminderBody(String taskTitle) {
+    return 'Time to prove \"$taskTitle\".';
+  }
+
+  @override
+  String get notificationStreakWarningTitle => 'Streak at risk';
+
+  @override
+  String notificationStreakWarningBody(num streakDays, String taskTitle) {
+    String _temp0 = intl.Intl.pluralLogic(
+      streakDays,
+      locale: localeName,
+      other: '$streakDays-day',
+      one: '1-day',
+    );
+    return 'Your $_temp0 streak on \"$taskTitle\" breaks tonight if it goes unproven.';
+  }
 }

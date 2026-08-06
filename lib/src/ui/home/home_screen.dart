@@ -5,16 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../l10n/date_number_formatting.dart';
 import '../../providers.dart';
-import '../../repo/completion_repository.dart';
 import '../../services/home_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../new_habit/new_habit_screen.dart';
-import '../proof/camera_capture_screen.dart';
-import '../proof/proof_outcome_routing.dart';
+import '../proof/proof_entry.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
-import '../widgets/message_snack_bar.dart';
 import '../widgets/plus_glyph.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/wordmark_glyph.dart';
@@ -57,80 +54,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// occurrence while the first attempt is still running.
   final Set<String> _provingKeys = {};
 
-  /// Tapping "Prove it" always runs [CompletionRepository.precheckProof]
-  /// *first*, so a doomed attempt (daily cap, attempts exhausted, or any of
-  /// the other guard-chain rejections) never opens the camera - see this
-  /// run's spec ("the state machine") and `proof_outcome_routing.dart`'s doc
-  /// comment. Only a clear precheck (`null`) opens [CameraCaptureScreen];
-  /// everything from there on (capture, verify, and routing to the outcome
-  /// screens) happens on that screen, not here.
+  /// Tapping "Prove it" hands straight to [startProofFlow], which owns the
+  /// precheck-then-camera sequence shared with the notification-tap route
+  /// (`proof_entry.dart`). All this adds is the per-occurrence re-entrancy
+  /// guard.
   Future<void> _handleProveIt(HomeOccurrenceCard card) async {
     final key = '${card.taskId}#${card.slot}';
     if (_provingKeys.contains(key)) return;
     setState(() => _provingKeys.add(key));
 
     try {
-      final clock = ref.read(clockProvider);
-      final today = clock.today();
-      final completionRepo = ref.read(completionRepositoryProvider);
-      final rejection = await completionRepo.precheckProof(
-        taskId: card.taskId,
-        occurrenceDate: today,
-        slot: card.slot,
-      );
-      if (!mounted) return;
-
-      if (rejection == null) {
-        await Navigator.of(context).push(MaterialPageRoute<void>(
-          builder: (_) => CameraCaptureScreen(
-            taskId: card.taskId,
-            taskTitle: card.taskTitle,
-            occurrenceDate: today,
-            slot: card.slot,
-          ),
-        ));
-        return;
-      }
-
-      // Daily-cap/attempts-exhausted precheck rejections route to the exact
-      // same outcome screens a post-submit rejection would (shared with
-      // CameraCaptureScreen via routeToProofOutcome, so both paths agree);
-      // the remaining rejection types have no dedicated screen by design
-      // (they're not reachable from a correctly-behaving UI) and fall back
-      // to a minimal snackbar below.
-      final handled = await routeToProofOutcome(
+      await startProofFlow(
         context,
         ref,
-        result: rejection,
         taskId: card.taskId,
         taskTitle: card.taskTitle,
-        occurrenceDate: today,
+        occurrenceDate: ref.read(clockProvider).today(),
         slot: card.slot,
       );
-      if (!handled && mounted) {
-        _showUnreachableRejection(rejection);
-      }
     } finally {
       if (mounted) setState(() => _provingKeys.remove(key));
     }
-  }
-
-  /// Minimal fallback for the handful of rejections
-  /// [routeToProofOutcome] deliberately builds no screen for (back-fill,
-  /// not-scheduled, task-not-found, already-completed): none of these are
-  /// reachable from a correctly-behaving UI (precheckProof already blocked
-  /// the tap that could cause them), so this stays a plain, untranslated
-  /// safety net rather than polished product copy - the same scope decision
-  /// the Phase 1 debug screen already makes for these exact rejection types.
-  void _showUnreachableRejection(CompleteOccurrenceResult result) {
-    final message = switch (result) {
-      CompletionRejectedBackfill() => 'Cannot complete a past date',
-      CompletionRejectedNotScheduled() => 'Not scheduled for this slot today',
-      CompletionRejectedTaskNotFound() => 'Task not found',
-      CompletionRejectedAlreadyCompleted() => 'Already completed',
-      _ => 'Something went wrong',
-    };
-    context.showMessageSnackBar(message);
   }
 
   @override

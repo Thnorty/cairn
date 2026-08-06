@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+</style>
+</helmet>
+
+<!--
+  Notifications settings. Reached from Profile > SETTINGS > Notifications
+  (the first row, which until now was a no-op).
+
+  Three phones: reminders ON, reminders OFF, and the OS-permission-denied
+  state.
+
+  THE SWITCH IS NEW. Nothing in this app or the design corpus had an on/off
+  switch before (New Habit's monthly-mode control is a segmented pill, a
+  different thing). It is defined here as a shared component: a 46x28 track,
+  radius 14, with a 22px parchment knob. OFF is a recessed muted track with
+  the same inset shadow the input fields use; ON is the sage button gradient.
+  Sage because in this design language sage means "on / yours / live".
+
+  WHAT THE SCREEN CONTROLS. A master switch, the default reminder time for
+  habits that have no `due_times` of their own, and a separate switch for
+  streak warnings. Per-habit times are NOT set here: they already come from
+  each task's own `due_times`, set in New Habit, and duplicating that control
+  in two places would let them disagree. The caption under the default-time
+  row says so, so the absence reads as deliberate rather than missing.
+
+  THE DEFAULT TIME ROW IS DISABLED (dimmed, non-tappable) when the master
+  switch is off, because it controls nothing in that state. The streak switch
+  likewise. Only the master switch stays live, so there is always exactly one
+  obvious way back on.
+
+  THE DENIED STATE is the important one and the easiest to get wrong. When
+  the OS permission is refused, the in-app switches are NOT quietly flipped
+  off and left looking broken: the app's own preference is remembered and
+  shown, but the whole panel is capped by a clay notice explaining that
+  Android is blocking delivery, with a button into system settings. That
+  distinction matters because "you turned this off" and "Android turned this
+  off" are different problems with different fixes, and a switch that snaps
+  back when tapped explains neither.
+-->
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;gap:30px;flex-wrap:wrap;padding:44px 24px;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 80% at 50% -10%, rgba(140,120,95,.14), transparent 55%), repeating-radial-gradient(circle at 76% 8%, transparent 0 30px, rgba(90,78,58,.045) 30px 31px);">
+
+  <!-- ================= ON ================= -->
+  <div>
+    <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a8072;margin-bottom:12px;text-align:center;">Reminders on</div>
+    <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+      <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;">
+
+        <div style="padding:16px 26px 0;">
+          <span style="width:38px;height:38px;border-radius:50%;background:rgba(120,108,88,.13);display:flex;align-items:center;justify-content:center;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5f584c" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </span>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;padding:14px 26px 12px;">
+          <div style="font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#9c917e;margin-bottom:5px;">Settings</div>
+          <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:30px;color:#2c2924;line-height:1;">Notifications</div>
+
+          <div style="margin-top:24px;background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:26px;padding:4px 18px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+
+            <!-- master -->
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 0;">
+              <div style="flex:1;">
+                <div style="font-size:15px;color:#2c2924;font-weight:500;">Habit reminders</div>
+                <div style="font-size:12px;color:#8a8072;margin-top:2px;">A nudge when a habit is due.</div>
+              </div>
+              <span style="width:46px;height:28px;border-radius:14px;background:linear-gradient(155deg,#7d9159,#5f7444);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 5px -2px rgba(70,88,50,.5);display:flex;align-items:center;justify-content:flex-end;padding:0 3px;flex-shrink:0;">
+                <span style="width:22px;height:22px;border-radius:50%;background:#f6f2e8;box-shadow:0 1px 3px rgba(45,38,26,.35);"></span>
+              </span>
+            </div>
+
+            <div style="height:1px;background:rgba(120,108,88,.14);"></div>
+
+            <!-- default time -->
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 0;">
+              <div style="flex:1;">
+                <div style="font-size:15px;color:#2c2924;font-weight:500;">Default time</div>
+                <div style="font-size:12px;color:#8a8072;margin-top:2px;">For habits with no set time of their own.</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;">
+                <span style="font-family:'Zilla Slab',serif;font-weight:600;font-size:17px;color:#2c2924;">09:00</span>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#a19785" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+              </div>
+            </div>
+
+            <div style="height:1px;background:rgba(120,108,88,.14);"></div>
+
+            <!-- streak warnings -->
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 0;">
+              <div style="flex:1;">
+                <div style="font-size:15px;color:#2c2924;font-weight:500;">Streak warnings</div>
+                <div style="font-size:12px;color:#8a8072;margin-top:2px;">One evening heads-up before a streak breaks.</div>
+              </div>
+              <span style="width:46px;height:28px;border-radius:14px;background:linear-gradient(155deg,#7d9159,#5f7444);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 5px -2px rgba(70,88,50,.5);display:flex;align-items:center;justify-content:flex-end;padding:0 3px;flex-shrink:0;">
+                <span style="width:22px;height:22px;border-radius:50%;background:#f6f2e8;box-shadow:0 1px 3px rgba(45,38,26,.35);"></span>
+              </span>
+            </div>
+
+          </div>
+
+          <div style="font-size:11.5px;color:#9c917e;margin-top:12px;line-height:1.5;padding:0 4px;">Habits with their own times are reminded at those times. Change them on the habit itself.</div>
+        </div>
+
+        <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= OFF ================= -->
+  <div>
+    <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a8072;margin-bottom:12px;text-align:center;">Reminders off</div>
+    <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+      <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;">
+
+        <div style="padding:16px 26px 0;">
+          <span style="width:38px;height:38px;border-radius:50%;background:rgba(120,108,88,.13);display:flex;align-items:center;justify-content:center;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5f584c" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </span>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;padding:14px 26px 12px;">
+          <div style="font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#9c917e;margin-bottom:5px;">Settings</div>
+          <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:30px;color:#2c2924;line-height:1;">Notifications</div>
+
+          <div style="margin-top:24px;background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:26px;padding:4px 18px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 0;">
+              <div style="flex:1;">
+                <div style="font-size:15px;color:#2c2924;font-weight:500;">Habit reminders</div>
+                <div style="font-size:12px;color:#8a8072;margin-top:2px;">A nudge when a habit is due.</div>
+              </div>
+              <span style="width:46px;height:28px;border-radius:14px;background:rgba(120,108,88,.25);box-shadow:inset 0 2px 4px rgba(80,66,46,.18);display:flex;align-items:center;justify-content:flex-start;padding:0 3px;flex-shrink:0;">
+                <span style="width:22px;height:22px;border-radius:50%;background:#f6f2e8;box-shadow:0 1px 3px rgba(45,38,26,.28);"></span>
+              </span>
+            </div>
+
+            <div style="height:1px;background:rgba(120,108,88,.14);"></div>
+
+            <!-- dimmed: controls nothing while the master is off -->
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 0;opacity:.42;">
+              <div style="flex:1;">
+                <div style="font-size:15px;color:#2c2924;font-weight:500;">Default time</div>
+                <div style="font-size:12px;color:#8a8072;margin-top:2px;">For habits with no set time of their own.</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;">
+                <span style="font-family:'Zilla Slab',serif;font-weight:600;font-size:17px;color:#2c2924;">09:00</span>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#a19785" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+              </div>
+            </div>
+
+            <div style="height:1px;background:rgba(120,108,88,.14);"></div>
+
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 0;opacity:.42;">
+              <div style="flex:1;">
+                <div style="font-size:15px;color:#2c2924;font-weight:500;">Streak warnings</div>
+                <div style="font-size:12px;color:#8a8072;margin-top:2px;">One evening heads-up before a streak breaks.</div>
+              </div>
+              <span style="width:46px;height:28px;border-radius:14px;background:rgba(120,108,88,.25);box-shadow:inset 0 2px 4px rgba(80,66,46,.18);display:flex;align-items:center;justify-content:flex-start;padding:0 3px;flex-shrink:0;">
+                <span style="width:22px;height:22px;border-radius:50%;background:#f6f2e8;box-shadow:0 1px 3px rgba(45,38,26,.28);"></span>
+              </span>
+            </div>
+
+          </div>
+
+          <div style="font-size:11.5px;color:#9c917e;margin-top:12px;line-height:1.5;padding:0 4px;">Habits with their own times are reminded at those times. Change them on the habit itself.</div>
+        </div>
+
+        <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= OS PERMISSION DENIED ================= -->
+  <div>
+    <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a8072;margin-bottom:12px;text-align:center;">Blocked by Android</div>
+    <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+      <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;">
+
+        <div style="padding:16px 26px 0;">
+          <span style="width:38px;height:38px;border-radius:50%;background:rgba(120,108,88,.13);display:flex;align-items:center;justify-content:center;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5f584c" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </span>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;padding:14px 26px 12px;">
+          <div style="font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#9c917e;margin-bottom:5px;">Settings</div>
+          <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:30px;color:#2c2924;line-height:1;">Notifications</div>
+
+          <!-- clay notice: Android is blocking, not the app -->
+          <div style="margin-top:22px;background:rgba(178,124,92,.13);border:1px solid rgba(178,124,92,.28);border-radius:22px;padding:16px;">
+            <div style="display:flex;align-items:flex-start;gap:12px;">
+              <span style="width:32px;height:32px;flex-shrink:0;border-radius:50%;background:rgba(178,124,92,.18);display:flex;align-items:center;justify-content:center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#a6603d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M4 4l16 16"></path></svg></span>
+              <div>
+                <div style="font-size:14.5px;font-weight:600;color:#8a4a28;">Android is blocking these</div>
+                <div style="font-size:12.5px;color:#7a5540;margin-top:3px;line-height:1.45;">Your choices below are saved, but nothing can be delivered until notifications are allowed for Cairn in system settings.</div>
+              </div>
+            </div>
+            <div style="margin-top:13px;text-align:center;background:linear-gradient(155deg,#c07a54,#a6603d);color:#f6efe6;padding:13px;border-radius:22px;font-weight:600;font-size:14.5px;box-shadow:0 8px 16px -8px rgba(140,74,42,.55),inset 0 1px 0 rgba(255,255,255,.25);">Open system settings</div>
+          </div>
+
+          <!-- preferences still shown and still remembered -->
+          <div style="margin-top:16px;background:linear-gradient(165deg,#f3eee3,#e4dccb);border-radius:26px;padding:4px 18px;border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 0 rgba(255,255,255,.6) inset;opacity:.55;">
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 0;">
+              <div style="flex:1;">
+                <div style="font-size:15px;color:#2c2924;font-weight:500;">Habit reminders</div>
+                <div style="font-size:12px;color:#8a8072;margin-top:2px;">A nudge when a habit is due.</div>
+              </div>
+              <span style="width:46px;height:28px;border-radius:14px;background:linear-gradient(155deg,#7d9159,#5f7444);box-shadow:inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:flex-end;padding:0 3px;flex-shrink:0;">
+                <span style="width:22px;height:22px;border-radius:50%;background:#f6f2e8;box-shadow:0 1px 3px rgba(45,38,26,.28);"></span>
+              </span>
+            </div>
+            <div style="height:1px;background:rgba(120,108,88,.14);"></div>
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 0;">
+              <div style="flex:1;">
+                <div style="font-size:15px;color:#2c2924;font-weight:500;">Default time</div>
+                <div style="font-size:12px;color:#8a8072;margin-top:2px;">For habits with no set time of their own.</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;">
+                <span style="font-family:'Zilla Slab',serif;font-weight:600;font-size:17px;color:#2c2924;">09:00</span>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#a19785" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+              </div>
+            </div>
+            <div style="height:1px;background:rgba(120,108,88,.14);"></div>
+            <div style="display:flex;align-items:center;gap:14px;padding:16px 0;">
+              <div style="flex:1;">
+                <div style="font-size:15px;color:#2c2924;font-weight:500;">Streak warnings</div>
+                <div style="font-size:12px;color:#8a8072;margin-top:2px;">One evening heads-up before a streak breaks.</div>
+              </div>
+              <span style="width:46px;height:28px;border-radius:14px;background:linear-gradient(155deg,#7d9159,#5f7444);box-shadow:inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:flex-end;padding:0 3px;flex-shrink:0;">
+                <span style="width:22px;height:22px;border-radius:50%;background:#f6f2e8;box-shadow:0 1px 3px rgba(45,38,26,.28);"></span>
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);"></div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
