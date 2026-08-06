@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ (API 31+) splash screen.
+
+     There is deliberately NO `values-night` counterpart to this file, and no
+     `values-night` styles.xml at all. Cairn's UI is always parchment, so a
+     night variant would only ever repeat the default - and its presence
+     actively breaks this file: in Android's resource-qualifier precedence
+     NIGHT MODE RANKS ABOVE PLATFORM VERSION, so a `values-night/styles.xml`
+     wins over `values-v31/styles.xml` on an Android 12+ device in dark mode.
+     That device would then resolve a LaunchTheme carrying none of the
+     attributes below and fall back to the OS default splash. Deleting the
+     night override lets dark mode fall through to `values/` under API 31 and
+     to this file at API 31+, which is what we want in both cases. -->
+<resources>
+    <!-- Theme applied to the Android Window while the process is starting on Android 12+ (API 31+) -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowSplashScreenBackground">@color/splash_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_cairn</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+    </style>
+    <!-- Theme applied to the Android Window as soon as the process has started. -->
+    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">@color/splash_background</item>
+    </style>
+</resources>
