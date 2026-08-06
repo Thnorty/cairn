@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart'
     show MaterialPageRoute, Text;
 import 'package:flutter/widgets.dart';
@@ -7,6 +9,8 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../l10n/date_number_formatting.dart';
 import '../../premium/premium_service.dart';
 import '../../providers.dart';
+import '../../config.dart';
+import '../external_url.dart';
 import '../../services/account_service.dart';
 import '../../services/points_service.dart';
 import '../../services/profile_service.dart';
@@ -830,7 +834,6 @@ class _PremiumMountainBars extends StatelessWidget {
 class _SettingsSection extends ConsumerWidget {
   const _SettingsSection();
 
-  static void _noOp() {}
 
   Future<void> _handleRestore(BuildContext context, WidgetRef ref) async {
     final outcome = await ref.read(premiumServiceProvider).restore();
@@ -929,10 +932,13 @@ class _SettingsSection extends ConsumerWidget {
                 )),
               ),
               const HairlineDivider(),
+              // Opens the hosted privacy policy (AppConfig.privacyUrl, filled
+              // in at Phase 5c). Was a no-op long after that URL existed,
+              // which left a tappable-looking row that did nothing.
               _SettingsRow(
                 glyph: _GlyphShape.shield,
                 label: l10n.profilePrivacyRow,
-                onTap: _noOp,
+                onTap: () => unawaited(launchExternalUrl(AppConfig.privacyUrl)),
               ),
               const HairlineDivider(),
               _SettingsRow(

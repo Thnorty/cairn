@@ -2,12 +2,12 @@ import 'package:flutter/material.dart'
     show CircularProgressIndicator, Material, MaterialPageRoute, MaterialType, Text;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
 import '../../config.dart';
 import '../../premium/premium_service.dart';
 import '../../providers.dart';
+import '../external_url.dart';
 import '../proof/verification_chrome.dart'
     show CloseCircleButton, percentPositionToAlignment;
 import '../theme/app_colors.dart';
@@ -67,16 +67,8 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   _PremiumPlan _selectedPlan = _PremiumPlan.yearly;
   bool _inFlight = false;
 
-  Future<void> _launchUrl(String urlString) async {
-    if (urlString.isEmpty) return;
-    try {
-      final uri = Uri.parse(urlString);
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (_) {}
-  }
-
   void _handleManageSubscription() {
-    _launchUrl('https://play.google.com/store/account/subscriptions');
+    launchExternalUrl('https://play.google.com/store/account/subscriptions');
   }
 
   Future<void> _handlePurchase(PremiumOffering offering) async {
@@ -981,14 +973,6 @@ class _FooterLinks extends StatelessWidget {
   final AppLocalizations l10n;
   final VoidCallback? onRestore;
 
-  Future<void> _launchUrl(String urlString) async {
-    if (urlString.isEmpty) return;
-    try {
-      final uri = Uri.parse(urlString);
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (_) {}
-  }
-
   @override
   Widget build(BuildContext context) {
     Widget link(String label, VoidCallback? onTap) {
@@ -1019,12 +1003,12 @@ class _FooterLinks extends StatelessWidget {
         dot(),
         link(
           l10n.premiumTermsLink,
-          AppConfig.termsUrl.isNotEmpty ? () => _launchUrl(AppConfig.termsUrl) : null,
+          AppConfig.termsUrl.isNotEmpty ? () => launchExternalUrl(AppConfig.termsUrl) : null,
         ),
         dot(),
         link(
           l10n.premiumPrivacyLink,
-          AppConfig.privacyUrl.isNotEmpty ? () => _launchUrl(AppConfig.privacyUrl) : null,
+          AppConfig.privacyUrl.isNotEmpty ? () => launchExternalUrl(AppConfig.privacyUrl) : null,
         ),
       ],
     );

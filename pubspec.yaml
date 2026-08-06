@@ -62,6 +62,11 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # Direct (not transitive) so tests can swap `UrlLauncherPlatform.instance`
+  # for a fake and assert WHICH url an external link opens, without touching
+  # url_launcher's platform channel. See test/support/fake_url_launcher.dart.
+  url_launcher_platform_interface: ^2.3.2
+
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your

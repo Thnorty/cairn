@@ -1,5 +1,6 @@
 import 'package:cairn/l10n/generated/app_localizations.dart';
 import 'package:cairn/src/clock.dart';
+import 'package:cairn/src/config.dart';
 import 'package:cairn/src/db/database.dart';
 import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/settings_repository.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers.dart';
+import '../../support/fake_url_launcher.dart';
 
 /// Records whether/how many times [request] was called, so a test can
 /// assert the "Allow camera" button really goes through
@@ -146,13 +148,18 @@ void main() {
   });
 
   group('learn more about privacy', () {
-    testWidgets('shows the coming-soon snackbar', (tester) async {
+    testWidgets('opens the hosted privacy policy', (tester) async {
+      final launcher = FakeUrlLauncher.install();
       await pumpVerification(tester);
 
       await tester.tap(find.text('Learn more about privacy'));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
-      expect(find.text('A privacy details page is coming soon.'), findsOneWidget);
+      // The same destination as Profile's Privacy row and the Premium
+      // footer's link - all three go through AppConfig.privacyUrl, so a
+      // wrong or empty one shows up here rather than only on a device.
+      expect(launcher.launched, [AppConfig.privacyUrl]);
+      expect(AppConfig.privacyUrl, isNotEmpty);
     });
   });
 }

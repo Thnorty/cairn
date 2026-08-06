@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart' show Material, MaterialPageRoute, MaterialType;
 import 'package:flutter/widgets.dart';
 
@@ -20,12 +21,20 @@ import '../widgets/app_tab_bar.dart';
 /// paints any header of its own: the build below is just the tab bodies in
 /// an `IndexedStack` plus the tab bar.
 ///
-/// TEMPORARY: Phase 1's debug screen (exercises the fake verifier without
-/// spending Gemini calls) has no home in the real navigation yet.
-/// Long-pressing the wordmark on HomeScreen's own brand row is a stand-in
-/// entry point until a real settings/debug affordance exists - see
-/// [HomeScreen.onOpenDebug], wired below via [_openDebugScreen]; remove both
-/// once a real entry point exists.
+/// DEBUG BUILDS ONLY: Phase 1's debug screen (exercises the fake verifier
+/// without spending Gemini calls) has no home in the real navigation.
+/// Long-pressing the wordmark on HomeScreen's own brand row is its stand-in
+/// entry point - see [HomeScreen.onOpenDebug], wired below via
+/// [_openDebugScreen].
+///
+/// That entry point is gated on [kDebugMode], and the gate is load-bearing
+/// rather than tidiness: the debug screen can switch the app onto a
+/// `FakeProofVerifier` in `pass` mode (every photo verifies with no Gemini
+/// call at all, which defeats the one thing this app is for) and can force
+/// the premium entitlement on (lifting the daily proof cap, the only live
+/// paid benefit). Both are one long-press away from Today, so shipping this
+/// reachable in a release build hands every user a verification and paywall
+/// bypass. It was reachable in release until 2026-08-06.
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
@@ -45,7 +54,10 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final bodies = [
-      HomeScreen(onOpenDebug: _openDebugScreen),
+      // Null in release, which leaves the wordmark's long-press handler inert
+      // (GestureDetector treats a null onLongPress as no gesture at all) and
+      // lets the tree-shaker drop DebugScreen from the binary entirely.
+      HomeScreen(onOpenDebug: kDebugMode ? _openDebugScreen : null),
       const TrailScreen(),
       const StatsScreen(),
       const ProfileScreen(),

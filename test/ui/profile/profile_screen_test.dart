@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:cairn/l10n/generated/app_localizations.dart';
 import 'package:cairn/src/clock.dart';
+import 'package:cairn/src/config.dart';
 import 'package:cairn/src/db/database.dart';
 import 'package:cairn/src/models/proof_verdict.dart';
 import 'package:cairn/src/providers.dart';
@@ -23,6 +24,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../helpers.dart';
 import '../../support/fake_auth_service.dart';
+import '../../support/fake_url_launcher.dart';
 
 /// Wraps [testWidgets] with the same drift-stream-teardown fix-up
 /// `home_screen_test.dart` and `app_shell_test.dart` use: cancelling
@@ -363,6 +365,25 @@ void main() {
       await tester.tap(find.text('Restore purchase'));
       await tester.pumpAndSettle();
       expect(find.text('Coming soon'), findsNothing);
+    });
+
+    testProfileWidgets(
+        'tapping the Privacy row opens the hosted privacy policy (it was a '
+        'dead no-op long after AppConfig.privacyUrl existed)', (tester) async {
+      final launcher = FakeUrlLauncher.install();
+      final db = await pumpProfile(
+        tester,
+        clock: FixedClock(d(2026, 7, 10)),
+        seed: (db, taskRepo) async {},
+      );
+      addTearDown(db.close);
+
+      await tester.ensureVisible(find.text('Privacy'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Privacy'));
+      await tester.pumpAndSettle();
+
+      expect(launcher.launched, [AppConfig.privacyUrl]);
     });
 
     testProfileWidgets(

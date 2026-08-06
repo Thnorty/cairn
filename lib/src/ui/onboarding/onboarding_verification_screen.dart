@@ -5,14 +5,15 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
+import '../../config.dart';
 import '../../providers.dart';
+import '../external_url.dart';
 import '../proof/verification_chrome.dart'
     show SealCheckmarkIcon, percentPositionToAlignment;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
-import '../widgets/message_snack_bar.dart';
 import 'onboarding_header.dart';
 import 'onboarding_point_card.dart';
 
@@ -56,9 +57,6 @@ class _OnboardingVerificationScreenState
     }
   }
 
-  void _showComingSoon(String message) {
-    context.showMessageSnackBar(message);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +122,10 @@ class _OnboardingVerificationScreenState
             l10n: l10n,
             busy: _busy,
             onAllowCamera: _handleAllowCamera,
-            onLearnMore: () => _showComingSoon(l10n.onboardingPrivacyComingSoonSnackbar),
+            // Opens the hosted privacy policy, same destination as Profile's
+            // Privacy row and the Premium footer's link. Showed a
+            // "coming soon" snackbar long after AppConfig.privacyUrl existed.
+            onLearnMore: () => unawaited(launchExternalUrl(AppConfig.privacyUrl)),
           ),
         ],
       ),
