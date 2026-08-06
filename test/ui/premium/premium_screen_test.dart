@@ -1,6 +1,9 @@
-﻿import 'package:cairn/l10n/generated/app_localizations.dart';
+import 'package:cairn/l10n/generated/app_localizations.dart';
 import 'package:cairn/src/premium/premium_service.dart';
 import 'package:cairn/src/providers.dart';
+import 'package:cairn/src/services/account_service.dart';
+import 'package:cairn/src/ui/account/account_chrome.dart';
+import 'package:cairn/src/ui/account/account_flow.dart';
 import 'package:cairn/src/ui/premium/premium_screen.dart';
 import 'package:cairn/src/ui/proof/verification_chrome.dart' show CloseCircleButton;
 import 'package:cairn/src/ui/theme/app_colors.dart';
@@ -9,18 +12,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/fake_premium_service.dart';
+import '../account/account_test_harness.dart';
 
 void main() {
   Widget wrap({
     FakePremiumService? fakePremium,
     bool? isPremiumOverride,
+    AccountState? accountState,
+    List extraOverrides = const [],
   }) {
     final service = fakePremium ?? FakePremiumService();
+    final state = accountState ?? const AccountState(isAnonymous: false, email: 'user@example.com');
     return ProviderScope(
       overrides: [
         premiumServiceProvider.overrideWithValue(service),
+        accountStateProvider.overrideWith((ref) => Future.value(state)),
         if (isPremiumOverride != null)
           debugPremiumOverrideProvider.overrideWith((_) => isPremiumOverride),
+        ...extraOverrides.cast(),
       ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -43,10 +52,14 @@ void main() {
     WidgetTester tester, {
     FakePremiumService? fakePremium,
     bool? isPremiumOverride,
+    AccountState? accountState,
+    List extraOverrides = const [],
   }) async {
     await tester.pumpWidget(wrap(
       fakePremium: fakePremium,
       isPremiumOverride: isPremiumOverride,
+      accountState: accountState,
+      extraOverrides: extraOverrides,
     ));
     await tester.tap(find.text('Open Premium'));
     await tester.pumpAndSettle();
@@ -63,7 +76,183 @@ void main() {
     return border.top.color == AppColors.sage;
   }
 
-  group('content and tags', () {
+  group('account required paywall (signed out)', () {
+    const signedOutState = AccountState(isAnonymous: true, email: null);
+
+    testWidgets(
+        'signed out: crest, 5 value rows, and 2 plan cards remain visible; account required card is shown',
+        (tester) async {
+      await pumpPremium(tester, accountState: signedOutState);
+
+      expect(find.text('CAIRN PREMIUM'), findsOneWidget);
+      expect(find.text('Keep every stone, on every peak'), findsOneWidget);
+
+      expect(find.text('Unlimited AI proofs'), findsOneWidget);
+      expect(find.text('Cloud photo backup'), findsOneWidget);
+      expect(find.text('Deeper insights'), findsOneWidget);
+      expect(find.text('Home-screen widgets'), findsOneWidget);
+      expect(find.text('Stone styles'), findsOneWidget);
+
+      expect(find.text('Yearly'), findsOneWidget);
+      expect(find.text('Monthly'), findsOneWidget);
+
+      expect(
+        find.text(
+            'A subscription belongs to an account, not a phone. With one, it follows you to any device you sign in on.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+        'signed out: CTA label is Create an account to subscribe and sub-caption includes "Then a 7-day free trial"',
+        (tester) async {
+      await pumpPremium(tester, accountState: signedOutState);
+
+      expect(find.text('Create an account to subscribe'), findsOneWidget);
+      expect(find.text('Then a 7-day free trial · \$20.99/yr · cancel anytime'), findsOneWidget);
+      expect(find.text('Start 7-day free trial'), findsNothing);
+    });
+
+    testWidgets(
+        'signed out: tapping CTA opens AccountFlow and does NOT call purchase()',
+        (tester) async {
+      final fakePremium = FakePremiumService();
+      await pumpPremium(
+        tester,
+        fakePremium: fakePremium,
+        accountState: signedOutState,
+      );
+
+      await tester.tap(find.text('Create an account to subscribe'));
+      await tester.pumpAndSettle();
+
+      expect(fakePremium.purchaseCount, 0);
+      expect(find.byType(AccountFlow), findsOneWidget);
+    });
+
+    testWidgets(
+        'signed out: tapping Restore shows Sign in to restore dialog and does NOT call restore()',
+        (tester) async {
+      final fakePremium = FakePremiumService();
+      await pumpPremium(
+        tester,
+        fakePremium: fakePremium,
+        accountState: signedOutState,
+      );
+
+      await tester.tap(find.text('Restore purchase'));
+      await tester.pumpAndSettle();
+
+      expect(fakePremium.restoreCount, 0);
+      expect(find.text('Sign in to restore'), findsOneWidget);
+      expect(
+        find.text(
+            'A restored subscription needs an account to live in. Create one or sign in, and we will put it back.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('signed out: cancelling restore dialog calls nothing',
+        (tester) async {
+      final fakePremium = FakePremiumService();
+      await pumpPremium(
+        tester,
+        fakePremium: fakePremium,
+        accountState: signedOutState,
+      );
+
+      await tester.tap(find.text('Restore purchase'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Not now'));
+      await tester.pumpAndSettle();
+
+      expect(fakePremium.restoreCount, 0);
+      expect(find.byType(AccountFlow), findsNothing);
+      expect(find.byType(PremiumScreen), findsOneWidget);
+    });
+
+    testWidgets('signed out: confirming restore dialog opens AccountFlow',
+        (tester) async {
+      final fakePremium = FakePremiumService();
+      await pumpPremium(
+        tester,
+        fakePremium: fakePremium,
+        accountState: signedOutState,
+      );
+
+      await tester.tap(find.text('Restore purchase'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+
+      expect(fakePremium.restoreCount, 0);
+      expect(find.byType(AccountFlow), findsOneWidget);
+    });
+
+    testWidgets(
+        'return trip: signed out -> tap CTA -> complete account flow -> user is back on PremiumScreen with purchase CTA',
+        (tester) async {
+      final harness = buildAccountTestHarness();
+      addTearDown(harness.db.close);
+      final fakePremium = FakePremiumService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ...harness.overrides,
+            premiumServiceProvider.overrideWithValue(fakePremium),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Builder(
+              builder: (context) => Scaffold(
+                body: Center(
+                  child: TextButton(
+                    onPressed: () => openPremiumScreen(context),
+                    child: const Text('Open Premium'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open Premium'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Create an account to subscribe'), findsOneWidget);
+
+      await tester.tap(find.text('Create an account to subscribe'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Keep your trail safe'), findsOneWidget);
+      await tester.enterText(find.byType(TextField).first, 'newuser@example.com');
+      await tester.enterText(find.byType(TextField).last, 'Abcdefg1');
+      await tester.ensureVisible(find.text('Create account'));
+      await tester.tap(find.text('Create account'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Enter the code'), findsOneWidget);
+      final fields = find.byType(TextField);
+      for (var i = 0; i < 6; i++) {
+        await tester.enterText(fields.at(i), '123456');
+        await tester.pump();
+      }
+      await tester.tap(find.widgetWithText(AccountSubmitButton, 'Verify'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PremiumScreen), findsOneWidget);
+      expect(find.byType(AccountFlow), findsNothing);
+      expect(find.text('Start 7-day free trial'), findsOneWidget);
+      expect(find.text('Create an account to subscribe'), findsNothing);
+    });
+  });
+
+  group('content and tags (signed in)', () {
     testWidgets(
         'renders real prices on both plan cards, 2 Coming soon tags, and 3 Available now tags',
         (tester) async {
@@ -72,8 +261,6 @@ void main() {
       expect(find.text('CAIRN PREMIUM'), findsOneWidget);
       expect(find.text('Keep every stone, on every peak'), findsOneWidget);
 
-      // Every canonical value row is still present (the tag counts below
-      // only prove how many are tagged, not which rows exist).
       expect(find.text('Unlimited AI proofs'), findsOneWidget);
       expect(find.text('Cloud photo backup'), findsOneWidget);
       expect(find.text('Deeper insights'), findsOneWidget);
@@ -87,9 +274,6 @@ void main() {
       expect(find.text('\$20.99'), findsOneWidget);
       expect(find.text('\$2.99'), findsOneWidget);
 
-      // Three benefits are live now: "Unlimited AI proofs", "Deeper
-      // insights" and "Stone styles". Bump these counts as each remaining
-      // roadmap row ships.
       expect(find.text('Available now'), findsNWidgets(3));
       expect(find.text('Coming soon'), findsNWidgets(2));
     });
@@ -130,7 +314,6 @@ void main() {
         (tester) async {
       await pumpPremium(tester);
 
-      // Yearly is selected by default (design default).
       expect(find.text('Then \$20.99/yr · cancel anytime'), findsOneWidget);
       expect(find.text('Then \$2.99/mo · cancel anytime'), findsNothing);
 
@@ -162,7 +345,6 @@ void main() {
           ),
         ],
       );
-      // (1 - 40 / (5 * 12)) * 100 == 33.33..., floored to 33.
       final fakePremium = FakePremiumService(offerings: offering);
 
       await pumpPremium(tester, fakePremium: fakePremium);
@@ -178,17 +360,14 @@ void main() {
 
       await pumpPremium(tester, fakePremium: fakePremium);
 
-      // Yearly plan card price + subtitle fallback.
       expect(find.text(r'$20.99'), findsOneWidget);
       expect(find.text(r'$20.99/yr · $1.75/mo'), findsOneWidget);
-      // Best value ribbon fallback.
       expect(find.text('BEST VALUE · SAVE 41%'), findsOneWidget);
-      // Footer trial subtitle fallback (Yearly selected by default).
       expect(find.text('Then \$20.99/yr · cancel anytime'), findsOneWidget);
     });
   });
 
-  group('plan selection and purchasing', () {
+  group('plan selection and purchasing (signed in)', () {
     testWidgets('Yearly is selected by default and tapping Monthly selects it',
         (tester) async {
       await pumpPremium(tester);
@@ -219,18 +398,15 @@ void main() {
         };
       await pumpPremium(tester, fakePremium: fakePremium);
 
-      // Default selection is annual
       await tester.tap(find.text('Start 7-day free trial'));
       await tester.pumpAndSettle();
 
       expect(fakePremium.purchaseCount, 1);
       expect(purchasedPlan?.id, FakePremiumService.defaultOffering.annual!.id);
 
-      // Re-open premium paywall
       await tester.tap(find.text('Open Premium'));
       await tester.pumpAndSettle();
 
-      // Select monthly
       await tester.ensureVisible(find.text('Monthly'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Monthly'));
@@ -287,7 +463,7 @@ void main() {
     });
   });
 
-  group('restore', () {
+  group('restore (signed in)', () {
     testWidgets('restore with no entitlement shows "No purchases to restore."',
         (tester) async {
       final fakePremium = FakePremiumService()
@@ -304,10 +480,6 @@ void main() {
   });
 
   group('close', () {
-    // The close-X sitting top-left is a deliberate, documented deviation
-    // from Cairn Premium.dc.html's own top-right X (every close/dismiss
-    // control in this app sits top-left) - see PremiumScreen's own comment.
-    // Guarded here so a later change cannot silently undo it.
     testWidgets('the close-X sits top-left, mirroring VerificationHeader',
         (tester) async {
       await pumpPremium(tester);

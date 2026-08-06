@@ -1490,4 +1490,34 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountDeleteFailedSnackbar =>
       'Couldn\'t delete account. Please try again.';
+
+  @override
+  String get premiumAccountRequiredCard =>
+      'A subscription belongs to an account, not a phone. With one, it follows you to any device you sign in on.';
+
+  @override
+  String get premiumCreateAccountButton => 'Create an account to subscribe';
+
+  @override
+  String premiumTrialSubtitleYearlySignedOut(String price) {
+    return 'Then a 7-day free trial · $price/yr · cancel anytime';
+  }
+
+  @override
+  String premiumTrialSubtitleMonthlySignedOut(String price) {
+    return 'Then a 7-day free trial · $price/mo · cancel anytime';
+  }
+
+  @override
+  String get premiumRestoreDialogTitle => 'Sign in to restore';
+
+  @override
+  String get premiumRestoreDialogBody =>
+      'A restored subscription needs an account to live in. Create one or sign in, and we will put it back.';
+
+  @override
+  String get premiumRestoreDialogNotNow => 'Not now';
+
+  @override
+  String get premiumRestoreDialogContinue => 'Continue';
 }

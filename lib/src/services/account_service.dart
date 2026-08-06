@@ -45,6 +45,20 @@ class AccountState {
   final bool isAnonymous;
   final String? email;
   const AccountState({required this.isAnonymous, this.email});
+
+  /// Whether this is a real, usable email account.
+  ///
+  /// USE THIS RATHER THAN `!isAnonymous`. That check alone is NOT sufficient
+  /// and is the trap this getter exists to close: per [AuthService]'s own doc
+  /// comment, `isAnonymous` is also false when there is no session at all
+  /// (Supabase never initialized, or auth bootstrap has not run yet), in
+  /// which case `email` is null too and there is no account to speak of.
+  ///
+  /// The predicate was hand-written at four separate call sites across the
+  /// Profile and Premium screens before it lived here; a fifth written as
+  /// `!isAnonymous` alone would have silently treated a not-yet-initialized
+  /// session as signed in.
+  bool get isSignedIn => !isAnonymous && email != null;
 }
 
 /// Orchestrates the Phase 4b account-upgrade flows (create account, sign in

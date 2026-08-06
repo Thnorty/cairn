@@ -177,3 +177,51 @@ class _BackChevronGlyphPainter extends CustomPainter {
   @override
   bool shouldRepaint(_BackChevronGlyphPainter oldDelegate) => color != oldDelegate.color;
 }
+
+/// The circular restore icon (`M20 12a8 8 0 1 1-2.3-5.6` + arrowhead): used
+/// in CairnDialog when restoring purchase while signed out.
+class RestoreDialogIcon extends StatelessWidget {
+  const RestoreDialogIcon({super.key, this.color = const Color(0xFF5F7A45), this.size = 22});
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _RestoreDialogIconPainter(color: color)),
+    );
+  }
+}
+
+class _RestoreDialogIconPainter extends CustomPainter {
+  const _RestoreDialogIconPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.width / 24;
+    Offset p(double x, double y) => Offset(x * s, y * s);
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2 * s
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final rect = Rect.fromCircle(center: p(12, 12), radius: 8 * s);
+    canvas.drawArc(rect, -1.2, 5.2, false, paint);
+
+    final arrow = Path()
+      ..moveTo(p(20, 4).dx, p(20, 4).dy)
+      ..lineTo(p(20, 8.5).dx, p(20, 8.5).dy)
+      ..lineTo(p(15.5, 8.5).dx, p(15.5, 8.5).dy);
+    canvas.drawPath(arrow, paint);
+  }
+
+  @override
+  bool shouldRepaint(_RestoreDialogIconPainter oldDelegate) => color != oldDelegate.color;
+}

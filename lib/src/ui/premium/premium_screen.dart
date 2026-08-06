@@ -7,6 +7,7 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../config.dart';
 import '../../premium/premium_service.dart';
 import '../../providers.dart';
+import '../account/account_flow.dart';
 import '../external_url.dart';
 import '../proof/verification_chrome.dart'
     show CloseCircleButton, percentPositionToAlignment;
@@ -17,7 +18,9 @@ import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
+import '../widgets/cairn_dialog.dart';
 import '../widgets/cairn_stack.dart';
+import '../widgets/glyphs.dart' show RestoreDialogIcon;
 import '../widgets/message_snack_bar.dart';
 
 /// Pushes [PremiumScreen] on top of the current route. Shared by every
@@ -53,8 +56,8 @@ int _computeSavePercent(PremiumOffering? offering) {
   return percent.clamp(0, 99);
 }
 
-/// `Cairn Premium.dc.html` & `Cairn Premium - Billing States.dc.html`:
-/// the Premium paywall screen.
+/// `Cairn Premium.dc.html`, `Cairn Premium - Billing States.dc.html` &
+/// `Cairn Premium - Account Required.dc.html`: the Premium paywall screen.
 class PremiumScreen extends ConsumerStatefulWidget {
   const PremiumScreen({super.key});
 
@@ -69,6 +72,24 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
 
   void _handleManageSubscription() {
     launchExternalUrl('https://play.google.com/store/account/subscriptions');
+  }
+
+  /// Opens the account flow, which is what the signed-out CTA and the gated
+  /// Restore both lead to.
+  ///
+  /// No `onComplete` hook is needed and none is passed: on a successful
+  /// sign-in/create, `AccountFlow._completeAndClose` already invalidates
+  /// [accountStateProvider] and then closes itself. Popping reveals this
+  /// screen again, and because [build] watches that provider the paywall
+  /// rebuilds with the real purchase CTA in place of this one. Passing an
+  /// `onComplete` that invalidated again would just repeat work the flow has
+  /// already done, and imply callers are responsible for it.
+  void _handleCreateAccount() {
+    Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const AccountFlow(start: AccountEntryPoint.createAccount),
+      ),
+    );
   }
 
   Future<void> _handlePurchase(PremiumOffering offering) async {
@@ -103,6 +124,26 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   }
 
   Future<void> _handleRestore() async {
+    final isSignedIn =
+        ref.read(accountStateProvider).asData?.value.isSignedIn ?? false;
+
+    if (!isSignedIn) {
+      final l10n = AppLocalizations.of(context)!;
+      final confirmed = await showCairnDialog(
+        context: context,
+        icon: const RestoreDialogIcon(),
+        title: l10n.premiumRestoreDialogTitle,
+        body: l10n.premiumRestoreDialogBody,
+        cancelLabel: l10n.premiumRestoreDialogNotNow,
+        confirmLabel: l10n.premiumRestoreDialogContinue,
+        tone: CairnDialogTone.sage,
+      );
+      if (confirmed && mounted) {
+        _handleCreateAccount();
+      }
+      return;
+    }
+
     setState(() => _inFlight = true);
     try {
       final outcome = await ref.read(premiumServiceProvider).restore();
@@ -143,6 +184,8 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     final offeringAsync = ref.watch(premiumOfferingProvider);
     final offering = offeringAsync.asData?.value;
     final isPremium = ref.watch(premiumStatusProvider);
+    final isSignedIn =
+        ref.watch(accountStateProvider).asData?.value.isSignedIn ?? false;
 
     final yearlyPrice = offering?.annual?.priceString ?? l10n.premiumYearlyPlanPrice;
     final monthlyPrice = offering?.monthly?.priceString ?? l10n.premiumMonthlyPlanPrice;
@@ -205,6 +248,10 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                       enabled: !_inFlight,
                       onSelect: (plan) => setState(() => _selectedPlan = plan),
                     ),
+                    if (!isSignedIn) ...[
+                      const SizedBox(height: 18),
+                      _AccountRequiredCard(l10n: l10n),
+                    ],
                   ],
                 ],
               ),
@@ -220,10 +267,12 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
             _Footer(
               l10n: l10n,
               inFlight: _inFlight,
+              isSignedIn: isSignedIn,
               selectedPeriod: _selectedPlan,
               selectedPrice:
                   _selectedPlan == _PremiumPlan.yearly ? yearlyPrice : monthlyPrice,
               onStartTrial: onStartTrial,
+              onCreateAccount: _handleCreateAccount,
               onRestore: onRestore,
             ),
         ],
@@ -849,6 +898,100 @@ class _RibbonBadge extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Account required card (Cairn Premium - Account Required.dc.html)
+// ---------------------------------------------------------------------------
+
+class _AccountRequiredCard extends StatelessWidget {
+  const _AccountRequiredCard({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsetsDirectional.fromSTEB(14, 13, 14, 13),
+      decoration: BoxDecoration(
+        color: AppColors.accountRequiredCardBg,
+        border: Border.all(color: AppColors.accountRequiredCardBorder),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(
+              color: AppColors.accountRequiredCardIconBg,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: const _LockGlyph(),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Text(
+              l10n.premiumAccountRequiredCard,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.accountRequiredCardText,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LockGlyph extends StatelessWidget {
+  const _LockGlyph();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 15,
+      height: 15,
+      child: CustomPaint(painter: _LockGlyphPainter()),
+    );
+  }
+}
+
+class _LockGlyphPainter extends CustomPainter {
+  const _LockGlyphPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.width / 24;
+    Offset p(double x, double y) => Offset(x * s, y * s);
+    final paint = Paint()
+      ..color = AppColors.sageText
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2 * s
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final body = Path()
+      ..moveTo(p(4, 10).dx, p(4, 10).dy)
+      ..lineTo(p(20, 10).dx, p(20, 10).dy)
+      ..lineTo(p(20, 20).dx, p(20, 20).dy)
+      ..lineTo(p(4, 20).dx, p(4, 20).dy)
+      ..close();
+    canvas.drawPath(body, paint);
+
+    final shackle = Path()
+      ..moveTo(p(8, 10).dx, p(8, 10).dy)
+      ..lineTo(p(8, 7).dx, p(8, 7).dy)
+      ..arcToPoint(p(16, 7), radius: Radius.circular(4 * s))
+      ..lineTo(p(16, 10).dx, p(16, 10).dy);
+    canvas.drawPath(shackle, paint);
+  }
+
+  @override
+  bool shouldRepaint(_LockGlyphPainter oldDelegate) => false;
+}
+
+// ---------------------------------------------------------------------------
 // Footers
 // ---------------------------------------------------------------------------
 
@@ -856,24 +999,52 @@ class _Footer extends StatelessWidget {
   const _Footer({
     required this.l10n,
     required this.inFlight,
+    required this.isSignedIn,
     required this.selectedPeriod,
     required this.selectedPrice,
     required this.onStartTrial,
+    required this.onCreateAccount,
     required this.onRestore,
   });
 
   final AppLocalizations l10n;
   final bool inFlight;
+  final bool isSignedIn;
   final _PremiumPlan selectedPeriod;
   final String selectedPrice;
   final VoidCallback? onStartTrial;
+  final VoidCallback onCreateAccount;
   final VoidCallback? onRestore;
 
   @override
   Widget build(BuildContext context) {
-    final trialSubtitle = selectedPeriod == _PremiumPlan.yearly
-        ? l10n.premiumTrialSubtitleYearly(selectedPrice)
-        : l10n.premiumTrialSubtitleMonthly(selectedPrice);
+    final String buttonLabel;
+    final PrimaryButtonColor buttonColor;
+    final String trialSubtitle;
+    final VoidCallback? onPressed;
+
+    if (inFlight) {
+      buttonLabel = l10n.premiumPurchasingButtonLabel;
+      buttonColor = PrimaryButtonColor.terracotta;
+      trialSubtitle = selectedPeriod == _PremiumPlan.yearly
+          ? l10n.premiumTrialSubtitleYearly(selectedPrice)
+          : l10n.premiumTrialSubtitleMonthly(selectedPrice);
+      onPressed = onStartTrial;
+    } else if (!isSignedIn) {
+      buttonLabel = l10n.premiumCreateAccountButton;
+      buttonColor = PrimaryButtonColor.sage;
+      trialSubtitle = selectedPeriod == _PremiumPlan.yearly
+          ? l10n.premiumTrialSubtitleYearlySignedOut(selectedPrice)
+          : l10n.premiumTrialSubtitleMonthlySignedOut(selectedPrice);
+      onPressed = onCreateAccount;
+    } else {
+      buttonLabel = l10n.premiumStartTrialButton;
+      buttonColor = PrimaryButtonColor.terracotta;
+      trialSubtitle = selectedPeriod == _PremiumPlan.yearly
+          ? l10n.premiumTrialSubtitleYearly(selectedPrice)
+          : l10n.premiumTrialSubtitleMonthly(selectedPrice);
+      onPressed = onStartTrial;
+    }
 
     return Container(
       width: double.infinity,
@@ -882,10 +1053,9 @@ class _Footer extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           PrimaryButton(
-            label: inFlight
-                ? l10n.premiumPurchasingButtonLabel
-                : l10n.premiumStartTrialButton,
-            onPressed: onStartTrial,
+            label: buttonLabel,
+            color: buttonColor,
+            onPressed: onPressed,
             icon: inFlight
                 ? const SizedBox(
                     width: 18,

@@ -2026,5 +2026,44 @@
   "accountDeleteFailedSnackbar": "Couldn't delete account. Please try again.",
   "@accountDeleteFailedSnackbar": {
     "description": "Snackbar message shown when account deletion fails due to a network or server error."
+  },
+
+  "premiumAccountRequiredCard": "A subscription belongs to an account, not a phone. With one, it follows you to any device you sign in on.",
+  "@premiumAccountRequiredCard": {
+    "description": "Sage card on the Premium paywall when signed out, explaining why an account is required to subscribe."
+  },
+  "premiumCreateAccountButton": "Create an account to subscribe",
+  "@premiumCreateAccountButton": {
+    "description": "Primary button label on the Premium paywall when signed out, opening the account flow."
+  },
+  "premiumTrialSubtitleYearlySignedOut": "Then a 7-day free trial · {price}/yr · cancel anytime",
+  "@premiumTrialSubtitleYearlySignedOut": {
+    "description": "Sub-caption under the Create an account to subscribe button when signed out and yearly plan is selected.",
+    "placeholders": {
+      "price": { "type": "String", "example": "$20.99" }
+    }
+  },
+  "premiumTrialSubtitleMonthlySignedOut": "Then a 7-day free trial · {price}/mo · cancel anytime",
+  "@premiumTrialSubtitleMonthlySignedOut": {
+    "description": "Sub-caption under the Create an account to subscribe button when signed out and monthly plan is selected.",
+    "placeholders": {
+      "price": { "type": "String", "example": "$2.99" }
+    }
+  },
+  "premiumRestoreDialogTitle": "Sign in to restore",
+  "@premiumRestoreDialogTitle": {
+    "description": "Title of the confirmation dialog shown when tapping Restore purchase while signed out."
+  },
+  "premiumRestoreDialogBody": "A restored subscription needs an account to live in. Create one or sign in, and we will put it back.",
+  "@premiumRestoreDialogBody": {
+    "description": "Body copy of the confirmation dialog shown when tapping Restore purchase while signed out."
+  },
+  "premiumRestoreDialogNotNow": "Not now",
+  "@premiumRestoreDialogNotNow": {
+    "description": "Cancel button label on the restore-purchase confirmation dialog when signed out."
+  },
+  "premiumRestoreDialogContinue": "Continue",
+  "@premiumRestoreDialogContinue": {
+    "description": "Confirm button label on the restore-purchase confirmation dialog when signed out, opening the account flow."
   }
 }

@@ -78,6 +78,7 @@ class FakeAuthService implements AuthService {
   Future<void> startEmailUpgrade(String email) async {
     startEmailUpgradeCalls.add(email);
     if (startEmailUpgradeError != null) throw startEmailUpgradeError!;
+    userEmail = email;
   }
 
   @override

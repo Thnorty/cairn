@@ -587,6 +587,17 @@ abstract final class AppColors {
   /// `#efe8da` - Muted snackbar background color.
   static const Color snackbarMutedBg = Color(0xFFEFE8DA);
 
+  /// rgba(122,141,96,.13) / rgba(122,141,96,.26) - account-required card
+  /// background and border on the Premium paywall when signed out.
+  static const Color accountRequiredCardBg = Color(0x217A8D60);
+  static const Color accountRequiredCardBorder = Color(0x427A8D60);
+
+  /// rgba(122,141,96,.18) - account-required card lock icon circle background.
+  static const Color accountRequiredCardIconBg = Color(0x2E7A8D60);
+
+  /// `#4f5e3c` - account-required card body text color.
+  static const Color accountRequiredCardText = Color(0xFF4F5E3C);
+
   // ---- Onboarding screens ---------------------------------------------------
 
   /// rgba(150,166,120,.26) - the onboarding welcome screen's own top sage

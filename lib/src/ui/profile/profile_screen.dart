@@ -28,6 +28,7 @@ import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
 import '../trail/how_cairns_work_screen.dart';
 import '../widgets/app_scaffold.dart';
+import '../widgets/cairn_dialog.dart';
 import '../widgets/glyphs.dart';
 import '../widgets/message_snack_bar.dart';
 import '../widgets/screen_header.dart';
@@ -164,17 +165,15 @@ class _ProfileBody extends StatelessWidget {
           const SizedBox(height: 14),
           if (accountFeatureAvailable) ...[
             accountStateAsync.when(
-              // AccountState.isAnonymous being false does NOT by itself mean
-              // "signed in with an email": per AuthService's own doc
-              // comment, it is also false when there is no session at all
-              // (e.g. Supabase never initialized, or auth bootstrap hasn't
-              // run yet), in which case email is null too. The signed-in
-              // row only ever renders once there is a real email to show;
-              // every other case (anonymous, or no session yet) falls back
-              // to the ordinary "Climbing anonymously / Create" row.
+              // The signed-in row only ever renders once there is a real
+              // email to show; every other case (anonymous, or no session
+              // yet) falls back to the ordinary "Climbing anonymously /
+              // Create" row. That distinction lives in
+              // [AccountState.isSignedIn] - see its doc comment for why
+              // `!isAnonymous` alone is not enough.
               data: (state) {
                 final email = state.email;
-                if (!state.isAnonymous && email != null) {
+                if (state.isSignedIn && email != null) {
                   return SignedInAccountRow(email: email);
                 }
                 return _AccountStatusRow(onCreate: onCreateAccount);
@@ -837,6 +836,35 @@ class _SettingsSection extends ConsumerWidget {
 
 
   Future<void> _handleRestore(BuildContext context, WidgetRef ref) async {
+    final isSignedIn =
+        ref.read(accountStateProvider).asData?.value.isSignedIn ?? false;
+
+    if (!isSignedIn) {
+      final l10n = AppLocalizations.of(context)!;
+      final confirmed = await showCairnDialog(
+        context: context,
+        icon: const RestoreDialogIcon(),
+        title: l10n.premiumRestoreDialogTitle,
+        body: l10n.premiumRestoreDialogBody,
+        cancelLabel: l10n.premiumRestoreDialogNotNow,
+        confirmLabel: l10n.premiumRestoreDialogContinue,
+        tone: CairnDialogTone.sage,
+      );
+      if (confirmed && context.mounted) {
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute<void>(
+            builder: (_) => AccountFlow(
+              start: AccountEntryPoint.createAccount,
+              onComplete: () {
+                ref.invalidate(accountStateProvider);
+              },
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
     final outcome = await ref.read(premiumServiceProvider).restore();
     if (!context.mounted) return;
     final l10n = AppLocalizations.of(context)!;
@@ -874,10 +902,11 @@ class _SettingsSection extends ConsumerWidget {
     // pre-fill would silently come up empty on the very first tap.
     final currentName = ref.watch(storedDisplayNameProvider).asData?.value;
     final accountState = ref.watch(accountStateProvider).asData?.value;
+    // Non-null only for a real email account - see AccountState.isSignedIn,
+    // which exists because `!isAnonymous` alone also passes for "no session
+    // at all". The Delete account row keys off this being non-null.
     final signedInEmail =
-        (accountState != null && !accountState.isAnonymous)
-            ? accountState.email
-            : null;
+        (accountState?.isSignedIn ?? false) ? accountState!.email : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

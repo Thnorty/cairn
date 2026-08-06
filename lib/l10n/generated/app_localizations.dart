@@ -2395,6 +2395,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t delete account. Please try again.'**
   String get accountDeleteFailedSnackbar;
+
+  /// Sage card on the Premium paywall when signed out, explaining why an account is required to subscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'A subscription belongs to an account, not a phone. With one, it follows you to any device you sign in on.'**
+  String get premiumAccountRequiredCard;
+
+  /// Primary button label on the Premium paywall when signed out, opening the account flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account to subscribe'**
+  String get premiumCreateAccountButton;
+
+  /// Sub-caption under the Create an account to subscribe button when signed out and yearly plan is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Then a 7-day free trial · {price}/yr · cancel anytime'**
+  String premiumTrialSubtitleYearlySignedOut(String price);
+
+  /// Sub-caption under the Create an account to subscribe button when signed out and monthly plan is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Then a 7-day free trial · {price}/mo · cancel anytime'**
+  String premiumTrialSubtitleMonthlySignedOut(String price);
+
+  /// Title of the confirmation dialog shown when tapping Restore purchase while signed out.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to restore'**
+  String get premiumRestoreDialogTitle;
+
+  /// Body copy of the confirmation dialog shown when tapping Restore purchase while signed out.
+  ///
+  /// In en, this message translates to:
+  /// **'A restored subscription needs an account to live in. Create one or sign in, and we will put it back.'**
+  String get premiumRestoreDialogBody;
+
+  /// Cancel button label on the restore-purchase confirmation dialog when signed out.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get premiumRestoreDialogNotNow;
+
+  /// Confirm button label on the restore-purchase confirmation dialog when signed out, opening the account flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get premiumRestoreDialogContinue;
 }
 
 class _AppLocalizationsDelegate

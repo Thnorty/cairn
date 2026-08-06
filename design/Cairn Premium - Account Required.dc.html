@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;450;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+</style>
+</helmet>
+
+<!--
+  Premium, as an ANONYMOUS user sees it. Companion to `Cairn Premium.dc.html`
+  (the offer) and `Cairn Premium - Billing States.dc.html` (purchasing /
+  success / error / restore / already-premium).
+
+  WHY AN ACCOUNT IS REQUIRED TO BUY. RevenueCat identifies the buyer by
+  Cairn's own user id, and an anonymous id is not durable: signing out or
+  deleting the account mints a NEW anonymous id, so the entitlement stops
+  following the user. Play still knows about the purchase, but recovering it
+  depends on the same Google account and a manual Restore. Someone paying for
+  a year should not be one sign-out away from having to go and find their
+  subscription again. An account makes it portable, which is what they think
+  they are buying.
+
+  THE PAYWALL IS STILL FULLY VISIBLE. The gate is on the button, not on the
+  door. An anonymous user sees the crest, the price cards AND every value row
+  before anything is asked of them, so they can decide whether they even want
+  it. Hiding the offer until you hand over an email is the pattern that makes
+  people close the app, and it would leave Stats' locked "Deeper insights"
+  card and the Daily Limit screen with nowhere to send anyone.
+
+  THIS FILE IS `Cairn Premium.dc.html` WITH EXACTLY TWO CHANGES. The entire
+  phone screen - status bar, crest, eyebrow, headline, value list, plan cards,
+  ribbon, footer links - is copied verbatim from it, so the signed-out state
+  cannot drift from the offer as that file evolves. The only deltas are:
+
+    1. the sage "why an account" card added directly above the footer, and
+    2. the footer CTA: sage, relabelled, and its caption reworded so it no
+       longer implies this button starts the trial.
+
+  Everything else, including the benefits-BEFORE-price ordering, is inherited
+  rather than re-decided. (Two earlier drafts of this file got that wrong: the
+  first omitted the value list entirely, leaving a signed-out user staring at
+  prices with no statement of what they buy; the second re-added it but below
+  the plan cards, inverting the order the real paywall uses. Copying the
+  screen wholesale is what stops a third variation.)
+
+  THE CTA IS SAGE, NOT TERRACOTTA, and that is deliberate. Terracotta is the
+  buy button everywhere in this app. This button does not buy anything - it
+  opens the account flow - and sage is that flow's own colour (Create account
+  / Sign in / Verify all use it). Colour is doing the honest work here: the
+  purchase button has not appeared yet.
+
+  THE CAPTION SAYS WHY, IN ONE LINE. "Asking for an account" reads as a tax
+  unless the reason is visible, and the reason is genuinely in the user's
+  favour, so it is worth the line.
+
+  RESTORE IS GATED TOO (decision 2026-08-06). Restore only needs the Google
+  account technically, so this is a product choice, not a technical one: it
+  guarantees every entitled user has somewhere durable for the entitlement to
+  live. The cost is that someone who bought anonymously must make an account
+  before recovering - inconvenient, but not a dead end. Because the footer
+  link is small and carries no context, tapping it while signed out explains
+  itself first (phone 2) rather than silently throwing up a signup form.
+-->
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;gap:30px;flex-wrap:wrap;padding:44px 24px;font-family:'Work Sans',system-ui,sans-serif;background:#e0d6c5;background-image:radial-gradient(120% 80% at 50% -10%, rgba(140,120,95,.14), transparent 55%), repeating-radial-gradient(circle at 76% 8%, transparent 0 30px, rgba(90,78,58,.045) 30px 31px);">
+
+  <!-- ================= 1. SIGNED-OUT PAYWALL ================= -->
+  <div>
+    <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a8072;margin-bottom:12px;text-align:center;">Signed out</div>
+    <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+      <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#e9e1d3;background-image:radial-gradient(140% 45% at 50% -6%, rgba(150,166,120,.22), transparent 60%),radial-gradient(90% 30% at 100% 4%, rgba(178,124,92,.14), transparent 60%);">
+
+      <div style="position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:repeating-radial-gradient(circle at 50% -6%, transparent 0 28px, rgba(90,100,72,.05) 28px 29px);"></div>
+
+      <!-- ===== header ===== -->
+      <div style="position:relative;z-index:5;background:linear-gradient(180deg,#e9e6d5 82%,rgba(233,230,213,0));padding-bottom:6px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 30px 4px;color:#33302b;font-weight:600;font-size:15px;letter-spacing:.3px;">
+          <span>7:24</span>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="display:flex;align-items:flex-end;gap:2px;height:11px;">
+              <div style="width:3px;height:5px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:7px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:9px;background:#33302b;border-radius:1px;"></div>
+              <div style="width:3px;height:11px;background:#33302b;border-radius:1px;"></div>
+            </div>
+            <div style="width:16px;height:11px;border:1.5px solid #33302b;border-radius:3px;position:relative;padding:1.5px;"><div style="width:70%;height:100%;background:#33302b;border-radius:1px;"></div><div style="position:absolute;right:-3px;top:3px;width:2px;height:4px;background:#33302b;border-radius:0 1px 1px 0;"></div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;padding:6px 22px 0;">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(120,108,88,.14);display:flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a453c" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== scroll body ===== -->
+      <div class="pmscroll" style="position:relative;flex:1;overflow-y:auto;padding:2px 26px 12px;">
+
+        <!-- crest -->
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
+            <div style="width:14px;height:8px;border-radius:48% 52% 45% 55%/62% 58% 42% 38%;background:linear-gradient(158deg,#96a776,#6d8056);box-shadow:0 0 0 3px rgba(122,141,96,.18),inset 0 1px 0 rgba(255,255,255,.4);transform:rotate(-3deg);margin-bottom:-1px;"></div>
+            <div style="width:22px;height:9px;border-radius:50% 50% 45% 55%/60% 58% 42% 40%;background:linear-gradient(158deg,#dcd5c7,#b6ad9c);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(2deg);margin-bottom:-1px;"></div>
+            <div style="width:29px;height:10px;border-radius:47% 53% 46% 54%/60% 55% 45% 40%;background:linear-gradient(158deg,#d6cfc0,#b1a796);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 3px rgba(60,50,35,.16);transform:rotate(-2deg);"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#5f7a45;margin-top:12px;">Cairn Premium</span>
+          <div style="font-family:'Zilla Slab',serif;font-weight:600;font-size:28px;color:#2c2924;margin-top:8px;line-height:1.12;">Keep every stone,<br>on every peak</div>
+        </div>
+
+        <!-- value list -->
+        <div style="margin-top:22px;display:flex;flex-direction:column;gap:2px;">
+          <div style="display:flex;align-items:center;gap:13px;padding:11px 4px;">
+            <span style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.16);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5f7a45" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"></path></svg></span>
+            <div style="flex:1;"><div style="font-size:15px;font-weight:600;color:#2c2924;">Unlimited AI proofs</div><div style="font-size:12.5px;color:#6a6153;margin-top:1px;">No daily cap. Prove as many habits as you keep.</div></div>
+            <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#5f7444;background:rgba(122,141,96,.18);padding:3px 8px;border-radius:8px;">Available now</span>
+          </div>
+          <div style="height:1px;background:rgba(120,108,88,.14);margin:0 4px;"></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:11px 4px;">
+            <span style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.16);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a9c6c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 9.2 3.8 3.8 0 0 1 16.5 17"></path><path d="M12 12v6M12 12l-2.5 2.5M12 12l2.5 2.5"></path></svg></span>
+            <div style="flex:1;"><div style="font-size:15px;font-weight:600;color:#5f584c;">Cloud photo backup</div><div style="font-size:12.5px;color:#8a8072;margin-top:1px;">Every proof photo saved and restorable on any phone.</div></div>
+            <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#a08a6d;background:rgba(150,128,96,.14);padding:3px 8px;border-radius:8px;">Coming soon</span>
+          </div>
+          <div style="height:1px;background:rgba(120,108,88,.14);margin:0 4px;"></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:11px 4px;">
+            <span style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.16);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5f7a45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19c3-6 5-8 8-8s3 2 3 4-2 3-3 3M4 19h10M18 5l1.5 3 3 .5-2 2 .5 3L18 15"></path></svg></span>
+            <div style="flex:1;"><div style="font-size:15px;font-weight:600;color:#2c2924;">Deeper insights</div><div style="font-size:12.5px;color:#6a6153;margin-top:1px;">Consistency curves, best times of day, rank projections.</div></div>
+            <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#5f7444;background:rgba(122,141,96,.18);padding:3px 8px;border-radius:8px;">Available now</span>
+          </div>
+          <div style="height:1px;background:rgba(120,108,88,.14);margin:0 4px;"></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:11px 4px;">
+            <span style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.16);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a9c6c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M8 4v4M4 9h4"></path></svg></span>
+            <div style="flex:1;"><div style="font-size:15px;font-weight:600;color:#5f584c;">Home-screen widgets</div><div style="font-size:12.5px;color:#8a8072;margin-top:1px;">Your cairn on your home screen. Tap to prove.</div></div>
+            <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#a08a6d;background:rgba(150,128,96,.14);padding:3px 8px;border-radius:8px;">Coming soon</span>
+          </div>
+          <div style="height:1px;background:rgba(120,108,88,.14);margin:0 4px;"></div>
+          <div style="display:flex;align-items:center;gap:13px;padding:11px 4px;">
+            <span style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.16);display:flex;align-items:center;justify-content:center;"><span style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;"><span style="width:7px;height:3px;border-radius:50%;background:#5f7a45;margin-bottom:-.5px;"></span><span style="width:11px;height:4px;border-radius:50%;background:#7a8d5a;margin-bottom:-.5px;"></span><span style="width:14px;height:4px;border-radius:50%;background:#5f7a45;"></span></span></span>
+            <div style="flex:1;"><div style="font-size:15px;font-weight:600;color:#2c2924;">Stone styles</div><div style="font-size:12.5px;color:#6a6153;margin-top:1px;">Slate, granite, basalt — make your cairn yours.</div></div>
+            <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#5f7444;background:rgba(122,141,96,.18);padding:3px 8px;border-radius:8px;">Available now</span>
+          </div>
+        </div>
+
+        <!-- plan cards -->
+        <div style="margin-top:20px;display:flex;flex-direction:column;gap:11px;">
+          <!-- annual (selected) -->
+          <div style="position:relative;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(165deg,#f4efe4,#e6decb);border:2px solid #6d8056;border-radius:24px;padding:16px 18px;box-shadow:0 12px 22px -12px rgba(90,110,60,.4),0 1px 0 rgba(255,255,255,.6) inset;">
+            <div style="position:absolute;top:-11px;left:18px;background:linear-gradient(155deg,#7a8d5a,#5f7444);color:#f4f0e6;font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:4px 11px;border-radius:11px;box-shadow:0 4px 8px -4px rgba(90,110,60,.6);">Best value · save 41%</div>
+            <div>
+              <div style="font-family:'Zilla Slab',serif;font-weight:600;font-size:18px;color:#2c2924;">Yearly</div>
+              <div style="font-size:12.5px;color:#6a6153;margin-top:2px;">$20.99/yr · $1.75/mo</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="text-align:right;"><div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:20px;color:#2c2924;">$20.99</div></div>
+              <span style="width:24px;height:24px;border-radius:50%;background:#6d8056;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.3);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f4f0e6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"></path></svg></span>
+            </div>
+          </div>
+          <!-- monthly -->
+          <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(165deg,#f2ede2,#e5ddcc);border:1.5px solid rgba(120,108,88,.22);border-radius:24px;padding:16px 18px;box-shadow:0 1px 0 rgba(255,255,255,.6) inset;">
+            <div>
+              <div style="font-family:'Zilla Slab',serif;font-weight:600;font-size:18px;color:#453f35;">Monthly</div>
+              <div style="font-size:12.5px;color:#6a6153;margin-top:2px;">Billed every month</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="font-family:'Zilla Slab',serif;font-weight:700;font-size:20px;color:#453f35;">$2.99</div>
+              <span style="width:24px;height:24px;border-radius:50%;border:2px solid rgba(120,108,88,.4);box-sizing:border-box;"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+        <!-- why an account: the ONLY block this state adds to the offer -->
+        <div style="margin-top:18px;display:flex;align-items:flex-start;gap:11px;background:rgba(122,141,96,.13);border:1px solid rgba(122,141,96,.26);border-radius:20px;padding:13px 14px;">
+          <span style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:rgba(122,141,96,.18);display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5f7a45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h16v10H4z"></path><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg></span>
+          <div style="font-size:12.5px;color:#4f5e3c;line-height:1.5;">A subscription belongs to an account, not a phone. With one, it follows you to any device you sign in on.</div>
+        </div>
+
+      <!-- ===== footer ===== -->
+      <div style="position:relative;z-index:5;flex-shrink:0;padding:12px 26px 26px;background:linear-gradient(0deg,#e9e1d3 66%,rgba(233,225,211,0));">
+        <button style="width:100%;background:linear-gradient(155deg,#7a8d60,#5f7a45);color:#f6efe6;border:none;padding:17px;border-radius:26px;font-family:'Work Sans',sans-serif;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 10px 20px -8px rgba(70,88,50,.55),inset 0 1px 0 rgba(255,255,255,.25);">Create an account to subscribe</button>
+        <div style="text-align:center;font-size:12px;color:#6a6153;margin-top:9px;">Then a 7-day free trial · $20.99/yr · cancel anytime</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:9px;font-size:11.5px;color:#9c917e;">
+          <span>Restore purchase</span>
+          <span style="width:3px;height:3px;border-radius:50%;background:#c4bbaa;"></span>
+          <span>Terms</span>
+          <span style="width:3px;height:3px;border-radius:50%;background:#c4bbaa;"></span>
+          <span>Privacy</span>
+        </div>
+      </div>
+
+      <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);z-index:6;"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 2. RESTORE, TAPPED WHILE SIGNED OUT ================= -->
+  <div>
+    <div style="font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a8072;margin-bottom:12px;text-align:center;">Restore while signed out</div>
+    <div style="width:392px;height:846px;background:#26231e;border-radius:56px;padding:11px;box-shadow:0 2px 3px rgba(255,255,255,.12) inset, 0 40px 70px -30px rgba(45,38,26,.6), 0 18px 34px -18px rgba(45,38,26,.4);position:relative;">
+      <div style="width:100%;height:100%;border-radius:46px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;background:#e9e1d3;">
+
+        <div style="position:absolute;inset:0;background:#e9e1d3;background-image:radial-gradient(135% 44% at 50% -6%, rgba(150,166,120,.22), transparent 62%);"></div>
+        <div style="position:absolute;inset:0;background:rgba(38,32,24,.44);"></div>
+
+        <!-- CairnDialog, sage tone (see Cairn Dialog.dc.html) -->
+        <div style="position:relative;width:312px;background:linear-gradient(165deg,#f6f1e6,#e8e0ce);border:1px solid rgba(255,255,255,.5);border-radius:28px;padding:24px 22px 20px;box-shadow:0 26px 44px -20px rgba(40,32,20,.55);">
+          <div style="display:flex;justify-content:center;">
+            <span style="width:52px;height:52px;border-radius:50%;background:rgba(122,141,96,.15);border:1px solid rgba(122,141,96,.32);display:flex;align-items:center;justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5f7a45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"></path><path d="M20 4v4.5h-4.5"></path></svg>
+            </span>
+          </div>
+          <div style="text-align:center;font-family:'Zilla Slab',serif;font-weight:700;font-size:21px;color:#2c2924;margin-top:14px;">Sign in to restore</div>
+          <div style="text-align:center;font-size:13.5px;color:#5f5647;margin-top:8px;line-height:1.5;">A restored subscription needs an account to live in. Create one or sign in, and we will put it back.</div>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <div style="flex:1;text-align:center;background:rgba(120,108,88,.08);border:1px solid rgba(120,108,88,.3);color:#5f5647;padding:14px;border-radius:20px;font-weight:600;font-size:14.5px;">Not now</div>
+            <div style="flex:1;text-align:center;background:linear-gradient(155deg,#7a8d60,#5f7a45);color:#f6efe6;padding:14px;border-radius:20px;font-weight:600;font-size:14.5px;box-shadow:0 8px 16px -8px rgba(70,88,50,.5);">Continue</div>
+          </div>
+        </div>
+
+        <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:126px;height:5px;border-radius:3px;background:rgba(50,44,34,.35);"></div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
