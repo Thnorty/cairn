@@ -35,7 +35,7 @@ import 'verify_too_old_screen.dart';
 ///
 /// Every number the outcome screens show (stone counts, tries left, the
 /// daily cap) is re-read from the repositories/services here, never
-/// computed from the caller's own stale snapshot - see CLAUDE.md's "nothing
+/// computed from the caller's own stale snapshot - see AGENTS.md's "nothing
 /// hardcoded, nothing computed in a widget" rule for this run.
 Future<bool> routeToProofOutcome(
   BuildContext context,
@@ -94,7 +94,7 @@ Future<bool> routeToProofOutcome(
       final cairn = await completionRepo.currentCairnFor(taskId);
       if (!context.mounted) return true;
       // Only a *verified* completion can ever show the Cairn Complete
-      // celebration: CLAUDE.md's pending-completion rule withholds every
+      // celebration: AGENTS.md's pending-completion rule withholds every
       // bonus (the cap bonus included) until the proof actually verifies,
       // so [CompletionPendingVerification] below never takes this branch
       // even when its own stone would otherwise cap the cairn.

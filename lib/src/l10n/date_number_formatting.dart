@@ -36,7 +36,7 @@ String formatWeekdayMonthDayHeader(LocalDate date, Locale locale) {
   final localeTag = locale.toLanguageTag();
   // LocalDate has no time-of-day/zone component; DateTime(y, m, d) here is
   // used purely to hand y/m/d to intl for weekday/month-name lookup, not for
-  // any calendar arithmetic (which must stay on LocalDate, per CLAUDE.md).
+  // any calendar arithmetic (which must stay on LocalDate, per AGENTS.md).
   final dt = DateTime(date.year, date.month, date.day);
   final weekday = DateFormat.EEEE(localeTag).format(dt);
   final monthDay = DateFormat.MMMd(localeTag).format(dt);

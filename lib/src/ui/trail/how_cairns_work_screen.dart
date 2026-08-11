@@ -14,7 +14,7 @@ import '../widgets/cairn_stack.dart';
 import '../widgets/glyphs.dart';
 
 /// `Cairn How Cairns Work.dc.html`: a just-in-time explainer sheet for the
-/// per-task cairn/stone vocabulary (see CLAUDE.md's "Per-task cairns"
+/// per-task cairn/stone vocabulary (see AGENTS.md's "Per-task cairns"
 /// domain rule), pushed from a small "?" info button on the Trail screen's
 /// header (`trail_screen.dart`'s `_InfoCircleButton`) rather than shown
 /// unprompted - a user who already understands cairns should never see

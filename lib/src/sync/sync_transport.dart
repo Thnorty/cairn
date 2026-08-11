@@ -52,7 +52,7 @@ class SyncPushBatch {
 /// now) implementation, and an in-memory fake for tests.
 abstract class SyncTransport {
   /// Rows changed on the server with `updatedAt > cursor`, per table, plus
-  /// the new cursor. Cursor is `updatedAt`-based, per CLAUDE.md's "cursor
+  /// the new cursor. Cursor is `updatedAt`-based, per AGENTS.md's "cursor
   /// pull on updated_at".
   Future<SyncPullResult> pull({required int cursor});
 

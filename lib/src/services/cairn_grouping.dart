@@ -199,7 +199,7 @@ class CairnGrouping {
   /// The cairn a task is currently "on" for display: the one every
   /// "Cairn N · M stones" label in the app (Home's cards, the proof-outcome
   /// screens, Trail's own hero) should show. This is the single source of
-  /// truth for that value - see CLAUDE.md's "Per-task cairns" rule.
+  /// truth for that value - see AGENTS.md's "Per-task cairns" rule.
   ///
   /// - No live completions at all: a brand-new task is "on Cairn 1 with 0
   ///   stones", even though [cairnsFor] itself returns an empty list for

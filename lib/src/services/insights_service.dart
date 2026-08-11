@@ -13,7 +13,7 @@ class WeeklyConsistency {
 
   /// Sum, across every active task, of that week's scheduled occurrences on
   /// dates that are strictly BEFORE today - i.e. fully elapsed, the same
-  /// "today-pending doesn't count either way yet" rule CLAUDE.md's streak
+  /// "today-pending doesn't count either way yet" rule AGENTS.md's streak
   /// definition uses ("a date counts iff every slot that date is complete
   /// ... only a fully-elapsed incomplete scheduled date [breaks it]"). For
   /// every week except the one containing today this is identical to
@@ -32,7 +32,7 @@ class WeeklyConsistency {
   /// task no longer contributes to [scheduled] - see
   /// [InsightsService.consistency]'s doc comment). Unlike [scheduled], this
   /// is NOT restricted to elapsed dates: a completion can only ever exist
-  /// for today or earlier (no back-filling, per CLAUDE.md), so today's own
+  /// for today or earlier (no back-filling, per AGENTS.md), so today's own
   /// completions land here even though today itself is excluded from
   /// [scheduled] for the current week.
   final int completed;
@@ -158,7 +158,7 @@ class RankProjection {
 /// service and applies the entitlement gate there. Follows [StatsService]'s
 /// own structure and dependency style: a handful of injected repositories/
 /// services plus a [Clock], no stored state, "today" always read from the
-/// clock (never `DateTime.now()` in domain logic, per CLAUDE.md).
+/// clock (never `DateTime.now()` in domain logic, per AGENTS.md).
 class InsightsService {
   final TaskRepository _taskRepo;
   final CompletionRepository _completionRepo;

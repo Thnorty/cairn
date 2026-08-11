@@ -16,7 +16,7 @@ import 'package:flutter/widgets.dart';
 /// straight into `CameraCaptureScreen`) so widget tests can drive the whole
 /// capture/verify/route flow with [FakeCameraSession]-style fakes and never
 /// touch the plugin's platform channel, which `flutter test` cannot exercise
-/// (see CLAUDE.md: a real-device camera test is one of the human-required
+/// (see AGENTS.md: a real-device camera test is one of the human-required
 /// steps this repo cannot complete on its own).
 abstract class CameraSession {
   /// Acquires the device's default camera and starts the preview. Returns

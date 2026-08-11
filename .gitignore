@@ -47,9 +47,6 @@ android/key.properties
 *.jks
 *.keystore
 
-# Claude stuff
-.claude/settings.local.json
-
 # Flutter build artifacts
 .dart_tool/
 build/

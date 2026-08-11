@@ -548,7 +548,7 @@ void main() {
 
     /// Seeds a task with two verified completions on consecutive days (day
     /// one via its own earlier-dated clock, since completions can never be
-    /// back-filled - see CLAUDE.md's no-back-filling rule), so today's card
+    /// back-filled - see AGENTS.md's no-back-filling rule), so today's card
     /// renders a 2-stone growing cairn: stone index 0 (today's, most recent)
     /// is sage-highlighted regardless of style, but stone index 1
     /// (yesterday's) renders the plain themed palette - exactly what this

@@ -262,7 +262,7 @@ class _RankHeroCard extends StatelessWidget {
                           ),
                           // Withheld metres, shown only while a proof is
                           // still awaiting a verdict - never folded into the
-                          // total above (see CLAUDE.md's pending-completion
+                          // total above (see AGENTS.md's pending-completion
                           // decision and ProfileSnapshot's doc comment).
                           if (snapshot.pendingAltitude > 0) ...[
                             const SizedBox(height: 3),

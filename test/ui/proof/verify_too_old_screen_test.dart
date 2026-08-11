@@ -62,7 +62,7 @@ void main() {
       find.text("This didn't use a try. You still have 3 left today."),
       findsOneWidget,
     );
-    // The forbidden character (CLAUDE.md bans it outright) never appears
+    // The forbidden character (AGENTS.md bans it outright) never appears
     // anywhere in the rendered copy. Built from its code point (U+2014)
     // rather than typed literally, so this very file contains zero raw
     // occurrences of the character itself.

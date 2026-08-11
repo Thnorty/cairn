@@ -117,7 +117,7 @@ void main() {
       'the stone was recorded', (tester) async {
     final task = await makeTask();
     // 9 prior verified stones, then a 10th via completeWithProof (a pass):
-    // the same stone-caps-the-cairn scenario CLAUDE.md's per-task-cairns
+    // the same stone-caps-the-cairn scenario AGENTS.md's per-task-cairns
     // rule and completion_repository_test.dart's "cairn cap bonus" group
     // both cover, exercised here through the routing this run unifies.
     for (var day = 1; day <= 9; day++) {

@@ -35,7 +35,7 @@ void _openNewHabitScreen(BuildContext context) {
 }
 
 /// The Trail screen (`Cairn Trail.dc.html`): a per-task history of "cairns"
-/// (see `CLAUDE.md`'s per-task-cairns domain rule and
+/// (see `AGENTS.md`'s per-task-cairns domain rule and
 /// `lib/src/services/cairn_grouping.dart`), rendered as a winding path from
 /// the currently-growing cairn at the top down to the trailhead at the
 /// bottom.

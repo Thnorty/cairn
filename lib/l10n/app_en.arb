@@ -232,7 +232,7 @@
   },
   "offlineReassuranceBody": "Your proof is saved on this device - we'll verify it automatically the moment you're back online.",
   "@offlineReassuranceBody": {
-    "description": "Regular-weight remainder of the reassurance banner on the verification-pending screen, following offlineReassuranceLead. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character)."
+    "description": "Regular-weight remainder of the reassurance banner on the verification-pending screen, following offlineReassuranceLead. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (AGENTS.md bans that character)."
   },
 
   "streakSafeLabel": "Streak safe",
@@ -390,7 +390,7 @@
 
   "dailyLimitBody": "You've used all {count, plural, one{1 free AI proof} other{{count} free AI proofs}} for today. This stone is ready - it'll settle onto your cairn as soon as your proofs reset.",
   "@dailyLimitBody": {
-    "description": "Body copy on the daily-limit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character). Apostrophes are left as plain literal characters: this project's l10n.yaml does not set use-escaping, so gen_l10n treats ' as literal text even inside a plural construct rather than as ICU quoting syntax.",
+    "description": "Body copy on the daily-limit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (AGENTS.md bans that character). Apostrophes are left as plain literal characters: this project's l10n.yaml does not set use-escaping, so gen_l10n treats ' as literal text even inside a plural construct rather than as ICU quoting syntax.",
     "placeholders": {
       "count": {
         "type": "num",
@@ -486,7 +486,7 @@
 
   "stalePhotoAttemptsIntro": "This didn't use a try. You still have",
   "@stalePhotoAttemptsIntro": {
-    "description": "Plain lead-in clause of the 'doesn't cost an attempt' info card on the Verify Too Old screen, immediately preceding the bold stalePhotoAttemptsCount clause. The canonical design's own copy is 'This didn't use a try [em dash, U+2014] you still have {n} left today.'; CLAUDE.md bans that character, so the em dash is replaced here with a period and the sentence continues ('This didn't use a try. You still have...') - the wording is unchanged, only the punctuation. Do not restore the em dash."
+    "description": "Plain lead-in clause of the 'doesn't cost an attempt' info card on the Verify Too Old screen, immediately preceding the bold stalePhotoAttemptsCount clause. The canonical design's own copy is 'This didn't use a try [em dash, U+2014] you still have {n} left today.'; AGENTS.md bans that character, so the em dash is replaced here with a period and the sentence continues ('This didn't use a try. You still have...') - the wording is unchanged, only the punctuation. Do not restore the em dash."
   },
   "stalePhotoAttemptsCount": "{count, plural, one{1 left today} other{{count} left today}}",
   "@stalePhotoAttemptsCount": {
@@ -638,11 +638,11 @@
 
   "timesOfDayHelpText": "Each time is one proof - two times means a twice-a-day habit.",
   "@timesOfDayHelpText": {
-    "description": "Helper copy under timesOfDayLabel on the Daily/Weekly/Monthly variants of the New Habit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character)."
+    "description": "Helper copy under timesOfDayLabel on the Daily/Weekly/Monthly variants of the New Habit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (AGENTS.md bans that character)."
   },
   "onceTimeHelpText": "Optional - a reminder to prove it on the day.",
   "@onceTimeHelpText": {
-    "description": "Helper copy under timeOfDayLabel on the Once variant of the New Habit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character)."
+    "description": "Helper copy under timeOfDayLabel on the Once variant of the New Habit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (AGENTS.md bans that character)."
   },
 
   "addTimeButton": "Add a time",
@@ -1076,7 +1076,7 @@
   },
   "premiumValueStoneStylesSubtitle": "Slate, granite, basalt. Make your cairn yours.",
   "@premiumValueStoneStylesSubtitle": {
-    "description": "Subtitle of the fifth row in the Premium screen's value list. The design's own copy uses an em dash (U+2014 between 'basalt' and 'make your cairn yours'); CLAUDE.md bans that character, so it is replaced here with a period, splitting the line into two short sentences rather than restoring the dash."
+    "description": "Subtitle of the fifth row in the Premium screen's value list. The design's own copy uses an em dash (U+2014 between 'basalt' and 'make your cairn yours'); AGENTS.md bans that character, so it is replaced here with a period, splitting the line into two short sentences rather than restoring the dash."
   },
 
   "premiumYearlyPlanTitle": "Yearly",
@@ -1217,7 +1217,7 @@
 
   "onboardingWelcomeSubhead": "Cairn turns real effort into something you can see grow: one verified stone at a time.",
   "@onboardingWelcomeSubhead": {
-    "description": "Subhead under the headline on the onboarding welcome screen. The design's em dash (U+2014) was replaced with ':' per this project's house style (CLAUDE.md bans that character)."
+    "description": "Subhead under the headline on the onboarding welcome screen. The design's em dash (U+2014) was replaced with ':' per this project's house style (AGENTS.md bans that character)."
   },
 
   "onboardingWelcomeClarifier": "A cairn is a small stack of stones that hikers build to mark a trail.",
@@ -1279,7 +1279,7 @@
   },
   "onboardingVerificationSubhead": "A quick check keeps every stone honest. Here's exactly what happens to your photo.",
   "@onboardingVerificationSubhead": {
-    "description": "Subhead under the title on the onboarding verification screen. The design's em dash (U+2014) was replaced with '.' per this project's house style (CLAUDE.md bans that character)."
+    "description": "Subhead under the title on the onboarding verification screen. The design's em dash (U+2014) was replaced with '.' per this project's house style (AGENTS.md bans that character)."
   },
 
   "onboardingPoint1Title": "Sent only to be checked",
@@ -1288,7 +1288,7 @@
   },
   "onboardingPoint1Body": "Your photo is sent to an AI (Google Gemini) to confirm it matches your habit, nothing else.",
   "@onboardingPoint1Body": {
-    "description": "Body copy of the first point card on the onboarding verification screen. The design's em dash (U+2014) was replaced with ',' per this project's house style (CLAUDE.md bans that character)."
+    "description": "Body copy of the first point card on the onboarding verification screen. The design's em dash (U+2014) was replaced with ',' per this project's house style (AGENTS.md bans that character)."
   },
   "onboardingPoint2Title": "Never stored in the cloud",
   "@onboardingPoint2Title": {

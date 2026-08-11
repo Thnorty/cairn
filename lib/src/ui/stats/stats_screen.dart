@@ -1211,7 +1211,7 @@ class _RankProjectionBody extends StatelessWidget {
 class _DeeperInsightsCard extends StatelessWidget {
   const _DeeperInsightsCard({required this.onTap});
 
-  /// Premium is post-MVP (see CLAUDE.md's phase plan); for now this is a
+  /// Premium is post-MVP (see AGENTS.md's phase plan); for now this is a
   /// no-op-for-now that shows a "coming soon" snackbar rather than building
   /// the real Premium screen here - same scope decision as Profile's own
   /// `_PremiumRow`.

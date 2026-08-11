@@ -46,7 +46,7 @@ class VerifyTooOldScreen extends StatelessWidget {
   final int photoTakenAtMillis;
 
   /// Whole minutes old, from [stalePhotoAgeMinutes] - computed by the
-  /// caller, not this widget (CLAUDE.md: nothing computed in a widget).
+  /// caller, not this widget (AGENTS.md: nothing computed in a widget).
   final int ageMinutes;
 
   final Uint8List imageBytes;

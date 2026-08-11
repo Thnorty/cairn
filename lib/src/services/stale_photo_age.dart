@@ -3,7 +3,7 @@
 /// moment of rejection.
 ///
 /// Factored out of [VerifyTooOldScreen] (see `verify_too_old_screen.dart`)
-/// rather than computed inline, per CLAUDE.md's "no DateTime.now() in
+/// rather than computed inline, per AGENTS.md's "no DateTime.now() in
 /// domain code" / "nothing computed in a widget" rules: this file has its
 /// own unit tests independent of the widget tree, and the widget only ever
 /// receives the already-computed minute count.

@@ -56,7 +56,7 @@ class _NotificationTapListenerState
       // being killed, so by the time it is tapped the occurrence it names may
       // no longer be today - the phone was on silent overnight, or the app
       // was opened from the tray the next morning. Completing a past date is
-      // forbidden (CLAUDE.md's no-back-filling rule), and letting it through
+      // forbidden (AGENTS.md's no-back-filling rule), and letting it through
       // would surface `startProofFlow`'s untranslated "Cannot complete a past
       // date" safety net as if it were product copy. Opening the app to Today
       // and saying nothing is the honest outcome.

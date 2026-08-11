@@ -12,7 +12,7 @@ import '../widgets/status_chip.dart';
 import 'verification_chrome.dart';
 
 /// `Cairn Verify Pending.dc.html`: shown for [CompletionPendingVerification]
-/// (offline, or the verifier was otherwise unreachable). Per CLAUDE.md's
+/// (offline, or the verifier was otherwise unreachable). Per AGENTS.md's
 /// pending-completion rule, the stone is already placed and the streak
 /// already counts today; only the metres are held back until the retry
 /// resolves - [heldMetres] is `completion.pointsAwarded`, computed and

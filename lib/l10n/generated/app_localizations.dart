@@ -260,7 +260,7 @@ abstract class AppLocalizations {
   /// **'No connection right now.'**
   String get offlineReassuranceLead;
 
-  /// Regular-weight remainder of the reassurance banner on the verification-pending screen, following offlineReassuranceLead. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character).
+  /// Regular-weight remainder of the reassurance banner on the verification-pending screen, following offlineReassuranceLead. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (AGENTS.md bans that character).
   ///
   /// In en, this message translates to:
   /// **'Your proof is saved on this device - we\'ll verify it automatically the moment you\'re back online.'**
@@ -416,7 +416,7 @@ abstract class AppLocalizations {
   /// **'That\'s today\'s five'**
   String get dailyLimitTitle;
 
-  /// Body copy on the daily-limit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character). Apostrophes are left as plain literal characters: this project's l10n.yaml does not set use-escaping, so gen_l10n treats ' as literal text even inside a plural construct rather than as ICU quoting syntax.
+  /// Body copy on the daily-limit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (AGENTS.md bans that character). Apostrophes are left as plain literal characters: this project's l10n.yaml does not set use-escaping, so gen_l10n treats ' as literal text even inside a plural construct rather than as ICU quoting syntax.
   ///
   /// In en, this message translates to:
   /// **'You\'ve used all {count, plural, one{1 free AI proof} other{{count} free AI proofs}} for today. This stone is ready - it\'ll settle onto your cairn as soon as your proofs reset.'**
@@ -506,7 +506,7 @@ abstract class AppLocalizations {
   /// **'Photos more than {minutes} minutes old can\'t be verified, so snap a fresh one right as you finish.'**
   String stalePhotoReassuranceBody(int minutes);
 
-  /// Plain lead-in clause of the 'doesn't cost an attempt' info card on the Verify Too Old screen, immediately preceding the bold stalePhotoAttemptsCount clause. The canonical design's own copy is 'This didn't use a try [em dash, U+2014] you still have {n} left today.'; CLAUDE.md bans that character, so the em dash is replaced here with a period and the sentence continues ('This didn't use a try. You still have...') - the wording is unchanged, only the punctuation. Do not restore the em dash.
+  /// Plain lead-in clause of the 'doesn't cost an attempt' info card on the Verify Too Old screen, immediately preceding the bold stalePhotoAttemptsCount clause. The canonical design's own copy is 'This didn't use a try [em dash, U+2014] you still have {n} left today.'; AGENTS.md bans that character, so the em dash is replaced here with a period and the sentence continues ('This didn't use a try. You still have...') - the wording is unchanged, only the punctuation. Do not restore the em dash.
   ///
   /// In en, this message translates to:
   /// **'This didn\'t use a try. You still have'**
@@ -692,13 +692,13 @@ abstract class AppLocalizations {
   /// **'TIME OF DAY'**
   String get timeOfDayLabel;
 
-  /// Helper copy under timesOfDayLabel on the Daily/Weekly/Monthly variants of the New Habit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character).
+  /// Helper copy under timesOfDayLabel on the Daily/Weekly/Monthly variants of the New Habit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (AGENTS.md bans that character).
   ///
   /// In en, this message translates to:
   /// **'Each time is one proof - two times means a twice-a-day habit.'**
   String get timesOfDayHelpText;
 
-  /// Helper copy under timeOfDayLabel on the Once variant of the New Habit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (CLAUDE.md bans that character).
+  /// Helper copy under timeOfDayLabel on the Once variant of the New Habit screen. The design's em dash (U+2014) was replaced with ' - ' per this project's house style (AGENTS.md bans that character).
   ///
   /// In en, this message translates to:
   /// **'Optional - a reminder to prove it on the day.'**
@@ -1166,7 +1166,7 @@ abstract class AppLocalizations {
   /// **'Stone styles'**
   String get premiumValueStoneStylesTitle;
 
-  /// Subtitle of the fifth row in the Premium screen's value list. The design's own copy uses an em dash (U+2014 between 'basalt' and 'make your cairn yours'); CLAUDE.md bans that character, so it is replaced here with a period, splitting the line into two short sentences rather than restoring the dash.
+  /// Subtitle of the fifth row in the Premium screen's value list. The design's own copy uses an em dash (U+2014 between 'basalt' and 'make your cairn yours'); AGENTS.md bans that character, so it is replaced here with a period, splitting the line into two short sentences rather than restoring the dash.
   ///
   /// In en, this message translates to:
   /// **'Slate, granite, basalt. Make your cairn yours.'**
@@ -1322,7 +1322,7 @@ abstract class AppLocalizations {
   /// **'Prove it.'**
   String get onboardingWelcomeHeadlineAccent;
 
-  /// Subhead under the headline on the onboarding welcome screen. The design's em dash (U+2014) was replaced with ':' per this project's house style (CLAUDE.md bans that character).
+  /// Subhead under the headline on the onboarding welcome screen. The design's em dash (U+2014) was replaced with ':' per this project's house style (AGENTS.md bans that character).
   ///
   /// In en, this message translates to:
   /// **'Cairn turns real effort into something you can see grow: one verified stone at a time.'**
@@ -1406,7 +1406,7 @@ abstract class AppLocalizations {
   /// **'How verification works'**
   String get onboardingVerificationTitle;
 
-  /// Subhead under the title on the onboarding verification screen. The design's em dash (U+2014) was replaced with '.' per this project's house style (CLAUDE.md bans that character).
+  /// Subhead under the title on the onboarding verification screen. The design's em dash (U+2014) was replaced with '.' per this project's house style (AGENTS.md bans that character).
   ///
   /// In en, this message translates to:
   /// **'A quick check keeps every stone honest. Here\'s exactly what happens to your photo.'**
@@ -1418,7 +1418,7 @@ abstract class AppLocalizations {
   /// **'Sent only to be checked'**
   String get onboardingPoint1Title;
 
-  /// Body copy of the first point card on the onboarding verification screen. The design's em dash (U+2014) was replaced with ',' per this project's house style (CLAUDE.md bans that character).
+  /// Body copy of the first point card on the onboarding verification screen. The design's em dash (U+2014) was replaced with ',' per this project's house style (AGENTS.md bans that character).
   ///
   /// In en, this message translates to:
   /// **'Your photo is sent to an AI (Google Gemini) to confirm it matches your habit, nothing else.'**

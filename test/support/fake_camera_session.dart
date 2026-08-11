@@ -10,7 +10,7 @@ enum FakeCameraLens { back, front }
 
 /// In-memory [CameraSession] for widget tests and the screenshot harness:
 /// never touches the real `camera` plugin's platform channel, which
-/// `flutter test` cannot exercise (see CLAUDE.md: a real-device camera test
+/// `flutter test` cannot exercise (see AGENTS.md: a real-device camera test
 /// is one of the human-required steps this repo cannot complete on its own).
 class FakeCameraSession implements CameraSession {
   FakeCameraSession({

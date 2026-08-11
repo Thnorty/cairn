@@ -1,16 +1,18 @@
-# cairn
+# Cairn
 
-A new Flutter project.
+Cairn is a Flutter habit-tracking app where each completion is proven with an AI-verified photo. Completed habits add stones to task-specific cairns, earn metres, build streaks, and advance the user's rank.
 
-## Getting Started
+The app is local-first, with drift-backed offline data, Supabase account and record sync, a server-side proof verifier, RevenueCat premium entitlements, and local notifications.
 
-This project is a starting point for a Flutter application.
+## Contributing
 
-A few resources to get you started if this is your first Flutter project:
+[AGENTS.md](AGENTS.md) is the sole canonical instruction source for all human and AI contributors. It records the architecture, domain invariants, phase history, and human-gated constraints.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+The `.dc.html` files in `design/` are canonical for all real UI. Do not invent or restyle screens outside those designs.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Before handing off a change, inspect the actual diff and run:
+
+```sh
+flutter analyze
+flutter test
+```

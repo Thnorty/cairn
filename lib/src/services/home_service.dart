@@ -7,7 +7,7 @@ import 'cairn_grouping.dart';
 import 'occurrence_generator.dart';
 
 /// The four card states the Home screen renders, mapping exactly onto the
-/// domain (see `CLAUDE.md`'s pending-completion decision):
+/// domain (see `AGENTS.md`'s pending-completion decision):
 ///
 /// - [verified]: a live completion exists and its verdict is in.
 /// - [awaitingVerification]: a live completion exists but is still

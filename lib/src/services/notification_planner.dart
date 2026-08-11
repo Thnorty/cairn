@@ -21,7 +21,7 @@ import 'streak_service.dart';
 ///  1. **Per-occurrence reminders**: for each scheduled, not-yet-completed
 ///     occurrence in the window, fire at that task's own `due_times` entry
 ///     for the slot, or [SettingsRepository.defaultReminderTime] when the
-///     task has no due times (a single untimed slot 0, per CLAUDE.md's
+///     task has no due times (a single untimed slot 0, per AGENTS.md's
 ///     "an occurrence is (task, localDate, slot)" rule).
 ///  2. **Streak-at-risk warnings**: at most one per task per day, fired in
 ///     the evening ([eveningWarningHour]), only for a task whose *current*
@@ -35,7 +35,7 @@ import 'streak_service.dart';
 /// nagging).
 ///
 /// Reuses the existing [OccurrenceGenerator] and [StreakService] rather than
-/// reimplementing either, per CLAUDE.md. "Now"/"today" always come from the
+/// reimplementing either, per AGENTS.md. "Now"/"today" always come from the
 /// injected [Clock], never `DateTime.now()`.
 class NotificationPlanner {
   /// How many days ahead (inclusive of today) to plan reminders for. The app

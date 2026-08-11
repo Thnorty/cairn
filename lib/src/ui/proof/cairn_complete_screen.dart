@@ -20,7 +20,7 @@ import 'verification_chrome.dart';
 /// `CompletionRecorded` case for the `cairn.stoneCount ==
 /// PointsService.cairnCapStones` check that decides whether this screen
 /// ever appears. Deliberately never shown for [CompletionPendingVerification]
-/// (an offline/pending cap): CLAUDE.md's pending-completion rule withholds
+/// (an offline/pending cap): AGENTS.md's pending-completion rule withholds
 /// every bonus, the cairn-cap bonus included, until the proof actually
 /// verifies, so celebrating a bonus that hasn't landed yet would be a lie.
 ///
