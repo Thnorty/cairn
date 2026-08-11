@@ -17,12 +17,13 @@ class TrailTaskChip {
 /// see `Cairn Trail.dc.html`. [cairns] is scoped to the selected task;
 /// [altitude]/[rank] are app-wide (see their own doc comments).
 class TrailSnapshot {
-  /// One chip per active task, ordered the same way Home orders task cards
-  /// (by [TaskRepository.cairnNumbers]).
+  /// One chip per active repeating task, ordered the same way Home orders
+  /// task cards (by [TaskRepository.cairnNumbers]). One-off tasks do not
+  /// build an ongoing trail and are excluded.
   final List<TrailTaskChip> chips;
 
   /// The task this snapshot's [cairns] describes, or null when there are no
-  /// active tasks at all ([chips] is then also empty).
+  /// active repeating tasks at all ([chips] is then also empty).
   final String? selectedTaskId;
   final String? selectedTaskTitle;
 
@@ -79,9 +80,10 @@ class TrailService {
   }) : _cairns = cairns;
 
   /// [selectedTaskId] names the task whose trail to show; when it no longer
-  /// names an active task (null, a stale id from an archived/deleted task,
-  /// or simply not yet chosen) the first task (by cairn number) is shown
-  /// instead - see [_effectiveTask]'s doc comment.
+  /// names an active repeating task (null, a stale id from an
+  /// archived/deleted/one-off task, or simply not yet chosen) the first
+  /// repeating task (by cairn number) is shown instead - see
+  /// [_effectiveTask]'s doc comment.
   Stream<TrailSnapshot> watchTrail({String? selectedTaskId}) {
     return _db
         .customSelect(
@@ -98,7 +100,9 @@ class TrailService {
       _buildSnapshot(selectedTaskId);
 
   Future<TrailSnapshot> _buildSnapshot(String? selectedTaskId) async {
-    final tasks = await _taskRepo.activeTasks();
+    final tasks = (await _taskRepo.activeTasks())
+        .where((task) => task.recurrenceType != RecurrenceType.once)
+        .toList();
     final cairnNumbers = await _taskRepo.cairnNumbers();
 
     final sortedTasks = [...tasks]..sort(
@@ -149,8 +153,8 @@ class TrailService {
   }
 
   /// [selectedTaskId] when it still names one of [sortedTasks] (an active
-  /// task), else the first task in [sortedTasks] (the same default Home's
-  /// own card ordering would put first).
+  /// repeating task), else the first task in [sortedTasks] (the same default
+  /// Home's own card ordering would put first).
   Task _effectiveTask(List<Task> sortedTasks, String? selectedTaskId) {
     if (selectedTaskId != null) {
       for (final task in sortedTasks) {

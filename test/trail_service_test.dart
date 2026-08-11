@@ -45,6 +45,33 @@ void main() {
       expect(snapshot.altitude, 0);
       expect(snapshot.rank.tier, RankTier.pebble);
     });
+
+    test('an active completed once task is excluded from the Trail', () async {
+      final clock = FixedClock(d(2026, 7, 20));
+      final taskRepo = TaskRepository(db, clock);
+      final completionRepo =
+          CompletionRepository(db, clock, verifier: FakeProofVerifier());
+      final task = await taskRepo.createTask(
+        title: 'Submit application',
+        recurrenceType: RecurrenceType.once,
+        dueDate: d(2026, 7, 20),
+        startDate: d(2026, 7, 20),
+      );
+      final result = await completionRepo.completeOccurrence(
+        taskId: task.id,
+        occurrenceDate: d(2026, 7, 20),
+      );
+      expect(result, isA<CompletionRecorded>());
+
+      final snapshot = await buildService(clock).buildSnapshot(
+        selectedTaskId: task.id,
+      );
+
+      expect(snapshot.chips, isEmpty);
+      expect(snapshot.selectedTaskId, isNull);
+      expect(snapshot.selectedTaskTitle, isNull);
+      expect(snapshot.cairns, isEmpty);
+    });
   });
 
   group('chips and selection', () {
@@ -130,6 +157,32 @@ void main() {
 
       expect(snapshot.selectedTaskId, taskB.id);
       expect(snapshot.selectedTaskTitle, 'B');
+    });
+
+    test('once tasks are omitted and cannot remain selected', () async {
+      final clock = FixedClock(d(2026, 7, 20));
+      final taskRepo = TaskRepository(db, clock);
+      final onceTask = await taskRepo.createTask(
+        title: 'Submit application',
+        recurrenceType: RecurrenceType.once,
+        dueDate: d(2026, 7, 20),
+        startDate: d(2026, 7, 20),
+      );
+      final repeatingTask = await taskRepo.createTask(
+        title: 'Read daily',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 20),
+      );
+
+      final snapshot = await buildService(clock).buildSnapshot(
+        selectedTaskId: onceTask.id,
+      );
+
+      expect(snapshot.chips, hasLength(1));
+      expect(snapshot.chips.single.taskId, repeatingTask.id);
+      expect(snapshot.chips.single.title, 'Read daily');
+      expect(snapshot.selectedTaskId, repeatingTask.id);
+      expect(snapshot.selectedTaskTitle, 'Read daily');
     });
 
     test(
