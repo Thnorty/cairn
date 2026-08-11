@@ -15,6 +15,7 @@ import '../theme/app_gradients.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
+import 'onboarding_background.dart';
 import 'onboarding_header.dart';
 
 /// `Cairn Onboarding Name.dc.html`: the "Your name" step, collecting a
@@ -132,18 +133,7 @@ class _OnboardingNameScreenState extends ConsumerState<OnboardingNameScreen> {
       // The exact same double sage/clay wash the Welcome and How It Works
       // steps use (Cairn Onboarding Name.dc.html's own inner-screen CSS is
       // byte-for-byte identical to theirs).
-      washes: const [
-        RadialGradient(
-          center: Alignment(0, -1.12),
-          radius: 1.3,
-          colors: [AppColors.onboardingWelcomeSageWash, AppColors.sageWashEnd],
-        ),
-        RadialGradient(
-          center: Alignment(1, -0.92),
-          radius: 0.9,
-          colors: [AppColors.clayTintBg, AppColors.clayWashEnd],
-        ),
-      ],
+      washes: kOnboardingWashes,
       contourOrigin: percentPositionToAlignment(50, -4),
       contourRingColor: AppColors.premiumContourRing,
       child: Column(

@@ -7,6 +7,7 @@ import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/cairn_stack.dart';
+import 'onboarding_background.dart';
 import 'onboarding_header.dart';
 
 /// `Cairn Onboarding.dc.html`: step 1 of 4 in the first-launch onboarding
@@ -51,18 +52,7 @@ class OnboardingWelcomeScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return ModalScaffold(
-      washes: const [
-        RadialGradient(
-          center: Alignment(0, -1.12),
-          radius: 1.3,
-          colors: [AppColors.onboardingWelcomeSageWash, AppColors.sageWashEnd],
-        ),
-        RadialGradient(
-          center: Alignment(1, -0.92),
-          radius: 0.9,
-          colors: [AppColors.clayTintBg, AppColors.clayWashEnd],
-        ),
-      ],
+      washes: kOnboardingWashes,
       contourOrigin: percentPositionToAlignment(50, -4),
       contourRingColor: AppColors.premiumContourRing,
       child: Column(

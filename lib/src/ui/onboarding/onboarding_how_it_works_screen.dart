@@ -9,6 +9,7 @@ import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/card_surface.dart';
+import 'onboarding_background.dart';
 import 'onboarding_header.dart';
 
 /// Step 2 of 4 in the first-launch onboarding flow (Welcome -\> How It
@@ -48,18 +49,7 @@ class OnboardingHowItWorksScreen extends StatelessWidget {
       // content is a straight relocation of that screen's own step
       // cards, not a new visual design, so it keeps the background it
       // was authored against.
-      washes: const [
-        RadialGradient(
-          center: Alignment(0, -1.12),
-          radius: 1.3,
-          colors: [AppColors.onboardingWelcomeSageWash, AppColors.sageWashEnd],
-        ),
-        RadialGradient(
-          center: Alignment(1, -0.92),
-          radius: 0.9,
-          colors: [AppColors.clayTintBg, AppColors.clayWashEnd],
-        ),
-      ],
+      washes: kOnboardingWashes,
       contourOrigin: percentPositionToAlignment(50, -4),
       contourRingColor: AppColors.premiumContourRing,
       child: Column(

@@ -4,9 +4,11 @@ import 'package:cairn/src/db/database.dart';
 import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/settings_repository.dart';
 import 'package:cairn/src/services/camera_permission_requester.dart';
+import 'package:cairn/src/ui/onboarding/onboarding_background.dart';
 import 'package:cairn/src/ui/onboarding/onboarding_flow.dart';
 import 'package:cairn/src/ui/onboarding/onboarding_gate.dart';
 import 'package:cairn/src/ui/shell/app_shell.dart';
+import 'package:cairn/src/ui/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -112,6 +114,71 @@ void main() {
     // Teardown fix-up (see other onboarding/AppShell tests' identical
     // rationale): a drift `.watch()` subscription's teardown timer needs an
     // extra pump after the widget tree is replaced.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(Duration.zero);
+  });
+
+  testWidgets(
+      'all five steps share one background and system back returns to the '
+      'previous onboarding step', (tester) async {
+    final db = inMemoryDatabase();
+    addTearDown(db.close);
+
+    await tester.pumpWidget(wrap(db, FixedClock(d(2026, 7, 1))));
+    await tester.pumpAndSettle();
+
+    void expectSharedBackground() {
+      final scaffold = tester.widget<ModalScaffold>(find.byType(ModalScaffold));
+      expect(scaffold.washes, same(kOnboardingWashes));
+    }
+
+    // Welcome is the first route, so system back leaves the flow in place.
+    expectSharedBackground();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Start climbing'), findsOneWidget);
+
+    // How It Works uses the shared treatment and system back returns home.
+    await tester.tap(find.text('Start climbing'));
+    await tester.pumpAndSettle();
+    expectSharedBackground();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Start climbing'), findsOneWidget);
+
+    // Advance through every later step, checking the shared treatment.
+    await tester.tap(find.text('Start climbing'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('What should we call you?'), findsOneWidget);
+    expectSharedBackground();
+
+    await tester.enterText(find.byType(TextField), 'Sam');
+    await tester.pump();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('How verification works'), findsOneWidget);
+    expectSharedBackground();
+
+    await tester.tap(find.text('Allow camera'));
+    await tester.pumpAndSettle();
+    expect(find.text('Never miss a stone'), findsOneWidget);
+    expectSharedBackground();
+
+    // System back walks the nested stack without popping the app root.
+    for (final previousTitle in [
+      'How verification works',
+      'What should we call you?',
+      'How it works',
+      'Start climbing',
+    ]) {
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text(previousTitle), findsOneWidget);
+    }
+    expect(find.byType(AppShell), findsNothing);
+
     await tester.pumpWidget(const SizedBox());
     await tester.pump(Duration.zero);
   });

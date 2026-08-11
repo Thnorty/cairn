@@ -14,6 +14,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
+import 'onboarding_background.dart';
 import 'onboarding_header.dart';
 import 'onboarding_point_card.dart';
 
@@ -63,13 +64,7 @@ class _OnboardingVerificationScreenState
     final l10n = AppLocalizations.of(context)!;
 
     return ModalScaffold(
-      washes: const [
-        RadialGradient(
-          center: Alignment(0, -1.12),
-          radius: 1.3,
-          colors: [AppColors.onboardingVerificationSageWash, AppColors.sageWashEnd],
-        ),
-      ],
+      washes: kOnboardingWashes,
       contourOrigin: percentPositionToAlignment(50, -4),
       contourRingColor: AppColors.premiumContourRing,
       child: Column(

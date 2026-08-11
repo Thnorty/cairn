@@ -60,8 +60,14 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
     ref.invalidate(onboardingCompleteProvider);
   }
 
-  @override
-  Widget build(BuildContext context) {
+  void _handleBack() {
+    final navigator = _navigatorKey.currentState;
+    if (navigator != null && navigator.canPop()) {
+      navigator.pop();
+    }
+  }
+
+  Widget _buildNavigator() {
     return Navigator(
       key: _navigatorKey,
       onGenerateRoute: (settings) {
@@ -69,7 +75,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
           return MaterialPageRoute<void>(
             settings: settings,
             builder: (_) => OnboardingNotificationsScreen(
-              onBack: () => _navigatorKey.currentState!.pop(),
+              onBack: _handleBack,
               onComplete: () => unawaited(_completeOnboarding()),
             ),
           );
@@ -78,7 +84,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
           return MaterialPageRoute<void>(
             settings: settings,
             builder: (_) => OnboardingVerificationScreen(
-              onBack: () => _navigatorKey.currentState!.pop(),
+              onBack: _handleBack,
               onCameraPermissionResolved: () =>
                   _navigatorKey.currentState!.pushNamed(_notificationsRoute),
             ),
@@ -88,7 +94,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
           return MaterialPageRoute<void>(
             settings: settings,
             builder: (_) => OnboardingNameScreen(
-              onBack: () => _navigatorKey.currentState!.pop(),
+              onBack: _handleBack,
               onSubmit: () => _navigatorKey.currentState!.pushNamed(_verificationRoute),
             ),
           );
@@ -97,7 +103,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
           return MaterialPageRoute<void>(
             settings: settings,
             builder: (_) => OnboardingHowItWorksScreen(
-              onBack: () => _navigatorKey.currentState!.pop(),
+              onBack: _handleBack,
               onContinue: () => _navigatorKey.currentState!.pushNamed(_nameRoute),
             ),
           );
@@ -126,4 +132,10 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
       },
     );
   }
+
+  @override
+  Widget build(BuildContext context) => NavigatorPopHandler(
+    onPopWithResult: (_) => _handleBack(),
+    child: _buildNavigator(),
+  );
 }
