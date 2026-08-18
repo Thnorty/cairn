@@ -73,8 +73,8 @@ class StatsSnapshot {
   final int weekTotal;
 
   /// One entry per active task with a live streak of at least one day,
-  /// ordered by [TaskRepository.cairnNumbers] (creation order, the same
-  /// ordering Home's own cards use).
+  /// ordered by most recent completion descending, then creation date
+  /// (the same ordering Home's own cards use).
   final List<StatsStreak> streaks;
 
   const StatsSnapshot({
@@ -145,10 +145,9 @@ class StatsService {
     );
 
     final activeTasks = await _taskRepo.activeTasks();
-    final cairnNumbers = await _taskRepo.cairnNumbers();
     final sortedTasks = [...activeTasks]..sort(
         (a, b) =>
-            (cairnNumbers[a.id] ?? 0).compareTo(cairnNumbers[b.id] ?? 0),
+            TaskRepository.compareTasks(a, b, completionsByTask: completionsByTask),
       );
 
     // cairnsBuilt runs over every task that appears in completionsByTask -

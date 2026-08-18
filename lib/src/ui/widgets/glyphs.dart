@@ -225,3 +225,68 @@ class _RestoreDialogIconPainter extends CustomPainter {
   @override
   bool shouldRepaint(_RestoreDialogIconPainter oldDelegate) => color != oldDelegate.color;
 }
+
+/// The trash glyph (`M4 7h16` + lid + bin): used in CairnDialog when deleting
+/// a habit, and in the Delete Account flow.
+class TrashGlyph extends StatelessWidget {
+  const TrashGlyph({super.key, required this.color, this.size = 22});
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _TrashGlyphPainter(color: color)),
+    );
+  }
+}
+
+class _TrashGlyphPainter extends CustomPainter {
+  const _TrashGlyphPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.width / 24;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2 * s
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final w = size.width / 24;
+    final h = size.height / 24;
+
+    // Bar: `<path d="M4 7h16"/>`
+    canvas.drawLine(Offset(4 * w, 7 * h), Offset(20 * w, 7 * h), paint);
+
+    // Lid: `<path d="M9.5 7V5.2a1.2 1.2 0 0 1 1.2-1.2h2.6a1.2 1.2 0 0 1 1.2 1.2V7"/>`
+    final lid = Path()
+      ..moveTo(9.5 * w, 7 * h)
+      ..lineTo(9.5 * w, 5.2 * h)
+      ..arcToPoint(Offset(10.7 * w, 4 * h), radius: Radius.circular(1.2 * w))
+      ..lineTo(13.3 * w, 4 * h)
+      ..arcToPoint(Offset(14.5 * w, 5.2 * h), radius: Radius.circular(1.2 * w))
+      ..lineTo(14.5 * w, 7 * h);
+    canvas.drawPath(lid, paint);
+
+    // Bin: `<path d="M6.4 7l.9 12a1.6 1.6 0 0 0 1.6 1.5h6.2a1.6 1.6 0 0 0 1.6-1.5l.9-12"/>`
+    final bin = Path()
+      ..moveTo(6.4 * w, 7 * h)
+      ..lineTo(7.3 * w, 19 * h)
+      ..arcToPoint(Offset(8.9 * w, 20.5 * h), radius: Radius.circular(1.6 * w))
+      ..lineTo(15.1 * w, 20.5 * h)
+      ..arcToPoint(Offset(16.7 * w, 19 * h), radius: Radius.circular(1.6 * w))
+      ..lineTo(17.6 * w, 7 * h);
+    canvas.drawPath(bin, paint);
+  }
+
+  @override
+  bool shouldRepaint(_TrashGlyphPainter oldDelegate) =>
+      color != oldDelegate.color;
+}
+

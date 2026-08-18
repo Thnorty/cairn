@@ -2455,6 +2455,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue'**
   String get premiumRestoreDialogContinue;
+
+  /// Title of the confirmation dialog shown when deleting a habit, matching Cairn Dialog.dc.html Frame 2.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this habit?'**
+  String get deleteHabitDialogTitle;
+
+  /// Body copy of the confirmation dialog shown when deleting a habit, matching Cairn Dialog.dc.html Frame 2.
+  ///
+  /// In en, this message translates to:
+  /// **'Its cairns and stones stay on your trail history, but you will stop climbing it. This can\'t be undone.'**
+  String get deleteHabitDialogBody;
+
+  /// Confirm button label on the confirmation dialog for habit deletion, matching Cairn Dialog.dc.html Frame 2.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteHabitDialogConfirm;
+
+  /// Snackbar message shown after a habit is deleted/archived.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit deleted.'**
+  String get habitDeletedSnackbar;
 }
 
 class _AppLocalizationsDelegate

@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart' show MaterialPageRoute, Text;
+import 'package:flutter/material.dart'
+    show MaterialPageRoute, ScaffoldMessenger, SnackBar, Text;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,6 +13,8 @@ import '../new_habit/new_habit_screen.dart';
 import '../proof/proof_entry.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
+import '../widgets/cairn_dialog.dart';
+import '../widgets/message_snack_bar.dart';
 import '../widgets/plus_glyph.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/wordmark_glyph.dart';
@@ -77,6 +80,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  Future<void> _handleDeleteTask(String taskId) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    final confirmed = await showDeleteHabitDialog(context);
+    if (!confirmed || !mounted) return;
+
+    await ref.read(taskRepositoryProvider).archiveTask(taskId);
+    messenger.showSnackBar(SnackBar(content: Text(l10n.habitDeletedSnackbar)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -127,6 +141,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         l10n: l10n,
                         provingKeys: _provingKeys,
                         onProveIt: _handleProveIt,
+                        onDeleteTask: _handleDeleteTask,
                       ),
                 // The stream's first emission is effectively synchronous
                 // (see HomeService.watchToday's doc comment), so there's no
@@ -149,12 +164,14 @@ class _PopulatedBody extends StatelessWidget {
     required this.l10n,
     required this.provingKeys,
     required this.onProveIt,
+    required this.onDeleteTask,
   });
 
   final HomeSnapshot snapshot;
   final AppLocalizations l10n;
   final Set<String> provingKeys;
   final void Function(HomeOccurrenceCard card) onProveIt;
+  final void Function(String taskId) onDeleteTask;
 
   @override
   Widget build(BuildContext context) {
@@ -194,6 +211,7 @@ class _PopulatedBody extends StatelessWidget {
                       key: ValueKey('${card.taskId}#${card.slot}'),
                       card: card,
                       onProveIt: busy ? () {} : () => onProveIt(card),
+                      onLongPress: () => onDeleteTask(card.taskId),
                     );
                   },
                 ),

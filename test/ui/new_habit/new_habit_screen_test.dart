@@ -490,5 +490,14 @@ void main() {
 
       expect(find.byType(NewHabitScreen), findsOneWidget);
     });
+
+    testNewHabitWidgets('title text field uses sentence capitalization', (tester) async {
+      final db = inMemoryDatabase();
+      addTearDown(db.close);
+      await pumpPushed(tester, db, FixedClock(d(2026, 7, 10)));
+
+      final textField = tester.widget<TextField>(find.byType(TextField));
+      expect(textField.textCapitalization, TextCapitalization.sentences);
+    });
   });
 }

@@ -6,6 +6,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_gradients.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
+import 'glyphs.dart';
 
 /// Which confirm gradient and icon tint [CairnDialog] paints.
 ///
@@ -289,3 +290,19 @@ Future<bool> showCairnDialog({
 
   return result ?? false;
 }
+
+/// Displays the canonical "Delete this habit?" confirmation dialog matching
+/// `Cairn Dialog.dc.html` Frame 2.
+Future<bool> showDeleteHabitDialog(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+  return showCairnDialog(
+    context: context,
+    icon: const TrashGlyph(color: AppColors.deleteIconStroke, size: 22),
+    title: l10n.deleteHabitDialogTitle,
+    body: l10n.deleteHabitDialogBody,
+    cancelLabel: l10n.cancelButton,
+    confirmLabel: l10n.deleteHabitDialogConfirm,
+    tone: CairnDialogTone.destructive,
+  );
+}
+

@@ -11,6 +11,7 @@ import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/cairn_dialog.dart';
+import '../widgets/glyphs.dart';
 import '../widgets/message_snack_bar.dart';
 import '../widgets/screen_header.dart';
 import 'account_chrome.dart';
@@ -57,11 +58,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
     final confirmed = await showCairnDialog(
       context: context,
       tone: CairnDialogTone.destructive,
-      icon: const SizedBox(
-        width: 22,
-        height: 22,
-        child: CustomPaint(painter: _TrashIconPainter(color: AppColors.deleteIconStroke)),
-      ),
+      icon: const TrashGlyph(color: AppColors.deleteIconStroke, size: 22),
       title: l10n.accountDeleteDialogTitle,
       body: l10n.accountDeleteDialogBody,
       cancelLabel: l10n.cancelButton,
@@ -241,12 +238,9 @@ class _WhatIsDestroyedBanner extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: const SizedBox(
-              width: 17,
-              height: 17,
-              child: CustomPaint(
-                painter: _TrashIconPainter(color: AppColors.deleteIconStroke),
-              ),
+            child: const TrashGlyph(
+              color: AppColors.deleteIconStroke,
+              size: 17,
             ),
           ),
           const SizedBox(width: 12),
@@ -348,51 +342,6 @@ class _WhatSurvivesBanner extends StatelessWidget {
       ),
     );
   }
-}
-
-class _TrashIconPainter extends CustomPainter {
-  const _TrashIconPainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final w = size.width / 24;
-    final h = size.height / 24;
-
-    // `<path d="M4 7h16"/>`
-    canvas.drawLine(Offset(4 * w, 7 * h), Offset(20 * w, 7 * h), paint);
-
-    // `<path d="M9.5 7V5.2a1.2 1.2 0 0 1 1.2-1.2h2.6a1.2 1.2 0 0 1 1.2 1.2V7"/>`
-    final lid = Path()
-      ..moveTo(9.5 * w, 7 * h)
-      ..lineTo(9.5 * w, 5.2 * h)
-      ..arcToPoint(Offset(10.7 * w, 4 * h), radius: Radius.circular(1.2 * w))
-      ..lineTo(13.3 * w, 4 * h)
-      ..arcToPoint(Offset(14.5 * w, 5.2 * h), radius: Radius.circular(1.2 * w))
-      ..lineTo(14.5 * w, 7 * h);
-    canvas.drawPath(lid, paint);
-
-    // `<path d="M6.4 7l.9 12a1.6 1.6 0 0 0 1.6 1.5h6.2a1.6 1.6 0 0 0 1.6-1.5l.9-12"/>`
-    final bin = Path()
-      ..moveTo(6.4 * w, 7 * h)
-      ..lineTo(7.3 * w, 19 * h)
-      ..arcToPoint(Offset(8.9 * w, 20.5 * h), radius: Radius.circular(1.6 * w))
-      ..lineTo(15.1 * w, 20.5 * h)
-      ..arcToPoint(Offset(16.7 * w, 19 * h), radius: Radius.circular(1.6 * w))
-      ..lineTo(17.6 * w, 7 * h);
-    canvas.drawPath(bin, paint);
-  }
-
-  @override
-  bool shouldRepaint(_TrashIconPainter oldDelegate) =>
-      color != oldDelegate.color;
 }
 
 class _CheckmarkPainter extends CustomPainter {

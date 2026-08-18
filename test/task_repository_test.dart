@@ -389,4 +389,144 @@ void main() {
       expect(reloaded.updatedAt, greaterThan(task.updatedAt));
     });
   });
+
+  group('archiveTask', () {
+    test('archives a task and marks it dirty', () async {
+      final task = await repo.createTask(
+        title: 'Morning stretch',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      final beforeArchive = await repo.activeTasks();
+      expect(beforeArchive.map((t) => t.id), contains(task.id));
+
+      await repo.archiveTask(task.id);
+
+      final afterArchive = await repo.activeTasks();
+      expect(afterArchive.map((t) => t.id), isNot(contains(task.id)));
+
+      final row = await (db.select(db.tasks)..where((t) => t.id.equals(task.id))).getSingle();
+      expect(row.archived, isTrue);
+      expect(row.dirty, isTrue);
+      expect(row.deletedAt, isNull);
+    });
+
+    test('archiving nonexistent task throws', () async {
+      expect(repo.archiveTask('no-such-id'), throwsArgumentError);
+    });
+  });
+
+  group('taskSortKey and compareTasks', () {
+    test('taskSortKey returns createdAt when completions is null or empty', () {
+      final task = Task(
+        id: 't1',
+        title: 'Task 1',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+        dueTimes: const [],
+        createdAt: 1000,
+        updatedAt: 1000,
+        archived: false,
+        dirty: false,
+      );
+
+      expect(TaskRepository.taskSortKey(task, null), 1000);
+      expect(TaskRepository.taskSortKey(task, const []), 1000);
+    });
+
+    test('taskSortKey returns max completedAt from completions', () {
+      final task = Task(
+        id: 't1',
+        title: 'Task 1',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+        dueTimes: const [],
+        createdAt: 1000,
+        updatedAt: 1000,
+        archived: false,
+        dirty: false,
+      );
+
+      final completions = [
+        Completion(
+          id: 'c1',
+          taskId: 't1',
+          occurrenceDate: d(2026, 7, 1),
+          slot: 0,
+          completedAt: 2500,
+          verificationStatus: VerificationStatus.verified,
+          pointsAwarded: 10,
+          updatedAt: 2500,
+          dirty: false,
+        ),
+        Completion(
+          id: 'c2',
+          taskId: 't1',
+          occurrenceDate: d(2026, 7, 2),
+          slot: 0,
+          completedAt: 5000,
+          verificationStatus: VerificationStatus.verified,
+          pointsAwarded: 10,
+          updatedAt: 5000,
+          dirty: false,
+        ),
+      ];
+
+      expect(TaskRepository.taskSortKey(task, completions), 5000);
+    });
+
+    test('compareTasks orders most recently completed first', () {
+      final taskA = Task(
+        id: 'tA',
+        title: 'Task A',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+        dueTimes: const [],
+        createdAt: 1000,
+        updatedAt: 1000,
+        archived: false,
+        dirty: false,
+      );
+      final taskB = Task(
+        id: 'tB',
+        title: 'Task B',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+        dueTimes: const [],
+        createdAt: 2000,
+        updatedAt: 2000,
+        archived: false,
+        dirty: false,
+      );
+
+      // Without completions: taskB (createdAt 2000) before taskA (createdAt 1000)
+      expect(TaskRepository.compareTasks(taskA, taskB), greaterThan(0));
+      expect(TaskRepository.compareTasks(taskB, taskA), lessThan(0));
+
+      // With completions: taskA completed at 9000 -> taskA before taskB
+      final compA = [
+        Completion(
+          id: 'cA',
+          taskId: 'tA',
+          occurrenceDate: d(2026, 7, 10),
+          slot: 0,
+          completedAt: 9000,
+          verificationStatus: VerificationStatus.verified,
+          pointsAwarded: 10,
+          updatedAt: 9000,
+          dirty: false,
+        ),
+      ];
+
+      expect(
+        TaskRepository.compareTasks(
+          taskA,
+          taskB,
+          completionsByTask: {'tA': compA},
+        ),
+        lessThan(0),
+      );
+    });
+  });
 }

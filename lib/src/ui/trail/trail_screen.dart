@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart'
-    show Material, MaterialPageRoute, MaterialType;
+    show Material, MaterialPageRoute, MaterialType, ScaffoldMessenger, SnackBar, Text;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,9 +17,11 @@ import '../theme/app_radii.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_scaffold.dart';
+import '../widgets/cairn_dialog.dart';
 import '../widgets/cairn_stack.dart';
 import '../widgets/ghost_cairn.dart';
 import '../widgets/glyphs.dart';
+import '../widgets/message_snack_bar.dart';
 import '../widgets/plus_glyph.dart';
 import '../widgets/screen_header.dart';
 
@@ -119,6 +121,17 @@ class _TrailScreenBody extends StatelessWidget {
   final TrailSnapshot snapshot;
   final WidgetRef ref;
 
+  Future<void> _handleDeleteTask(BuildContext context, String taskId) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    final confirmed = await showDeleteHabitDialog(context);
+    if (!confirmed) return;
+
+    await ref.read(taskRepositoryProvider).archiveTask(taskId);
+    messenger.showSnackBar(SnackBar(content: Text(l10n.habitDeletedSnackbar)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -130,6 +143,9 @@ class _TrailScreenBody extends StatelessWidget {
           taskTitle: snapshot.selectedTaskTitle!,
           rank: snapshot.rank,
           altitude: snapshot.altitude,
+          onLongPress: snapshot.selectedTaskId == null
+              ? null
+              : () => _handleDeleteTask(context, snapshot.selectedTaskId!),
         ),
         Padding(
           padding: const EdgeInsetsDirectional.fromSTEB(24, 14, 24, 2),
@@ -144,6 +160,7 @@ class _TrailScreenBody extends StatelessWidget {
                     onTap: () => ref
                         .read(selectedTrailTaskIdProvider.notifier)
                         .state = chip.taskId,
+                    onLongPress: () => _handleDeleteTask(context, chip.taskId),
                   ),
                   const SizedBox(width: 8),
                 ],
@@ -175,35 +192,45 @@ class _TrailHeader extends StatelessWidget {
     required this.taskTitle,
     required this.rank,
     required this.altitude,
+    this.onLongPress,
   });
 
   final String taskTitle;
   final Rank rank;
   final int altitude;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context);
 
+    final header = ScreenHeader(
+      eyebrow: l10n.trailHeaderEyebrow,
+      title: taskTitle,
+      // ScreenHeader's own Row keeps the eyebrow top-aligned regardless of
+      // this pill's height - see ScreenHeader's doc comment on why (this
+      // is the exact drift this run's spec fixes: the old Row here used
+      // `crossAxisAlignment: end`, so the pill's own height silently
+      // pushed the eyebrow down relative to Stats/Profile).
+      trailing: _RankPill(
+        rank: rank,
+        metresText: l10n.trailRankMetresLabel(formatMetresNumber(altitude, locale)),
+      ),
+    );
+
     return Padding(
       // Shared top-left inset for every tab screen (Home/Trail/Stats/
       // Profile) and the VerificationHeader family - see
       // `kScreenEdgePadding`'s own doc comment.
       padding: kScreenEdgePadding,
-      child: ScreenHeader(
-        eyebrow: l10n.trailHeaderEyebrow,
-        title: taskTitle,
-        // ScreenHeader's own Row keeps the eyebrow top-aligned regardless of
-        // this pill's height - see ScreenHeader's doc comment on why (this
-        // is the exact drift this run's spec fixes: the old Row here used
-        // `crossAxisAlignment: end`, so the pill's own height silently
-        // pushed the eyebrow down relative to Stats/Profile).
-        trailing: _RankPill(
-          rank: rank,
-          metresText: l10n.trailRankMetresLabel(formatMetresNumber(altitude, locale)),
-        ),
-      ),
+      child: onLongPress != null
+          ? GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onLongPress: onLongPress,
+              child: header,
+            )
+          : header,
     );
   }
 }
@@ -261,17 +288,20 @@ class _HabitChip extends StatelessWidget {
     required this.title,
     required this.selected,
     required this.onTap,
+    this.onLongPress,
   });
 
   final String title;
   final bool selected;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(AppRadii.pill);
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       behavior: HitTestBehavior.opaque,
       child: Semantics(
         button: true,

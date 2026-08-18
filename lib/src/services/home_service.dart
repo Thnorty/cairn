@@ -82,10 +82,8 @@ class HomeSnapshot {
   final int stonesThisWeek;
 
   /// One card per occurrence scheduled today, ordered by the owning task's
-  /// [TaskRepository.cairnNumbers] ordinal (a stable creation-order key used
-  /// purely for card ordering, never for the "Cairn N" label itself - see
-  /// [HomeOccurrenceCard.currentCairnIndex]) and then by slot ascending
-  /// within a task.
+  /// most recent completion (or creation date if uncompleted) descending,
+  /// and then by slot ascending within a task.
   final List<HomeOccurrenceCard> cards;
 
   const HomeSnapshot({
@@ -170,7 +168,6 @@ class HomeService {
     final now = DateTime.fromMillisecondsSinceEpoch(_clock.nowEpochMillis());
 
     final tasks = await _taskRepo.activeTasks();
-    final cairnNumbers = await _taskRepo.cairnNumbers();
     final completionsByTask = await _completionRepo.liveCompletionsGroupedByTask();
     final todaysCompletions =
         await _completionRepo.liveCompletionsForDate(today);
@@ -183,7 +180,7 @@ class HomeService {
 
     final sortedTasks = [...tasks]..sort(
         (a, b) =>
-            (cairnNumbers[a.id] ?? 0).compareTo(cairnNumbers[b.id] ?? 0),
+            TaskRepository.compareTasks(a, b, completionsByTask: completionsByTask),
       );
 
     final cards = <HomeOccurrenceCard>[];

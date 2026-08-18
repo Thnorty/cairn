@@ -34,23 +34,30 @@ class HomeOccurrenceCardView extends StatelessWidget {
     super.key,
     required this.card,
     required this.onProveIt,
+    this.onLongPress,
   });
 
   final HomeOccurrenceCard card;
   final VoidCallback onProveIt;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
-    switch (card.status) {
-      case HomeCardStatus.verified:
-        return _VerifiedCard(card: card);
-      case HomeCardStatus.awaitingVerification:
-        return _AwaitingCard(card: card);
-      case HomeCardStatus.due:
-        return _DueCard(card: card, onProveIt: onProveIt);
-      case HomeCardStatus.scheduled:
-        return _ScheduledCard(card: card, onProveIt: onProveIt);
+    final cardWidget = switch (card.status) {
+      HomeCardStatus.verified => _VerifiedCard(card: card),
+      HomeCardStatus.awaitingVerification => _AwaitingCard(card: card),
+      HomeCardStatus.due => _DueCard(card: card, onProveIt: onProveIt),
+      HomeCardStatus.scheduled => _ScheduledCard(card: card, onProveIt: onProveIt),
+    };
+
+    if (onLongPress != null) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onLongPress: onLongPress,
+        child: cardWidget,
+      );
     }
+    return cardWidget;
   }
 }
 

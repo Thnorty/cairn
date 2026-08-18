@@ -150,16 +150,13 @@ void main() {
         'the header and its own chip styling', (tester) async {
       final clock = FixedClock(d(2026, 7, 20));
       final db = await pumpTrail(tester, clock, (db) async {
-        // Distinct created_at per task: a single FixedClock instance always
-        // returns the same nowEpochMillis(), so two createTask calls on the
-        // *same* clock tie on created_at and TaskRepository.cairnNumbers()'
-        // ordering (created_at only) then falls back to whatever order the
-        // database happens to return ties in - nondeterministic, not the
-        // creation order this test's "default-selected task" assertion
-        // relies on. A second clock advanced by 1s removes the tie.
+        // Distinct created_at per task: when neither has completions,
+        // tasks sort by newest-created first.
+        // Creating "Morning workout" first and "Read 20 pages" second (newer)
+        // makes "Read 20 pages" the default-selected task.
         final taskRepo = TaskRepository(db, clock);
         await taskRepo.createTask(
-          title: 'Read 20 pages',
+          title: 'Morning workout',
           recurrenceType: RecurrenceType.daily,
           startDate: d(2026, 7, 1),
         );
@@ -168,14 +165,14 @@ void main() {
           FixedClock(d(2026, 7, 20), nowMillis: clock.nowEpochMillis() + 1000),
         );
         await laterTaskRepo.createTask(
-          title: 'Morning workout',
+          title: 'Read 20 pages',
           recurrenceType: RecurrenceType.daily,
           startDate: d(2026, 7, 1),
         );
       });
       addTearDown(db.close);
 
-      // The first-created task ("Read 20 pages") is selected by default.
+      // The newest-created task ("Read 20 pages") is selected by default.
       expect(
         findStyledText('Read 20 pages', AppTextStyles.screenTitle),
         findsOneWidget,
@@ -198,15 +195,11 @@ void main() {
     testTrailWidgets('tapping a chip switches the displayed trail', (tester) async {
       final clock = FixedClock(d(2026, 7, 20));
       final db = await pumpTrail(tester, clock, (db) async {
-        // Distinct created_at per task - see the identical rationale in
-        // 'chips render per task...' above. Here it also matters for *this*
-        // test's own setup: the tap below assumes "Morning workout" isn't
-        // already the default-selected task (so find.text for it is
-        // unambiguous before the tap), which only holds if it reliably
-        // sorts second.
+        // Distinct created_at per task: "Read 20 pages" is created second (newer),
+        // making it default-selected, so "Morning workout" starts unselected.
         final taskRepo = TaskRepository(db, clock);
         await taskRepo.createTask(
-          title: 'Read 20 pages',
+          title: 'Morning workout',
           recurrenceType: RecurrenceType.daily,
           startDate: d(2026, 7, 1),
         );
@@ -215,7 +208,7 @@ void main() {
           FixedClock(d(2026, 7, 20), nowMillis: clock.nowEpochMillis() + 1000),
         );
         await laterTaskRepo.createTask(
-          title: 'Morning workout',
+          title: 'Read 20 pages',
           recurrenceType: RecurrenceType.daily,
           startDate: d(2026, 7, 1),
         );
@@ -307,6 +300,69 @@ void main() {
       // this history's cairns has zero stones, so no GhostCairnStack.
       expect(find.byType(CairnStack), findsNWidgets(3));
       expect(find.byType(GhostCairnStack), findsNothing);
+    });
+  });
+
+  group('habit deletion', () {
+    testTrailWidgets('long-pressing a habit chip opens delete habit dialog and cancel dismisses it', (
+      tester,
+    ) async {
+      final clock = FixedClock(d(2026, 7, 20));
+      final db = await pumpTrail(tester, clock, (db) async {
+        final taskRepo = TaskRepository(db, clock);
+        await taskRepo.createTask(
+          title: 'Read 20 pages',
+          recurrenceType: RecurrenceType.daily,
+          startDate: d(2026, 7, 1),
+        );
+      });
+      addTearDown(db.close);
+
+      // Long-press the habit chip
+      await tester.longPress(find.text('Read 20 pages').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Delete this habit?'), findsOneWidget);
+      expect(
+        find.text(
+          "Its cairns and stones stay on your trail history, but you will stop climbing it. This can't be undone.",
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Delete this habit?'), findsNothing);
+      expect(find.text('Read 20 pages'), findsWidgets);
+    });
+
+    testTrailWidgets('long-pressing the trail header title opens delete habit dialog', (
+      tester,
+    ) async {
+      final clock = FixedClock(d(2026, 7, 20));
+      final db = await pumpTrail(tester, clock, (db) async {
+        final taskRepo = TaskRepository(db, clock);
+        await taskRepo.createTask(
+          title: 'Read 20 pages',
+          recurrenceType: RecurrenceType.daily,
+          startDate: d(2026, 7, 1),
+        );
+      });
+      addTearDown(db.close);
+
+      // Long-press the header (find.byType(ScreenHeader))
+      await tester.longPress(find.byType(ScreenHeader));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Delete this habit?'), findsOneWidget);
+
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Habit deleted.'), findsOneWidget);
+      // Empty trail view since the only task was archived
+      expect(find.text('Your first stone is waiting'), findsOneWidget);
     });
   });
 }

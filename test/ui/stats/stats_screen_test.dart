@@ -290,9 +290,10 @@ void main() {
     });
 
     testStatsWidgets(
-        'renders one row per active task with a live streak, in cairn '
-        '(creation) order', (tester) async {
-      final clock = FixedClock(d(2026, 7, 20));
+        'renders one row per active task with a live streak, in most '
+        'recently completed order', (tester) async {
+      final baseMillis = DateTime(2026, 7, 20, 12, 0).millisecondsSinceEpoch;
+      final clock = FixedClock(d(2026, 7, 20), nowMillis: baseMillis);
       final db = await pumpStats(tester, clock, (db) async {
         final taskRepo = TaskRepository(db, clock);
         final taskA = await taskRepo.createTask(
@@ -302,7 +303,7 @@ void main() {
         );
         final laterTaskRepo = TaskRepository(
           db,
-          FixedClock(d(2026, 7, 20), nowMillis: clock.nowEpochMillis() + 1000),
+          FixedClock(d(2026, 7, 20), nowMillis: baseMillis + 1000),
         );
         final taskB = await laterTaskRepo.createTask(
           title: 'Morning workout',
@@ -317,12 +318,17 @@ void main() {
         );
 
         for (var day = 18; day <= 20; day++) {
-          await CompletionRepository(db, FixedClock(d(2026, 7, day)),
-                  verifier: FakeProofVerifier())
-              .completeOccurrence(taskId: taskA.id, occurrenceDate: d(2026, 7, day));
+          await CompletionRepository(
+            db,
+            FixedClock(d(2026, 7, day), nowMillis: baseMillis + 5000),
+            verifier: FakeProofVerifier(),
+          ).completeOccurrence(taskId: taskA.id, occurrenceDate: d(2026, 7, day));
         }
-        await CompletionRepository(db, clock, verifier: FakeProofVerifier())
-            .completeOccurrence(taskId: taskB.id, occurrenceDate: d(2026, 7, 20));
+        await CompletionRepository(
+          db,
+          FixedClock(d(2026, 7, 20), nowMillis: baseMillis + 2000),
+          verifier: FakeProofVerifier(),
+        ).completeOccurrence(taskId: taskB.id, occurrenceDate: d(2026, 7, 20));
       });
       addTearDown(db.close);
 
@@ -333,8 +339,8 @@ void main() {
       expect(find.text('1 day'), findsOneWidget);
       expect(find.text('No streak habit'), findsNothing);
 
-      // Row order matches creation order (A before B): A's title sits above
-      // B's in the render tree.
+      // Row order matches most recently completed order (A completed at +5000, B at +2000):
+      // A's title sits above B's in the render tree.
       final aY = tester.getTopLeft(find.text('Read 20 pages')).dy;
       final bY = tester.getTopLeft(find.text('Morning workout')).dy;
       expect(aY, lessThan(bY));

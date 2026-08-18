@@ -1526,4 +1526,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumRestoreDialogContinue => 'Continue';
+
+  @override
+  String get deleteHabitDialogTitle => 'Delete this habit?';
+
+  @override
+  String get deleteHabitDialogBody =>
+      'Its cairns and stones stay on your trail history, but you will stop climbing it. This can\'t be undone.';
+
+  @override
+  String get deleteHabitDialogConfirm => 'Delete';
+
+  @override
+  String get habitDeletedSnackbar => 'Habit deleted.';
 }

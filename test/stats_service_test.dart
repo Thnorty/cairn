@@ -236,8 +236,9 @@ void main() {
   group('streaks', () {
     test(
         'only active tasks with a live streak of at least one day are '
-        'included, ordered by cairn number (creation order)', () async {
-      final clock = FixedClock(d(2026, 7, 20));
+        'included, ordered by most recent completion descending', () async {
+      final baseMillis = DateTime(2026, 7, 20, 12, 0).millisecondsSinceEpoch;
+      final clock = FixedClock(d(2026, 7, 20), nowMillis: baseMillis);
 
       final taskRepo = TaskRepository(db, clock);
       final taskA = await taskRepo.createTask(
@@ -247,7 +248,7 @@ void main() {
       );
       final laterRepo1 = TaskRepository(
         db,
-        FixedClock(d(2026, 7, 20), nowMillis: clock.nowEpochMillis() + 1000),
+        FixedClock(d(2026, 7, 20), nowMillis: baseMillis + 1000),
       );
       final taskB = await laterRepo1.createTask(
         title: 'B (no streak)',
@@ -256,7 +257,7 @@ void main() {
       );
       final laterRepo2 = TaskRepository(
         db,
-        FixedClock(d(2026, 7, 20), nowMillis: clock.nowEpochMillis() + 2000),
+        FixedClock(d(2026, 7, 20), nowMillis: baseMillis + 2000),
       );
       final taskC = await laterRepo2.createTask(
         title: 'C (longer streak)',
@@ -264,22 +265,29 @@ void main() {
         startDate: d(2026, 7, 1),
       );
 
-      // Task A: completed only today - a streak of 1.
-      await CompletionRepository(db, clock, verifier: FakeProofVerifier())
-          .completeOccurrence(taskId: taskA.id, occurrenceDate: d(2026, 7, 20));
+      // Task C: completed for 4 consecutive days ending today at baseMillis + 3000.
+      for (var day = 17; day <= 20; day++) {
+        await CompletionRepository(
+          db,
+          FixedClock(d(2026, 7, day), nowMillis: baseMillis + 3000),
+          verifier: FakeProofVerifier(),
+        ).completeOccurrence(taskId: taskC.id, occurrenceDate: d(2026, 7, day));
+      }
+
+      // Task A: completed today at baseMillis + 4000 (more recently than task C).
+      await CompletionRepository(
+        db,
+        FixedClock(d(2026, 7, 20), nowMillis: baseMillis + 4000),
+        verifier: FakeProofVerifier(),
+      ).completeOccurrence(taskId: taskA.id, occurrenceDate: d(2026, 7, 20));
 
       // Task B: no completions at all - no streak.
-
-      // Task C: completed for 4 consecutive days ending today.
-      for (var day = 17; day <= 20; day++) {
-        await CompletionRepository(db, FixedClock(d(2026, 7, day)), verifier: FakeProofVerifier())
-            .completeOccurrence(taskId: taskC.id, occurrenceDate: d(2026, 7, day));
-      }
 
       final service = buildService(clock);
       final snapshot = await service.buildSnapshot();
 
       expect(snapshot.streaks, hasLength(2));
+      // taskA was completed most recently (baseMillis + 4000 vs baseMillis + 3000)
       expect(snapshot.streaks[0].taskTitle, 'A (short streak)');
       expect(snapshot.streaks[0].days, 1);
       expect(snapshot.streaks[1].taskTitle, 'C (longer streak)');

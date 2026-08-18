@@ -75,14 +75,9 @@ void main() {
   });
 
   group('chips and selection', () {
-    test('chips are ordered by cairn number (task creation order)', () async {
-      // Distinct createdAt per task (see this file's own FixedClock(d(...),
-      // nowMillis: ...) precedent): the same FixedClock instance always
-      // returns the same nowEpochMillis(), so two createTask calls on one
-      // clock tie on created_at and cairnNumbers()' ordering (createdAt
-      // only) falls back to whatever order the database happens to return
-      // ties in - nondeterministic, not the creation order this test
-      // asserts. Advancing the clock between creates removes the tie.
+    test(
+        'chips are ordered by newest creation date when neither has completions',
+        () async {
       final clock = FixedClock(d(2026, 7, 20));
       final taskRepo = TaskRepository(db, clock);
       final taskA = await taskRepo.createTask(
@@ -104,16 +99,51 @@ void main() {
       final snapshot = await service.buildSnapshot();
 
       expect(snapshot.chips, hasLength(2));
+      expect(snapshot.chips[0].taskId, taskB.id);
+      expect(snapshot.chips[0].title, 'B');
+      expect(snapshot.chips[1].taskId, taskA.id);
+      expect(snapshot.chips[1].title, 'A');
+    });
+
+    test('chips are ordered by most recently completed date first', () async {
+      final clock = FixedClock(d(2026, 7, 20));
+      final baseMillis = clock.nowEpochMillis();
+      final taskA = await TaskRepository(
+        db,
+        FixedClock(d(2026, 7, 20), nowMillis: baseMillis),
+      ).createTask(
+        title: 'A',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      final taskB = await TaskRepository(
+        db,
+        FixedClock(d(2026, 7, 20), nowMillis: baseMillis + 1000),
+      ).createTask(
+        title: 'B',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      // Complete task A after task B's creation
+      await CompletionRepository(
+        db,
+        FixedClock(d(2026, 7, 20), nowMillis: baseMillis + 5000),
+        verifier: FakeProofVerifier(),
+      ).completeOccurrence(taskId: taskA.id, occurrenceDate: d(2026, 7, 20));
+
+      final service = buildService(clock);
+      final snapshot = await service.buildSnapshot();
+
+      expect(snapshot.chips, hasLength(2));
       expect(snapshot.chips[0].taskId, taskA.id);
       expect(snapshot.chips[0].title, 'A');
       expect(snapshot.chips[1].taskId, taskB.id);
       expect(snapshot.chips[1].title, 'B');
     });
 
-    test('with no selectedTaskId, defaults to the first task by cairn number',
+    test('with no selectedTaskId, defaults to the first task by sort order',
         () async {
-      // Distinct createdAt per task - see the identical rationale in
-      // 'chips are ordered by cairn number' above.
       final clock = FixedClock(d(2026, 7, 20));
       final taskRepo = TaskRepository(db, clock);
       final taskA = await taskRepo.createTask(
@@ -125,7 +155,7 @@ void main() {
         db,
         FixedClock(d(2026, 7, 20), nowMillis: clock.nowEpochMillis() + 1000),
       );
-      await laterTaskRepo.createTask(
+      final taskB = await laterTaskRepo.createTask(
         title: 'B',
         recurrenceType: RecurrenceType.daily,
         startDate: d(2026, 7, 1),
@@ -134,8 +164,8 @@ void main() {
       final service = buildService(clock);
       final snapshot = await service.buildSnapshot();
 
-      expect(snapshot.selectedTaskId, taskA.id);
-      expect(snapshot.selectedTaskTitle, 'A');
+      expect(snapshot.selectedTaskId, taskB.id);
+      expect(snapshot.selectedTaskTitle, 'B');
     });
 
     test('an explicit selectedTaskId naming an active task wins', () async {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart'
         InputBorder,
         InputDecoration,
         MaterialLocalizations,
+        TextCapitalization,
         TextField,
         TimeOfDay,
         showDatePicker,
@@ -313,6 +314,7 @@ class _TitleField extends StatelessWidget {
             child: TextField(
               controller: controller,
               autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
               style: AppTextStyles.taskTitle.copyWith(height: 1.2),
               decoration: const InputDecoration(
                 border: InputBorder.none,

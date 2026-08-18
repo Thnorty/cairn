@@ -18,8 +18,8 @@ class TrailTaskChip {
 /// [altitude]/[rank] are app-wide (see their own doc comments).
 class TrailSnapshot {
   /// One chip per active repeating task, ordered the same way Home orders
-  /// task cards (by [TaskRepository.cairnNumbers]). One-off tasks do not
-  /// build an ongoing trail and are excluded.
+  /// task cards (by most recent completion descending, then creation date).
+  /// One-off tasks do not build an ongoing trail and are excluded.
   final List<TrailTaskChip> chips;
 
   /// The task this snapshot's [cairns] describes, or null when there are no
@@ -103,11 +103,12 @@ class TrailService {
     final tasks = (await _taskRepo.activeTasks())
         .where((task) => task.recurrenceType != RecurrenceType.once)
         .toList();
-    final cairnNumbers = await _taskRepo.cairnNumbers();
+    final completionsByTask =
+        await _completionRepo.liveCompletionsGroupedByTask();
 
     final sortedTasks = [...tasks]..sort(
         (a, b) =>
-            (cairnNumbers[a.id] ?? 0).compareTo(cairnNumbers[b.id] ?? 0),
+            TaskRepository.compareTasks(a, b, completionsByTask: completionsByTask),
       );
 
     final chips = [

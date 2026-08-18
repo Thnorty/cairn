@@ -518,6 +518,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.drag(find.byType(ListView), const Offset(0, -1000));
+      await tester.pumpAndSettle();
+
       await tester.tap(find.text('Prove it'));
       await tester.pumpAndSettle();
 
@@ -629,6 +632,70 @@ void main() {
         AppColors.stoneGradients[1 % AppColors.stoneGradients.length].$1,
         AppColors.stoneGradients[1 % AppColors.stoneGradients.length].$2,
       ]);
+    });
+  });
+
+  group('habit deletion', () {
+    testHomeWidgets('long pressing a card opens the delete habit dialog and cancel dismisses it', (
+      tester,
+    ) async {
+      final clock = FixedClock(d(2026, 7, 10));
+      final db = await pumpHomeWithSeed(tester, clock, (db) async {
+        final taskRepo = TaskRepository(db, clock);
+        await taskRepo.createTask(
+          title: 'Morning stretch',
+          recurrenceType: RecurrenceType.daily,
+          startDate: d(2026, 7, 1),
+        );
+      });
+      addTearDown(db.close);
+
+      expect(find.text('Morning stretch'), findsOneWidget);
+
+      await tester.longPress(find.text('Morning stretch'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Delete this habit?'), findsOneWidget);
+      expect(
+        find.text(
+          "Its cairns and stones stay on your trail history, but you will stop climbing it. This can't be undone.",
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Delete this habit?'), findsNothing);
+      expect(find.text('Morning stretch'), findsOneWidget);
+    });
+
+    testHomeWidgets('confirming delete archives the habit and shows snackbar', (
+      tester,
+    ) async {
+      final clock = FixedClock(d(2026, 7, 10));
+      final db = await pumpHomeWithSeed(tester, clock, (db) async {
+        final taskRepo = TaskRepository(db, clock);
+        await taskRepo.createTask(
+          title: 'Morning stretch',
+          recurrenceType: RecurrenceType.daily,
+          startDate: d(2026, 7, 1),
+        );
+      });
+      addTearDown(db.close);
+
+      expect(find.text('Morning stretch'), findsOneWidget);
+
+      await tester.longPress(find.text('Morning stretch'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Habit deleted.'), findsOneWidget);
+      // Empty today view since the only task was archived
+      expect(find.text('Morning stretch'), findsNothing);
+      expect(find.text('Your first stone is waiting'), findsOneWidget);
     });
   });
 }

@@ -95,6 +95,7 @@ class _NewTaskDialogState extends State<_NewTaskDialog> {
               controller: _titleController,
               decoration: const InputDecoration(labelText: 'Title'),
               autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
             ),
             const SizedBox(height: 12),
             DropdownButton<RecurrenceType>(

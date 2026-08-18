@@ -2075,5 +2075,22 @@
   "premiumRestoreDialogContinue": "Continue",
   "@premiumRestoreDialogContinue": {
     "description": "Confirm button label on the restore-purchase confirmation dialog when signed out, opening the account flow."
+  },
+
+  "deleteHabitDialogTitle": "Delete this habit?",
+  "@deleteHabitDialogTitle": {
+    "description": "Title of the confirmation dialog shown when deleting a habit, matching Cairn Dialog.dc.html Frame 2."
+  },
+  "deleteHabitDialogBody": "Its cairns and stones stay on your trail history, but you will stop climbing it. This can't be undone.",
+  "@deleteHabitDialogBody": {
+    "description": "Body copy of the confirmation dialog shown when deleting a habit, matching Cairn Dialog.dc.html Frame 2."
+  },
+  "deleteHabitDialogConfirm": "Delete",
+  "@deleteHabitDialogConfirm": {
+    "description": "Confirm button label on the confirmation dialog for habit deletion, matching Cairn Dialog.dc.html Frame 2."
+  },
+  "habitDeletedSnackbar": "Habit deleted.",
+  "@habitDeletedSnackbar": {
+    "description": "Snackbar message shown after a habit is deleted/archived."
   }
 }

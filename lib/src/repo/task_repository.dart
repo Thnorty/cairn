@@ -244,13 +244,19 @@ class TaskRepository {
 
   /// User-facing archive (hidden, not deleted).
   Future<void> archiveTask(String taskId, {bool archived = true}) async {
-    await (_db.update(_db.tasks)..where((t) => t.id.equals(taskId))).write(
+    final rowsAffected = await (_db.update(_db.tasks)
+          ..where((t) => t.id.equals(taskId) & t.deletedAt.isNull()))
+        .write(
       TasksCompanion(
         archived: Value(archived),
         updatedAt: Value(_clock.nowEpochMillis()),
         dirty: const Value(true),
       ),
     );
+    if (rowsAffected == 0) {
+      throw ArgumentError.value(
+          taskId, 'taskId', 'task does not exist or is deleted');
+    }
   }
 
   /// Sync tombstone delete: rows are never hard-deleted.
@@ -287,6 +293,37 @@ class TaskRepository {
           ..limit(1))
         .getSingleOrNull();
     return row != null;
+  }
+
+  /// Computes a sort key timestamp (epoch millis) for ordering tasks:
+  /// the task's most recent live completion's [completedAt] epoch millis,
+  /// or [Task.createdAt] if the task has no live completions.
+  static int taskSortKey(Task task, Iterable<Completion>? completions) {
+    if (completions != null && completions.isNotEmpty) {
+      var maxCompletedAt = completions.first.completedAt;
+      for (final c in completions) {
+        if (c.completedAt > maxCompletedAt) {
+          maxCompletedAt = c.completedAt;
+        }
+      }
+      return maxCompletedAt;
+    }
+    return task.createdAt;
+  }
+
+  /// Compares two tasks by most recent live completion date/time descending,
+  /// falling back to task creation date/time descending, and finally task id
+  /// for a stable tiebreak.
+  static int compareTasks(
+    Task a,
+    Task b, {
+    Map<String, List<Completion>> completionsByTask = const {},
+  }) {
+    final keyA = taskSortKey(a, completionsByTask[a.id]);
+    final keyB = taskSortKey(b, completionsByTask[b.id]);
+    final cmp = keyB.compareTo(keyA);
+    if (cmp != 0) return cmp;
+    return b.id.compareTo(a.id);
   }
 
   /// Each task's stable creation-order ordinal, 1-based among every

@@ -197,12 +197,10 @@ void main() {
       expect(snapshot.cards[1].dueTime, '20:00');
     });
 
-    test("cards are ordered by the owning task's cairn number", () async {
+    test(
+        'cards are ordered by newest creation date when neither has completions',
+        () async {
       final clock = FixedClock(d(2026, 7, 10));
-      // Distinct nowMillis per creation (same LocalDate, later wall-clock
-      // instant), the way two real user taps a moment apart would land: this
-      // is what makes created_at, not the random tail of a same-millisecond
-      // UUID v7 id, decide the ordering under test.
       final baseMillis = clock.nowEpochMillis();
       final taskB = await TaskRepository(
         db,
@@ -224,13 +222,50 @@ void main() {
       final snapshot = await makeService(clock).buildSnapshot();
 
       expect(snapshot.cards, hasLength(2));
-      expect(snapshot.cards[0].taskId, taskB.id);
-      // Both tasks are brand-new (zero completions), so each is on its own
-      // Cairn 1 regardless of creation order - only the *card ordering*
-      // (proven by taskId above) comes from TaskRepository.cairnNumbers.
+      expect(snapshot.cards[0].taskId, taskA.id);
       expect(snapshot.cards[0].currentCairnIndex, 1);
-      expect(snapshot.cards[1].taskId, taskA.id);
+      expect(snapshot.cards[1].taskId, taskB.id);
       expect(snapshot.cards[1].currentCairnIndex, 1);
+    });
+
+    test(
+        'cards are ordered by most recently completed date first',
+        () async {
+      final clock = FixedClock(d(2026, 7, 10));
+      final baseMillis = clock.nowEpochMillis();
+      final taskB = await TaskRepository(
+        db,
+        FixedClock(d(2026, 7, 10), nowMillis: baseMillis),
+      ).createTask(
+        title: 'B (created first)',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+      final taskA = await TaskRepository(
+        db,
+        FixedClock(d(2026, 7, 10), nowMillis: baseMillis + 1000),
+      ).createTask(
+        title: 'A (created second)',
+        recurrenceType: RecurrenceType.daily,
+        startDate: d(2026, 7, 1),
+      );
+
+      // Complete task B more recently than task A's creation
+      await CompletionRepository(
+        db,
+        FixedClock(d(2026, 7, 10), nowMillis: baseMillis + 5000),
+        verifier: FakeProofVerifier(),
+      ).completeOccurrence(
+        taskId: taskB.id,
+        occurrenceDate: d(2026, 7, 10),
+      );
+
+      final snapshot = await makeService(clock).buildSnapshot();
+
+      expect(snapshot.cards, hasLength(2));
+      // taskB was completed at baseMillis + 5000, so it appears first before uncompleted taskA
+      expect(snapshot.cards[0].taskId, taskB.id);
+      expect(snapshot.cards[1].taskId, taskA.id);
     });
 
     test(
