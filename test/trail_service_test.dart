@@ -146,7 +146,7 @@ void main() {
         () async {
       final clock = FixedClock(d(2026, 7, 20));
       final taskRepo = TaskRepository(db, clock);
-      final taskA = await taskRepo.createTask(
+      await taskRepo.createTask(
         title: 'A',
         recurrenceType: RecurrenceType.daily,
         startDate: d(2026, 7, 1),

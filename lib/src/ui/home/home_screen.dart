@@ -14,7 +14,6 @@ import '../proof/proof_entry.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/cairn_dialog.dart';
-import '../widgets/message_snack_bar.dart';
 import '../widgets/plus_glyph.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/wordmark_glyph.dart';

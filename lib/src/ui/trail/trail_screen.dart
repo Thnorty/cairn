@@ -21,7 +21,6 @@ import '../widgets/cairn_dialog.dart';
 import '../widgets/cairn_stack.dart';
 import '../widgets/ghost_cairn.dart';
 import '../widgets/glyphs.dart';
-import '../widgets/message_snack_bar.dart';
 import '../widgets/plus_glyph.dart';
 import '../widgets/screen_header.dart';
 
