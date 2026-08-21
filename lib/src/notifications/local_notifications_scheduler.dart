@@ -20,11 +20,11 @@ import 'pending_notification.dart';
 ///
 /// Scheduling is deliberately **inexact**
 /// ([AndroidScheduleMode.inexactAllowWhileIdle]): exact alarms on Android
-/// 12+ need the `SCHEDULE_EXACT_ALARM`/`USE_EXACT_ALARM` permission, which
-/// Play reviews as a restricted permission and which is meant for alarm
-/// clocks and calendar events, not habit nudges. A reminder that lands a few
-/// minutes late is fine; a Play policy rejection is not. `allowWhileIdle` is
-/// what still gets it delivered when the device is in Doze.
+/// 12+ need special alarm access. `USE_EXACT_ALARM` is Play-restricted to
+/// qualifying core use cases, while `SCHEDULE_EXACT_ALARM` adds a separate
+/// user-granted permission flow. Cairn avoids both for habit nudges.
+/// `allowWhileIdle` is what still gets an inexact reminder delivered when the
+/// device is in Doze.
 class LocalNotificationsScheduler implements NotificationScheduler {
   LocalNotificationsScheduler({FlutterLocalNotificationsPlugin? plugin})
       : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
@@ -84,7 +84,9 @@ class LocalNotificationsScheduler implements NotificationScheduler {
         // so a fully-opaque launcher icon renders as a solid white square -
         // which is exactly what the first device run showed. `ic_stat_cairn`
         // is the cairn shape on a transparent background, built for this.
-        android: AndroidInitializationSettings('@drawable/ic_stat_cairn'),
+        // It is referenced by runtime name, so res/raw/keep.xml must retain it
+        // when release resource shrinking is enabled.
+        android: AndroidInitializationSettings('ic_stat_cairn'),
       ),
       onDidReceiveNotificationResponse: _handleResponse,
     );

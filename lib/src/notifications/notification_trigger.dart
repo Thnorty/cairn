@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:flutter/widgets.dart';
 
@@ -93,8 +94,16 @@ class NotificationTrigger {
     try {
       final plan = await _resolvePlanner().plan();
       await _resolveScheduler().scheduleAll(plan);
-    } catch (_) {
-      // Never let a planning/scheduling failure crash the app.
+    } catch (error, stackTrace) {
+      // Never let a planning/scheduling failure crash the app, but keep it
+      // visible in device logs so a release-only platform failure is not
+      // mistaken for a successfully registered schedule.
+      developer.log(
+        'Notification planning or scheduling failed.',
+        name: 'cairn.notifications',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 

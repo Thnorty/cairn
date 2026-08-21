@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  flutter_local_notifications resolves the small icon from a runtime string,
+  so Android's release resource shrinker cannot discover the reference by
+  following compiled resources. Keep it explicitly or plugin initialization
+  fails with invalid_icon and no notification channels or alarms are created.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_cairn" />
