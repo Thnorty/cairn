@@ -111,9 +111,9 @@ Full rationale for every decision below lives in `docs/proof-todo-app-guideline.
 
 ## Git
 
-- **Never run `git commit`, `git add`, `git push`, or any other state-changing git command.** The human owns all commits.
-- After completing a phase or a meaningful step, **print a suggested commit message** in a code block for the human to copy. Use conventional-commit style (`feat:`, `fix:`, `test:`, `chore:`), a concise subject line, and a short body listing what changed and why.
-- Read-only git commands (`git status`, `git diff`, `git log`) are fine.
+- **Commit and push upon completing important milestones and verified steps.** (Decided 2026-08-24).
+- Use conventional-commit style (`feat:`, `fix:`, `test:`, `chore:`), a concise subject line, and a short body listing what changed and why.
+- Ensure all tests pass (`flutter analyze` and `flutter test`) before committing and pushing.
 
 ## Character restriction
 
