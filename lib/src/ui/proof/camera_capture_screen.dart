@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart' show MaterialPageRoute, Scaffold;
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -114,6 +115,7 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
   /// `ProofFlowService.submitCapturedProof`.
   Future<void> _handleShutter() async {
     if (_busy || _phase != _CameraPhase.live) return;
+    unawaited(HapticFeedback.mediumImpact());
     setState(() => _busy = true);
     try {
       final path = await _session.takePicture();
@@ -339,6 +341,7 @@ class _CameraCaptureScreenState extends ConsumerState<CameraCaptureScreen> {
           _BottomControls(
             galleryLabel: l10n.galleryButton,
             flipLabel: l10n.flipCameraButton,
+            shutterLabel: l10n.shutterButton,
             onGallery: _busy ? null : _pickFromGallery,
             onShutter: _phase == _CameraPhase.live && !_busy ? _handleShutter : null,
             onFlip: _phase == _CameraPhase.live && _session.hasMultipleCameras && !_busy
@@ -395,6 +398,7 @@ class _BottomControls extends StatelessWidget {
   const _BottomControls({
     required this.galleryLabel,
     required this.flipLabel,
+    required this.shutterLabel,
     required this.onGallery,
     required this.onShutter,
     required this.onFlip,
@@ -403,6 +407,7 @@ class _BottomControls extends StatelessWidget {
 
   final String galleryLabel;
   final String flipLabel;
+  final String shutterLabel;
   final VoidCallback? onGallery;
   final VoidCallback? onShutter;
   final VoidCallback? onFlip;
@@ -423,7 +428,11 @@ class _BottomControls extends StatelessWidget {
             onTap: onGallery,
           ),
           if (showShutter)
-            _ShutterButton(key: const ValueKey('camera-shutter'), onTap: onShutter)
+            _ShutterButton(
+              key: const ValueKey('camera-shutter'),
+              label: shutterLabel,
+              onTap: onShutter,
+            )
           else
             const SizedBox(width: 82, height: 82),
           if (showShutter)
@@ -456,38 +465,43 @@ class _IconLabelButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null;
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Opacity(
-        opacity: enabled ? 1 : 0.4,
-        child: SizedBox(
-          width: 62,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: const Color(0x80282420),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.cameraGlassBorder),
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Opacity(
+          opacity: enabled ? 1 : 0.4,
+          child: SizedBox(
+            width: 62,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: const Color(0x80282420),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.cameraGlassBorder),
+                  ),
+                  alignment: Alignment.center,
+                  child: icon,
                 ),
-                alignment: Alignment.center,
-                child: icon,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontFamily: 'Work Sans',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 11,
-                  color: Color(0xFFE4DECE),
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontFamily: 'Work Sans',
+                    fontWeight: FontWeight.w500,
+                    fontSize: 11,
+                    color: Color(0xFFE4DECE),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -496,30 +510,36 @@ class _IconLabelButton extends StatelessWidget {
 }
 
 class _ShutterButton extends StatelessWidget {
-  const _ShutterButton({super.key, required this.onTap});
+  const _ShutterButton({super.key, required this.label, required this.onTap});
 
+  final String label;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null;
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Opacity(
-        opacity: enabled ? 1 : 0.4,
-        child: Container(
-          width: 82,
-          height: 82,
-          padding: const EdgeInsets.all(5),
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: Color(0x47F4F0E6),
-          ),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Opacity(
+          opacity: enabled ? 1 : 0.4,
+          child: Container(
+            width: 82,
+            height: 82,
+            padding: const EdgeInsets.all(5),
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: AppGradients.terracottaButton,
+              color: Color(0x47F4F0E6),
+            ),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: AppGradients.terracottaButton,
+              ),
             ),
           ),
         ),

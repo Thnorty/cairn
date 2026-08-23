@@ -56,10 +56,21 @@ void main() {
   }
 
   bool isTileSelected(WidgetTester tester, StoneStyle style) {
+    final tileFinder = find.byKey(ValueKey('stone-style-tile-${style.name}'));
+    final animatedContainerFinder = find.descendant(
+      of: tileFinder,
+      matching: find.byType(AnimatedContainer),
+    );
+    if (animatedContainerFinder.evaluate().isNotEmpty) {
+      final container = tester.widget<AnimatedContainer>(animatedContainerFinder.first);
+      final decoration = container.decoration as BoxDecoration;
+      final border = decoration.border as Border;
+      return border.top.color == AppColors.sage;
+    }
     final decoratedBox = tester
         .widgetList<DecoratedBox>(
           find.descendant(
-            of: find.byKey(ValueKey('stone-style-tile-${style.name}')),
+            of: tileFinder,
             matching: find.byType(DecoratedBox),
           ),
         )

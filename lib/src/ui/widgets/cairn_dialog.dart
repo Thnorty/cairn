@@ -152,7 +152,7 @@ class CairnDialog extends StatelessWidget {
   }
 }
 
-class _DialogButton extends StatelessWidget {
+class _DialogButton extends StatefulWidget {
   const _DialogButton({
     required this.label,
     required this.onPressed,
@@ -166,11 +166,36 @@ class _DialogButton extends StatelessWidget {
   final CairnDialogTone tone;
 
   @override
+  State<_DialogButton> createState() => _DialogButtonState();
+}
+
+class _DialogButtonState extends State<_DialogButton> {
+  bool _pressed = false;
+
+  void _handleTapDown(TapDownDetails details) {
+    if (widget.onPressed != null && mounted) {
+      setState(() => _pressed = true);
+    }
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    if (_pressed && mounted) {
+      setState(() => _pressed = false);
+    }
+  }
+
+  void _handleTapCancel() {
+    if (_pressed && mounted) {
+      setState(() => _pressed = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final BoxDecoration decoration;
     final TextStyle textStyle;
 
-    if (isSecondary) {
+    if (widget.isSecondary) {
       decoration = BoxDecoration(
         color: AppColors.dialogCancelBg,
         border: Border.all(color: AppColors.dialogCancelBorder),
@@ -180,7 +205,7 @@ class _DialogButton extends StatelessWidget {
         color: AppColors.textMuted,
       );
     } else {
-      final (gradient, shadows) = switch (tone) {
+      final (gradient, shadows) = switch (widget.tone) {
         CairnDialogTone.sage => (
             AppGradients.sageButton,
             AppShadows.sageButtonSmall,
@@ -206,28 +231,36 @@ class _DialogButton extends StatelessWidget {
       textStyle = AppTextStyles.buttonLabelMedium;
     }
 
-    final enabled = onPressed != null;
+    final enabled = widget.onPressed != null;
     return Material(
       type: MaterialType.transparency,
       child: Semantics(
         button: true,
         enabled: enabled,
-        label: label,
+        label: widget.label,
         child: MouseRegion(
           cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
           child: GestureDetector(
-            onTap: onPressed,
+            onTap: widget.onPressed,
+            onTapDown: enabled ? _handleTapDown : null,
+            onTapUp: enabled ? _handleTapUp : null,
+            onTapCancel: enabled ? _handleTapCancel : null,
             behavior: HitTestBehavior.opaque,
-            child: Opacity(
-              opacity: enabled ? 1.0 : 0.5,
-              child: Container(
-                padding: const EdgeInsetsDirectional.symmetric(vertical: 14),
-                alignment: Alignment.center,
-                decoration: decoration,
-                child: Text(
-                  label,
-                  style: textStyle,
-                  textAlign: TextAlign.center,
+            child: AnimatedScale(
+              scale: (enabled && _pressed) ? 0.97 : 1.0,
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeOutCubic,
+              child: Opacity(
+                opacity: enabled ? 1.0 : 0.5,
+                child: Container(
+                  padding: const EdgeInsetsDirectional.symmetric(vertical: 14),
+                  alignment: Alignment.center,
+                  decoration: decoration,
+                  child: Text(
+                    widget.label,
+                    style: textStyle,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ),

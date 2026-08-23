@@ -104,12 +104,16 @@ class _TimeSlotRow extends StatelessWidget {
               Text(label, style: AppTextStyles.taskTitle.copyWith(fontSize: 18)),
             ],
           ),
-          GestureDetector(
-            onTap: onRemove,
-            behavior: HitTestBehavior.opaque,
-            child: const Padding(
-              padding: EdgeInsetsDirectional.all(2),
-              child: CloseGlyph(color: AppColors.textInactive, size: 18),
+          Semantics(
+            button: true,
+            label: 'Remove $label',
+            child: GestureDetector(
+              onTap: onRemove,
+              behavior: HitTestBehavior.opaque,
+              child: const Padding(
+                padding: EdgeInsetsDirectional.all(2),
+                child: CloseGlyph(color: AppColors.textInactive, size: 18),
+              ),
             ),
           ),
         ],

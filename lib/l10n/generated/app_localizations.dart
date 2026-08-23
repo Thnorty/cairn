@@ -458,6 +458,12 @@ abstract class AppLocalizations {
   /// **'Flip'**
   String get flipCameraButton;
 
+  /// Accessibility label for the camera shutter button on the camera capture screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get shutterButton;
+
   /// Title shown while a captured photo is being sent for verification.
   ///
   /// In en, this message translates to:

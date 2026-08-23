@@ -286,34 +286,39 @@ class _GlassButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
-    return GestureDetector(
-      onTap: onPressed,
-      behavior: HitTestBehavior.opaque,
-      child: Opacity(
-        opacity: enabled ? 1 : 0.5,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsetsDirectional.symmetric(vertical: 15),
-          decoration: BoxDecoration(
-            color: const Color(0x8028241C),
-            borderRadius: BorderRadius.circular(AppRadii.buttonMedium),
-            border: Border.all(color: AppColors.cameraGlassBorder),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const RefreshCycleGlyph(color: AppColors.chipInactiveLight, size: 18),
-              const SizedBox(width: 9),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontFamily: 'Work Sans',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                  color: AppColors.chipInactiveLight,
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: label,
+      child: GestureDetector(
+        onTap: onPressed,
+        behavior: HitTestBehavior.opaque,
+        child: Opacity(
+          opacity: enabled ? 1 : 0.5,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsetsDirectional.symmetric(vertical: 15),
+            decoration: BoxDecoration(
+              color: const Color(0x8028241C),
+              borderRadius: BorderRadius.circular(AppRadii.buttonMedium),
+              border: Border.all(color: AppColors.cameraGlassBorder),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const RefreshCycleGlyph(color: AppColors.chipInactiveLight, size: 18),
+                const SizedBox(width: 9),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontFamily: 'Work Sans',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    color: AppColors.chipInactiveLight,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

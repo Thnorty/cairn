@@ -10,20 +10,21 @@ void main() {
     WidgetTester tester, {
     required bool value,
     ValueChanged<bool>? onChanged,
-  }) {
-    return tester.pumpWidget(
+  }) async {
+    await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: Center(child: CairnSwitch(value: value, onChanged: onChanged)),
         ),
       ),
     );
+    await tester.pumpAndSettle();
   }
 
-  Container track(WidgetTester tester) => tester.widget<Container>(
+  AnimatedContainer track(WidgetTester tester) => tester.widget<AnimatedContainer>(
         find.descendant(
           of: find.byType(CairnSwitch),
-          matching: find.byType(Container),
+          matching: find.byType(AnimatedContainer),
         ).first,
       );
 

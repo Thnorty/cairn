@@ -66,6 +66,16 @@ void main() {
   }
 
   bool isPlanSelected(WidgetTester tester, Key key) {
+    final animatedContainerFinder = find.descendant(
+      of: find.byKey(key),
+      matching: find.byType(AnimatedContainer),
+    );
+    if (animatedContainerFinder.evaluate().isNotEmpty) {
+      final container = tester.widget<AnimatedContainer>(animatedContainerFinder.first);
+      final decoration = container.decoration as BoxDecoration;
+      final border = decoration.border as Border;
+      return border.top.color == AppColors.sage;
+    }
     final decoratedBox = tester
         .widgetList<DecoratedBox>(
           find.descendant(of: find.byKey(key), matching: find.byType(DecoratedBox)),
@@ -381,7 +391,7 @@ void main() {
       await tester.ensureVisible(find.text('Monthly'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Monthly'));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(isPlanSelected(tester, yearlyKey), isFalse);
       expect(isPlanSelected(tester, monthlyKey), isTrue);

@@ -311,7 +311,9 @@ class _HabitChip extends StatelessWidget {
         // comment) so it never depends on its host remembering one.
         child: Material(
           type: MaterialType.transparency,
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
             padding: selected
                 ? const EdgeInsetsDirectional.fromSTEB(11, 8, 14, 8)
                 : const EdgeInsetsDirectional.symmetric(

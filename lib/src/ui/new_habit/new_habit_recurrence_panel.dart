@@ -103,7 +103,9 @@ class _RecurrenceChip extends StatelessWidget {
         child: GestureDetector(
           onTap: onTap,
           behavior: HitTestBehavior.opaque,
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
             padding: const EdgeInsetsDirectional.symmetric(vertical: 13),
             alignment: Alignment.center,
             decoration: BoxDecoration(
@@ -158,12 +160,14 @@ class DayCircle extends StatelessWidget {
   const DayCircle({
     super.key,
     required this.label,
+    this.semanticLabel,
     required this.selected,
     required this.onTap,
     this.fontSize = 14,
   });
 
   final String label;
+  final String? semanticLabel;
   final bool selected;
   final VoidCallback onTap;
   final double fontSize;
@@ -175,7 +179,7 @@ class DayCircle extends StatelessWidget {
       child: Semantics(
         button: true,
         selected: selected,
-        label: label,
+        label: semanticLabel ?? label,
         child: GestureDetector(
           onTap: onTap,
           behavior: HitTestBehavior.opaque,
@@ -256,6 +260,7 @@ class WeeklyDayPanel extends StatelessWidget {
                   child: DayCircle(
                     key: ValueKey('weekday-circle-$isoWeekday'),
                     label: narrowWeekdayLabel(isoWeekday, locale),
+                    semanticLabel: weekdayFullName(isoWeekday, locale),
                     selected: selectedDays.contains(isoWeekday),
                     onTap: () => onToggleDay(isoWeekday),
                   ),
@@ -393,6 +398,7 @@ class MonthlyPanel extends StatelessWidget {
                     child: DayCircle(
                       key: ValueKey('month-weekday-circle-$isoWeekday'),
                       label: narrowWeekdayLabel(isoWeekday, locale),
+                      semanticLabel: weekdayFullName(isoWeekday, locale),
                       fontSize: 13,
                       selected: monthWeekday == isoWeekday,
                       onTap: () => onMonthWeekdayChanged(isoWeekday),

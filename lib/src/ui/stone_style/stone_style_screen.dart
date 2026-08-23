@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' show Material, MaterialPageRoute, MaterialType;
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -92,10 +93,12 @@ class _StoneStyleScreenState extends ConsumerState<StoneStyleScreen> {
       openPremiumScreen(context);
       return;
     }
+    HapticFeedback.selectionClick();
     setState(() => _selected = style);
   }
 
   Future<void> _handleApply(StoneStyle target) async {
+    HapticFeedback.mediumImpact();
     setState(() => _applying = true);
     await ref.read(settingsRepositoryProvider).setStoneStyle(target);
     ref.invalidate(storedStoneStyleProvider);
@@ -327,7 +330,9 @@ class _StyleTile extends StatelessWidget {
         ? AppTextStyles.stoneStyleTileDescription.copyWith(color: AppColors.textFaint)
         : AppTextStyles.stoneStyleTileDescription;
 
-    final tile = DecoratedBox(
+    final tile = AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
       decoration: BoxDecoration(
         gradient: gradient,
         borderRadius: radius,

@@ -287,6 +287,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get flipCameraButton => 'Flip';
 
   @override
+  String get shutterButton => 'Take photo';
+
+  @override
   String get verifyingTitle => 'Verifying…';
 
   @override

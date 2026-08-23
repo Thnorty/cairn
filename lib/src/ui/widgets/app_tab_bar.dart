@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' show Material, MaterialType;
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter/widgets.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
@@ -98,7 +99,10 @@ class _TabItem extends StatelessWidget {
       selected: selected,
       label: label,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
         behavior: HitTestBehavior.opaque,
         // The opaque hit area fills the tab's Expanded slot width; the
         // vertical padding makes it taller than the icon+label alone, so a

@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter/widgets.dart';
 
 import '../theme/app_colors.dart';
@@ -58,9 +59,16 @@ class CairnSwitch extends StatelessWidget {
       enabled: changed != null,
       label: semanticLabel,
       child: GestureDetector(
-        onTap: changed == null ? null : () => changed(!value),
+        onTap: changed == null
+            ? null
+            : () {
+                HapticFeedback.selectionClick();
+                changed(!value);
+              },
         behavior: HitTestBehavior.opaque,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
           width: _trackWidth,
           height: _trackHeight,
           padding: const EdgeInsetsDirectional.symmetric(horizontal: _knobInset),

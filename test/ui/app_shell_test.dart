@@ -198,6 +198,29 @@ void main() {
 
       expect(find.text('No active tasks. Tap + to add one.'), findsOneWidget);
     });
+
+    testAppShellWidgets(
+      'pressing back on a secondary tab navigates back to Today',
+      (tester) async {
+        await pumpShell(tester);
+
+        // Initially on Today
+        expect(find.text('Your first stone is waiting'), findsOneWidget);
+
+        // Switch to Stats tab
+        await tester.tap(find.text('Stats'));
+        await tester.pumpAndSettle();
+        expect(find.text('YOUR GROUND'), findsOneWidget);
+
+        // Trigger system back
+        final dynamic widgetsAppState = tester.state(find.byType(WidgetsApp));
+        await widgetsAppState.didPopRoute();
+        await tester.pumpAndSettle();
+
+        // Returns to Today tab
+        expect(find.text('Your first stone is waiting'), findsOneWidget);
+      },
+    );
   });
 
   // Regression coverage for the missing-`Material`-ancestor bug: every one

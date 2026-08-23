@@ -196,4 +196,76 @@ void main() {
       },
     );
   });
+
+  group('Button press animation physics', () {
+    testWidgets('scales down on press and returns to 1.0 on release', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        PrimaryButton(label: 'Prove it', onPressed: () {}),
+      );
+
+      final animatedScaleFinder = find.byType(AnimatedScale);
+      expect(animatedScaleFinder, findsOneWidget);
+
+      AnimatedScale scaleWidget() =>
+          tester.widget<AnimatedScale>(animatedScaleFinder);
+
+      // Initially at resting scale 1.0
+      expect(scaleWidget().scale, 1.0);
+
+      // Press down
+      final gesture = await tester.startGesture(tester.getCenter(find.text('Prove it')));
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(scaleWidget().scale, 0.97);
+
+      // Release finger
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(scaleWidget().scale, 1.0);
+    });
+
+    testWidgets('resets scale to 1.0 when gesture is canceled (drag out)', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        PrimaryButton(label: 'Prove it', onPressed: () {}),
+      );
+
+      final animatedScaleFinder = find.byType(AnimatedScale);
+      AnimatedScale scaleWidget() =>
+          tester.widget<AnimatedScale>(animatedScaleFinder);
+
+      // Press down
+      final gesture = await tester.startGesture(tester.getCenter(find.text('Prove it')));
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(scaleWidget().scale, 0.97);
+
+      // Cancel gesture (drag far away / cancel)
+      await gesture.cancel();
+      await tester.pumpAndSettle();
+      expect(scaleWidget().scale, 1.0);
+    });
+
+    testWidgets('does not scale when disabled', (tester) async {
+      await pump(
+        tester,
+        PrimaryButton(label: 'Prove it', onPressed: null),
+      );
+
+      final animatedScaleFinder = find.byType(AnimatedScale);
+      AnimatedScale scaleWidget() =>
+          tester.widget<AnimatedScale>(animatedScaleFinder);
+
+      final gesture = await tester.startGesture(tester.getCenter(find.text('Prove it')));
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(scaleWidget().scale, 1.0);
+
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(scaleWidget().scale, 1.0);
+    });
+  });
 }

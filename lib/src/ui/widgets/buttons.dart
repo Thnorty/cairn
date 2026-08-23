@@ -190,15 +190,40 @@ class TextGhostButton extends StatelessWidget {
 /// build() comment). `MaterialType.transparency` fixes text inheritance
 /// without painting anything of its own, so it can't cover the button's own
 /// gradient/fill.
-class _Pressable extends StatelessWidget {
+class _Pressable extends StatefulWidget {
   const _Pressable({required this.onPressed, required this.child});
 
   final VoidCallback? onPressed;
   final Widget child;
 
   @override
+  State<_Pressable> createState() => _PressableState();
+}
+
+class _PressableState extends State<_Pressable> {
+  bool _pressed = false;
+
+  void _handleTapDown(TapDownDetails details) {
+    if (widget.onPressed != null && mounted) {
+      setState(() => _pressed = true);
+    }
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    if (_pressed && mounted) {
+      setState(() => _pressed = false);
+    }
+  }
+
+  void _handleTapCancel() {
+    if (_pressed && mounted) {
+      setState(() => _pressed = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final enabled = onPressed != null;
+    final enabled = widget.onPressed != null;
     return Material(
       type: MaterialType.transparency,
       child: Semantics(
@@ -209,8 +234,20 @@ class _Pressable extends StatelessWidget {
               ? SystemMouseCursors.click
               : SystemMouseCursors.basic,
           child: GestureDetector(
-            onTap: onPressed,
-            child: Opacity(opacity: enabled ? 1 : 0.5, child: child),
+            onTap: widget.onPressed,
+            onTapDown: enabled ? _handleTapDown : null,
+            onTapUp: enabled ? _handleTapUp : null,
+            onTapCancel: enabled ? _handleTapCancel : null,
+            behavior: HitTestBehavior.opaque,
+            child: AnimatedScale(
+              scale: (enabled && _pressed) ? 0.97 : 1.0,
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeOutCubic,
+              child: Opacity(
+                opacity: enabled ? 1.0 : 0.5,
+                child: widget.child,
+              ),
+            ),
           ),
         ),
       ),

@@ -429,6 +429,11 @@
     "description": "Camera capture screen control: switches between front and rear camera."
   },
 
+  "shutterButton": "Take photo",
+  "@shutterButton": {
+    "description": "Accessibility label for the camera shutter button on the camera capture screen."
+  },
+
   "verifyingTitle": "Verifying…",
   "@verifyingTitle": {
     "description": "Title shown while a captured photo is being sent for verification."

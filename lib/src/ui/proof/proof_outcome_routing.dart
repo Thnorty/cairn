@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart' show MaterialPageRoute;
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -93,6 +95,7 @@ Future<bool> routeToProofOutcome(
       // this stone caps the cairn: "Cairn N · 10 · new stone placed").
       final cairn = await completionRepo.currentCairnFor(taskId);
       if (!context.mounted) return true;
+      unawaited(HapticFeedback.mediumImpact());
       // Only a *verified* completion can ever show the Cairn Complete
       // celebration: AGENTS.md's pending-completion rule withholds every
       // bonus (the cap bonus included) until the proof actually verifies,
@@ -107,7 +110,9 @@ Future<bool> routeToProofOutcome(
         cairnNumber: cairn.index,
         stoneCount: cairn.stoneCount,
         onDone: cappedNow
-            ? () => navigator.push(MaterialPageRoute<void>(
+            ? () {
+                unawaited(HapticFeedback.heavyImpact());
+                navigator.push(MaterialPageRoute<void>(
                   builder: (_) => CairnCompleteScreen(
                     taskTitle: taskTitle,
                     cairnNumber: cairn.index,
@@ -120,12 +125,14 @@ Future<bool> routeToProofOutcome(
                     // only reveal VerifyResultScreen again.
                     onDone: () => navigator.popUntil((r) => r.isFirst),
                   ),
-                ))
+                ));
+              }
             : popToHome,
       ));
       return true;
 
     case CompletionPendingVerification(:final completion):
+      unawaited(HapticFeedback.lightImpact());
       go(VerifyPendingScreen(
         taskTitle: taskTitle,
         completedAtMillis: completion.completedAt,
@@ -140,6 +147,7 @@ Future<bool> routeToProofOutcome(
       // current cairn.
       final cairn = await completionRepo.currentCairnFor(taskId);
       if (!context.mounted) return true;
+      unawaited(HapticFeedback.vibrate());
       go(VerifyFailedScreen(
         taskTitle: taskTitle,
         atMillis: clock.nowEpochMillis(),
@@ -156,6 +164,7 @@ Future<bool> routeToProofOutcome(
     case CompletionRejectedStalePhoto(:final photoAgeMillis):
       final attemptsUsed = await completionRepo.attemptsUsedToday(taskId);
       if (!context.mounted) return true;
+      unawaited(HapticFeedback.vibrate());
       final remaining = policy.attemptsPerTaskPerDay - attemptsUsed;
       // A stale photo never burns an attempt (see
       // CompletionRejectedStalePhoto's own doc comment), so [remaining] here
@@ -190,6 +199,7 @@ Future<bool> routeToProofOutcome(
     case CompletionRejectedDailyCapReached():
       // A daily-cap rejection can only occur when a cap is configured
       // (ProofPolicy.dailyCap != null).
+      unawaited(HapticFeedback.vibrate());
       go(DailyLimitScreen(
         dailyCap: policy.dailyCap!,
         // Pushed via the captured `navigator`, not `openPremiumScreen`'s own
@@ -205,6 +215,7 @@ Future<bool> routeToProofOutcome(
     case CompletionRejectedAttemptsExhausted():
       final cairn = await completionRepo.currentCairnFor(taskId);
       if (!context.mounted) return true;
+      unawaited(HapticFeedback.vibrate());
       go(VerifyFailedScreen(
         taskTitle: taskTitle,
         atMillis: clock.nowEpochMillis(),

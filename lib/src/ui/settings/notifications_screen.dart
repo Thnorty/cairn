@@ -305,7 +305,11 @@ class _RowShell extends StatelessWidget {
     return GestureDetector(
       onTap: tap,
       behavior: HitTestBehavior.opaque,
-      child: dimmed,
+      child: Semantics(
+        button: true,
+        label: title,
+        child: dimmed,
+      ),
     );
   }
 }

@@ -73,20 +73,29 @@ class _AppShellState extends State<AppShell> {
     // cover `ScreenBackground`'s parchment colour/washes/contour beneath
     // it; it exists purely to fix text/ink inheritance for every
     // descendant (the tab bar and whatever each real screen paints).
-    return Material(
-      type: MaterialType.transparency,
-      child: ScreenBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: IndexedStack(index: _index, children: bodies),
-              ),
-              AppTabBar(
-                currentIndex: _index,
-                onTap: (i) => setState(() => _index = i),
-              ),
-            ],
+    return PopScope(
+      canPop: _index == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        if (_index != 0) {
+          setState(() => _index = 0);
+        }
+      },
+      child: Material(
+        type: MaterialType.transparency,
+        child: ScreenBackground(
+          child: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: IndexedStack(index: _index, children: bodies),
+                ),
+                AppTabBar(
+                  currentIndex: _index,
+                  onTap: (i) => setState(() => _index = i),
+                ),
+              ],
+            ),
           ),
         ),
       ),

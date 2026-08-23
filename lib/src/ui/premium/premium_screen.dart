@@ -726,7 +726,9 @@ class _PlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(AppRadii.rowCard);
-    final card = DecoratedBox(
+    final card = AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
       decoration: BoxDecoration(
         gradient: selected ? AppGradients.premiumBg : AppGradients.chipInactive,
         borderRadius: radius,
@@ -1116,21 +1118,26 @@ class _ManageSubscriptionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final label = AppLocalizations.of(context)!.premiumManageSubscriptionButton;
     return GestureDetector(
       onTap: onPressed,
       behavior: HitTestBehavior.opaque,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(17),
-        decoration: BoxDecoration(
-          gradient: AppGradients.chipInactive,
-          borderRadius: BorderRadius.circular(26),
-          border: Border.all(color: AppColors.premiumUnselectedCardBorder, width: 1.5),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          AppLocalizations.of(context)!.premiumManageSubscriptionButton,
-          style: AppTextStyles.buttonLabelLarge.copyWith(color: AppColors.inkDimmed),
+      child: Semantics(
+        button: true,
+        label: label,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(17),
+          decoration: BoxDecoration(
+            gradient: AppGradients.chipInactive,
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: AppColors.premiumUnselectedCardBorder, width: 1.5),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: AppTextStyles.buttonLabelLarge.copyWith(color: AppColors.inkDimmed),
+          ),
         ),
       ),
     );
