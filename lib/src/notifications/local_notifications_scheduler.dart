@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -69,12 +70,13 @@ class LocalNotificationsScheduler implements NotificationScheduler {
     try {
       final info = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(info.identifier));
-    } catch (_) {
-      // Leaves `tz.local` as UTC. Benign: `zonedSchedule` fires on an
-      // absolute instant, and `TZDateTime.from` below converts from a
-      // DateTime that already carries the correct instant, so the reminder
-      // still lands at the right wall-clock moment either way. Only
-      // hypothetical future features that *format* a TZDateTime would care.
+    } catch (error, stackTrace) {
+      developer.log(
+        'Failed to configure local timezone, falling back to UTC.',
+        name: 'cairn.notifications',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
 
     await _plugin.initialize(
@@ -162,20 +164,38 @@ class LocalNotificationsScheduler implements NotificationScheduler {
     await _plugin.cancelAll();
 
     for (final notification in notifications) {
+      final scheduledDate =
+          tz.TZDateTime.from(notification.scheduledFor, tz.local);
       try {
         await _plugin.zonedSchedule(
           id: notification.id,
           title: notification.title,
           body: notification.body,
           payload: notification.payload,
-          scheduledDate: tz.TZDateTime.from(notification.scheduledFor, tz.local),
+          scheduledDate: scheduledDate,
           notificationDetails: _detailsFor(notification.kind),
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         );
-      } catch (_) {
-        // Per-notification, so one rejected entry (a date the platform
-        // dislikes, a transient plugin error) costs only itself instead of
-        // silently truncating the rest of the plan.
+      } catch (exactError) {
+        // Fallback to inexactAllowWhileIdle if exact alarms are not permitted on this device
+        try {
+          await _plugin.zonedSchedule(
+            id: notification.id,
+            title: notification.title,
+            body: notification.body,
+            payload: notification.payload,
+            scheduledDate: scheduledDate,
+            notificationDetails: _detailsFor(notification.kind),
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          );
+        } catch (error, stackTrace) {
+          developer.log(
+            'Failed to schedule notification ${notification.id} for ${notification.scheduledFor}',
+            name: 'cairn.notifications',
+            error: error,
+            stackTrace: stackTrace,
+          );
+        }
       }
     }
   }

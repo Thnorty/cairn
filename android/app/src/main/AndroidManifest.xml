@@ -14,6 +14,8 @@
          here too so it's visible as an intentional part of THIS app rather than
          an implicit merge. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Exact alarms for reliable habit reminder and streak warning delivery. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <!-- So a scheduled reminder/streak-warning survives a device reboot instead
          of silently vanishing until the app is next opened (see the boot
          receiver declared below, between <application> tags). -->
