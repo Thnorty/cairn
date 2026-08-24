@@ -7,24 +7,45 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Top Row: Big Altitude Hero + Streak Badge -->
+    <!-- Top Row: Big Altitude Hero & Rank Pill (Left) + Streak Badge (Right) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
+        android:gravity="top"
         android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/widget_glance_altitude"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="0 m"
-            android:textColor="#33302B"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/widget_glance_altitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="0 m"
+                android:textColor="#33302B"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_glance_rank"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:background="@drawable/widget_chip_sage"
+                android:paddingStart="7dp"
+                android:paddingEnd="7dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:text="🏔️ Pebble"
+                android:textColor="#445929"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/widget_glance_streak"
@@ -40,17 +61,6 @@
             android:textSize="12sp"
             android:textStyle="bold" />
     </LinearLayout>
-
-    <!-- Rank Subtitle -->
-    <TextView
-        android:id="@+id/widget_glance_rank"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="1dp"
-        android:text="Pebble"
-        android:textColor="#6E6556"
-        android:textSize="12sp"
-        android:textStyle="bold" />
 
     <FrameLayout
         android:layout_width="match_parent"
