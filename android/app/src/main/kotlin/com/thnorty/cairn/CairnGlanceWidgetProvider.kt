@@ -27,25 +27,26 @@ class CairnGlanceWidgetProvider : AppWidgetProvider() {
                 val nextTitle = widgetData.getString("next_task_title", "") ?: ""
                 val nextTime = widgetData.getString("next_task_due_time", "") ?: ""
 
-                // 1. Top row: Altitude & Rank + Streak
-                setTextViewText(R.id.widget_glance_altitude, "$altitude m · $rankName")
+                // 1. Top row: Big Altitude & Rank + Streak
+                setTextViewText(R.id.widget_glance_altitude, "$altitude m")
+                setTextViewText(R.id.widget_glance_rank, "🏔️ $rankName")
                 setTextViewText(R.id.widget_glance_streak, "🔥 ${streak}d")
 
-                // 2. Middle: Today progress & next habit preview
-                val progressText = when {
-                    total == 0 -> "No habits today"
-                    remaining == 0 -> "All stones placed! ($done/$total)"
-                    else -> "$done of $total completed"
+                // 2. Middle: Next habit or Status
+                if (total == 0) {
+                    setTextViewText(R.id.widget_glance_today_label, "START CLIMBING")
+                    setTextViewText(R.id.widget_glance_next_preview, "No habits today")
+                    setTextViewText(R.id.widget_glance_today_progress, "Tap to add your first habit")
+                } else if (remaining == 0) {
+                    setTextViewText(R.id.widget_glance_today_label, "TODAY COMPLETE")
+                    setTextViewText(R.id.widget_glance_next_preview, "All stones placed! ✓")
+                    setTextViewText(R.id.widget_glance_today_progress, "$done of $total habits proven")
+                } else {
+                    setTextViewText(R.id.widget_glance_today_label, "NEXT HABIT")
+                    val habitWithTime = if (nextTime.isNotEmpty()) "$nextTitle ($nextTime)" else nextTitle
+                    setTextViewText(R.id.widget_glance_next_preview, habitWithTime.ifEmpty { "Ready to prove" })
+                    setTextViewText(R.id.widget_glance_today_progress, "$done of $total completed · $remaining left")
                 }
-                setTextViewText(R.id.widget_glance_today_progress, progressText)
-
-                val previewText = when {
-                    nextTitle.isNotEmpty() && nextTime.isNotEmpty() -> "Next: $nextTitle ($nextTime)"
-                    nextTitle.isNotEmpty() -> "Next: $nextTitle"
-                    remaining == 0 && total > 0 -> "Streak safe · Great climb!"
-                    else -> "Tap to open Cairn"
-                }
-                setTextViewText(R.id.widget_glance_next_preview, previewText)
 
                 // 3. Bottom row: Weekly stones
                 val weekText = if (stonesThisWeek == 1) "1 stone this week" else "$stonesThisWeek stones this week"
