@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_card_background"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="15dp">
 
     <!-- Top Row: Big Altitude Hero & Rank Pill (Left) + Streak Badge (Right) -->
     <LinearLayout
@@ -67,36 +67,160 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- Middle: Next Habit Highlight or Status -->
-    <TextView
-        android:id="@+id/widget_glance_today_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="NEXT HABIT"
-        android:textColor="#887E6E"
-        android:textSize="10sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/widget_glance_next_preview"
+    <!-- 1. Normal Mode: Habit Title + PROVE Button -->
+    <LinearLayout
+        android:id="@+id/widget_glance_habit_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:text="Read 20 pages"
-        android:textColor="#33302B"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/widget_glance_today_progress"
-        android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/widget_glance_today_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NEXT HABIT"
+                android:textColor="#887E6E"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_glance_next_preview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Read 20 pages"
+                android:textColor="#33302B"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_glance_today_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="1 of 2 completed"
+                android:textColor="#6E6556"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/widget_glance_btn_prove"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/widget_button_terracotta"
+            android:gravity="center"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="9dp"
+            android:paddingBottom="9dp"
+            android:text="PROVE"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- 2. All Done Mode -->
+    <LinearLayout
+        android:id="@+id/widget_glance_all_done_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="0 of 0 completed"
-        android:textColor="#6E6556"
-        android:textSize="12sp" />
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TODAY COMPLETE"
+            android:textColor="#887E6E"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:text="All stones placed! ✓"
+            android:textColor="#33302B"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_glance_all_done_sub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:text="All habits proven today"
+            android:textColor="#6E6556"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- 3. Empty Mode -->
+    <LinearLayout
+        android:id="@+id/widget_glance_empty_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="START CLIMBING"
+                android:textColor="#887E6E"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="No habits today"
+                android:textColor="#33302B"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="Tap to add habit"
+                android:textColor="#6E6556"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/widget_glance_btn_add"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/widget_button_sage"
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="9dp"
+            android:paddingBottom="9dp"
+            android:text="+ NEW"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
