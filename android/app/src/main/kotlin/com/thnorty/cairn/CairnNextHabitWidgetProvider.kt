@@ -33,7 +33,8 @@ class CairnNextHabitWidgetProvider : AppWidgetProvider() {
                 val nextTaskCairnLabel = widgetData.getString("next_task_cairn_label", "") ?: ""
 
                 // 1. Top Header Bar
-                setTextViewText(R.id.widget_header_altitude, "$altitude m · $rankName")
+                setTextViewText(R.id.widget_header_altitude, "$altitude m")
+                setTextViewText(R.id.widget_header_rank, "🏔️ $rankName")
                 setTextViewText(
                     R.id.widget_header_week,
                     if (stonesThisWeek == 1) "1 stone this week" else "$stonesThisWeek stones this week"
