@@ -109,12 +109,14 @@ Full rationale for every decision below lives in `docs/proof-todo-app-guideline.
 - Report exact verification results, deviations from the specification, and any remaining human gates.
 - For work involving credentials, privileged APIs, or deletion, pass the detailed work order by file reference instead of embedding security-sensitive text in an inline command.
 
-## Git
+## Git & Releases
 
 - **Commit and push upon completing important milestones and verified steps.** (Decided 2026-08-24).
 - Use conventional-commit style (`feat:`, `fix:`, `test:`, `chore:`), a concise subject line, and a short body listing what changed and why.
 - Ensure all tests pass (`flutter analyze` and `flutter test`) before committing and pushing.
+- **Provide Play Console Release Notes whenever building an `.aab` bundle.** (Decided 2026-08-24). Format with clear, user-facing bullet points ready for pasting into the release track notes.
 
 ## Character restriction
 
 Do not use U+2014. Use another fitting character.
+
