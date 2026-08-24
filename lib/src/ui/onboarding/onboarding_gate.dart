@@ -39,6 +39,7 @@ class _Shell extends StatelessWidget {
   const _Shell();
 
   @override
-  Widget build(BuildContext context) =>
-      const NotificationTapListener(child: AppShell());
+  Widget build(BuildContext context) => const WidgetClickListener(
+        child: NotificationTapListener(child: AppShell()),
+      );
 }

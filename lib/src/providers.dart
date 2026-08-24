@@ -50,6 +50,11 @@ import 'sync/sync_service.dart';
 import 'sync/sync_transport.dart';
 import 'sync/sync_trigger.dart';
 
+export 'widgets/widget_click_listener.dart';
+export 'widgets/widget_snapshot.dart';
+export 'widgets/widget_trigger.dart';
+export 'widgets/widget_updater.dart';
+
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase(driftDatabase(name: 'cairn'));
   ref.onDispose(db.close);
@@ -775,4 +780,5 @@ final notificationTriggerProvider = Provider<NotificationTrigger>((ref) {
   ref.onDispose(trigger.dispose);
   return trigger;
 });
+
 

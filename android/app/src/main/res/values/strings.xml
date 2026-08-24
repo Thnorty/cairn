@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cairn</string>
+    <string name="widget_glance_name">Cairn Glance</string>
+    <string name="widget_next_habit_name">Next Habit &amp; Prove</string>
+</resources>

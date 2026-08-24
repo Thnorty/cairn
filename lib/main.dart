@@ -76,6 +76,7 @@ class CairnApp extends ConsumerWidget {
     ref.watch(authBootstrapProvider);
     ref.watch(syncTriggerProvider);
     ref.watch(notificationTriggerProvider);
+    ref.watch(widgetTriggerProvider);
     final stoneStyle = ref.watch(effectiveStoneStyleProvider);
     return StoneStyleScope(
       style: stoneStyle,
