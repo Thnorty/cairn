@@ -18,20 +18,38 @@ class CairnGlanceWidgetProvider : AppWidgetProvider() {
             val widgetData = HomeWidgetPlugin.getData(context)
             val views = RemoteViews(context.packageName, R.layout.cairn_glance_widget).apply {
                 val altitude = widgetData.getInt("altitude", 0)
+                val rankName = widgetData.getString("rank_name", "Pebble") ?: "Pebble"
                 val streak = widgetData.getInt("active_streak", 0)
                 val remaining = widgetData.getInt("remaining_count", 0)
                 val total = widgetData.getInt("total_count", 0)
+                val done = widgetData.getInt("done_count", 0)
+                val stonesThisWeek = widgetData.getInt("stones_this_week", 0)
+                val nextTitle = widgetData.getString("next_task_title", "") ?: ""
+                val nextTime = widgetData.getString("next_task_due_time", "") ?: ""
 
-                setTextViewText(R.id.widget_glance_altitude, "$altitude m")
+                // 1. Top row: Altitude & Rank + Streak
+                setTextViewText(R.id.widget_glance_altitude, "$altitude m · $rankName")
                 setTextViewText(R.id.widget_glance_streak, "🔥 ${streak}d")
 
-                val remainingText = when {
+                // 2. Middle: Today progress & next habit preview
+                val progressText = when {
                     total == 0 -> "No habits today"
-                    remaining == 0 -> "All done today!"
-                    remaining == 1 -> "1 habit left today"
-                    else -> "$remaining habits left today"
+                    remaining == 0 -> "All stones placed! ($done/$total)"
+                    else -> "$done of $total completed"
                 }
-                setTextViewText(R.id.widget_glance_remaining, remainingText)
+                setTextViewText(R.id.widget_glance_today_progress, progressText)
+
+                val previewText = when {
+                    nextTitle.isNotEmpty() && nextTime.isNotEmpty() -> "Next: $nextTitle ($nextTime)"
+                    nextTitle.isNotEmpty() -> "Next: $nextTitle"
+                    remaining == 0 && total > 0 -> "Streak safe · Great climb!"
+                    else -> "Tap to open Cairn"
+                }
+                setTextViewText(R.id.widget_glance_next_preview, previewText)
+
+                // 3. Bottom row: Weekly stones
+                val weekText = if (stonesThisWeek == 1) "1 stone this week" else "$stonesThisWeek stones this week"
+                setTextViewText(R.id.widget_glance_week_stones, weekText)
 
                 // Launch App on click
                 val pendingIntent = HomeWidgetLaunchIntent.getActivity(

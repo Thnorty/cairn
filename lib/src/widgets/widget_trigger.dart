@@ -8,6 +8,7 @@ import '../providers.dart';
 import '../repo/completion_repository.dart';
 import '../repo/task_repository.dart';
 import '../services/home_service.dart';
+import '../services/points_service.dart';
 import '../services/streak_service.dart';
 
 /// Listens to database updates via [HomeService] and pushes refreshed
@@ -85,11 +86,16 @@ class WidgetTrigger {
       }
     }
 
+    final rank = PointsService().rankFor(altitude);
+
     final snapshot = WidgetSnapshot(
       remainingCount: remainingCount < 0 ? 0 : remainingCount,
       totalCount: home.totalCount,
+      doneCount: home.doneCount,
+      stonesThisWeek: home.stonesThisWeek,
       activeStreak: maxStreak,
       altitude: altitude,
+      rankName: rank.tier.label,
       nextTaskId: nextCard?.taskId,
       nextTaskTitle: nextCard?.taskTitle,
       nextTaskSlot: nextCard?.slot ?? 0,

@@ -4,8 +4,11 @@ class WidgetSnapshot {
   const WidgetSnapshot({
     required this.remainingCount,
     required this.totalCount,
+    required this.doneCount,
+    required this.stonesThisWeek,
     required this.activeStreak,
     required this.altitude,
+    required this.rankName,
     this.nextTaskId,
     this.nextTaskTitle,
     this.nextTaskSlot = 0,
@@ -20,11 +23,20 @@ class WidgetSnapshot {
   /// Total number of scheduled occurrences for today.
   final int totalCount;
 
+  /// Number of occurrences completed today.
+  final int doneCount;
+
+  /// Total completions across all habits in the current week.
+  final int stonesThisWeek;
+
   /// The user's highest active streak count in days across live habits.
   final int activeStreak;
 
   /// Total cumulative metres climbed (verified altitude).
   final int altitude;
+
+  /// The title of the user's current rank tier (e.g. "Pebble", "Ridge", "Summit").
+  final String rankName;
 
   /// Task ID of the next uncompleted occurrence, if any.
   final String? nextTaskId;
@@ -49,8 +61,11 @@ class WidgetSnapshot {
     return {
       'remaining_count': remainingCount,
       'total_count': totalCount,
+      'done_count': doneCount,
+      'stones_this_week': stonesThisWeek,
       'active_streak': activeStreak,
       'altitude': altitude,
+      'rank_name': rankName,
       'next_task_id': nextTaskId ?? '',
       'next_task_title': nextTaskTitle ?? '',
       'next_task_slot': nextTaskSlot,
@@ -67,8 +82,11 @@ class WidgetSnapshot {
           runtimeType == other.runtimeType &&
           remainingCount == other.remainingCount &&
           totalCount == other.totalCount &&
+          doneCount == other.doneCount &&
+          stonesThisWeek == other.stonesThisWeek &&
           activeStreak == other.activeStreak &&
           altitude == other.altitude &&
+          rankName == other.rankName &&
           nextTaskId == other.nextTaskId &&
           nextTaskTitle == other.nextTaskTitle &&
           nextTaskSlot == other.nextTaskSlot &&
@@ -80,8 +98,11 @@ class WidgetSnapshot {
   int get hashCode => Object.hash(
         remainingCount,
         totalCount,
+        doneCount,
+        stonesThisWeek,
         activeStreak,
         altitude,
+        rankName,
         nextTaskId,
         nextTaskTitle,
         nextTaskSlot,

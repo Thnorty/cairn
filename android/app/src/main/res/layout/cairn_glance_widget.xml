@@ -5,31 +5,25 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_card_background"
     android:orientation="vertical"
-    android:padding="14dp">
+    android:padding="13dp">
 
-    <!-- Top row: Cairn icon & Altitude & Streak -->
+    <!-- Top row: Rank & Altitude (Left) + Streak (Right) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <ImageView
-            android:id="@+id/widget_glance_icon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:contentDescription="Cairn"
-            android:src="@drawable/ic_stat_cairn" />
-
         <TextView
             android:id="@+id/widget_glance_altitude"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
             android:layout_weight="1"
-            android:text="0 m"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="0 m · Pebble"
             android:textColor="#33302B"
-            android:textSize="15sp"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
         <TextView
@@ -52,22 +46,38 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- Bottom: Today status -->
+    <!-- Middle section: Today's progress & Next up -->
     <TextView
+        android:id="@+id/widget_glance_today_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TODAY"
-        android:textColor="#887E6E"
-        android:textSize="10sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/widget_glance_remaining"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
         android:text="No habits due"
         android:textColor="#33302B"
         android:textSize="13sp"
         android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/widget_glance_next_preview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="Tap to start climbing"
+        android:textColor="#6E6556"
+        android:textSize="11sp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Bottom row: Weekly stones total -->
+    <TextView
+        android:id="@+id/widget_glance_week_stones"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0 stones this week"
+        android:textColor="#887E6E"
+        android:textSize="10sp" />
 </LinearLayout>

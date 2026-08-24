@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:cairn/src/clock.dart';
 import 'package:cairn/src/db/database.dart';
-import 'package:cairn/src/models/local_date.dart';
 import 'package:cairn/src/models/proof_verdict.dart';
 import 'package:cairn/src/repo/completion_repository.dart';
 import 'package:cairn/src/repo/task_repository.dart';
@@ -27,14 +26,17 @@ void main() {
   late FakeWidgetUpdater updater;
   late WidgetTrigger trigger;
 
-  const testToday = LocalDate(2026, 8, 24);
+  final testToday = d(2026, 7, 10);
 
   setUp(() {
     db = inMemoryDatabase();
     clock = FixedClock(testToday);
     taskRepo = TaskRepository(db, clock);
-    completionRepo =
-        CompletionRepository(db, clock, verifier: FakeProofVerifier());
+    completionRepo = CompletionRepository(
+      db,
+      clock,
+      verifier: FakeProofVerifier(),
+    );
     homeService = HomeService(
       db,
       taskRepo,
@@ -44,7 +46,6 @@ void main() {
     );
     streakService = const StreakService();
     updater = FakeWidgetUpdater();
-
     trigger = WidgetTrigger(
       updater: updater,
       homeService: homeService,
@@ -66,8 +67,11 @@ void main() {
       const snapshot = WidgetSnapshot(
         remainingCount: 2,
         totalCount: 3,
+        doneCount: 1,
+        stonesThisWeek: 4,
         activeStreak: 5,
         altitude: 150,
+        rankName: 'Cairn',
         nextTaskId: 'task-1',
         nextTaskTitle: 'Read 20 pages',
         nextTaskSlot: 0,
@@ -79,8 +83,11 @@ void main() {
       final map = snapshot.toWidgetData();
       expect(map['remaining_count'], 2);
       expect(map['total_count'], 3);
+      expect(map['done_count'], 1);
+      expect(map['stones_this_week'], 4);
       expect(map['active_streak'], 5);
       expect(map['altitude'], 150);
+      expect(map['rank_name'], 'Cairn');
       expect(map['next_task_id'], 'task-1');
       expect(map['next_task_title'], 'Read 20 pages');
       expect(map['next_task_slot'], 0);
@@ -93,14 +100,20 @@ void main() {
       const s1 = WidgetSnapshot(
         remainingCount: 1,
         totalCount: 1,
+        doneCount: 0,
+        stonesThisWeek: 2,
         activeStreak: 3,
         altitude: 50,
+        rankName: 'Pebble',
       );
       const s2 = WidgetSnapshot(
         remainingCount: 1,
         totalCount: 1,
+        doneCount: 0,
+        stonesThisWeek: 2,
         activeStreak: 3,
         altitude: 50,
+        rankName: 'Pebble',
       );
       expect(s1, equals(s2));
       expect(s1.hashCode, equals(s2.hashCode));
@@ -126,6 +139,8 @@ void main() {
       final latest = updater.latestSnapshot!;
       expect(latest.totalCount, 1);
       expect(latest.remainingCount, 1);
+      expect(latest.doneCount, 0);
+      expect(latest.rankName, 'Pebble');
       expect(latest.isAllCompleted, false);
       expect(latest.nextTaskTitle, 'Morning Yoga');
       expect(latest.nextTaskDueTime, '07:00');
@@ -163,6 +178,7 @@ void main() {
       final updated = updater.latestSnapshot!;
       expect(updated.totalCount, 1);
       expect(updated.remainingCount, 0);
+      expect(updated.doneCount, 1);
       expect(updated.isAllCompleted, isTrue);
       expect(updated.altitude, greaterThan(0));
     });

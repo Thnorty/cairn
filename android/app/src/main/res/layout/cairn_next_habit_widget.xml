@@ -5,9 +5,9 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_card_background"
     android:orientation="vertical"
-    android:padding="14dp">
+    android:padding="13dp">
 
-    <!-- Header: Label & Status -->
+    <!-- Top Bar: Altitude & Rank (Left), Week Stones (Middle), Streak & Today (Right) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,12 +15,38 @@
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/widget_header_label"
+            android:id="@+id/widget_header_altitude"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="NEXT HABIT"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="0 m · Pebble"
+            android:textColor="#33302B"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_header_week"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="0 stones this week"
             android:textColor="#887E6E"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/widget_header_streak"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/widget_chip_sage"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:text="🔥 0d"
+            android:textColor="#445929"
             android:textSize="11sp"
             android:textStyle="bold" />
 
@@ -33,7 +59,7 @@
             android:paddingEnd="6dp"
             android:paddingTop="2dp"
             android:paddingBottom="2dp"
-            android:text="2 left"
+            android:text="0/0 done"
             android:textColor="#445929"
             android:textSize="11sp"
             android:textStyle="bold" />
@@ -44,7 +70,7 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- 1. Normal View: Habit Info & Prove Button -->
+    <!-- 1. Normal View: Next Habit Info & Prove Button -->
     <LinearLayout
         android:id="@+id/widget_habit_content"
         android:layout_width="match_parent"
@@ -77,6 +103,15 @@
                 android:text="09:00 · Cairn 1 · 3 stones"
                 android:textColor="#6E6556"
                 android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/widget_habit_status_detail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="1 habit remaining today"
+                android:textColor="#887E6E"
+                android:textSize="11sp" />
         </LinearLayout>
 
         <TextView
@@ -88,8 +123,8 @@
             android:gravity="center"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:paddingTop="9dp"
+            android:paddingBottom="9dp"
             android:text="PROVE"
             android:textColor="#FFFFFF"
             android:textSize="13sp"
@@ -105,16 +140,10 @@
         android:orientation="horizontal"
         android:visibility="gone">
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:contentDescription="Completed"
-            android:src="@drawable/ic_stat_cairn" />
-
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
@@ -122,14 +151,15 @@
                 android:layout_height="wrap_content"
                 android:text="All stones placed today"
                 android:textColor="#33302B"
-                android:textSize="15sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/widget_all_done_streak"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🔥 Streak safe · Altitude climbing"
+                android:layout_marginTop="2dp"
+                android:text="🔥 Streak safe · All habits completed"
                 android:textColor="#6E6556"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -153,7 +183,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="No habits scheduled"
+                android:text="No habits scheduled today"
                 android:textColor="#33302B"
                 android:textSize="15sp"
                 android:textStyle="bold" />
@@ -176,8 +206,8 @@
             android:gravity="center"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:paddingTop="9dp"
+            android:paddingBottom="9dp"
             android:text="+ NEW"
             android:textColor="#FFFFFF"
             android:textSize="13sp"
