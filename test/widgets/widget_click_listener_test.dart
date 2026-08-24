@@ -3,6 +3,7 @@ import 'package:cairn/src/clock.dart';
 import 'package:cairn/src/db/database.dart';
 import 'package:cairn/src/providers.dart';
 import 'package:cairn/src/repo/task_repository.dart';
+import 'package:cairn/src/ui/new_habit/new_habit_screen.dart';
 import 'package:cairn/src/ui/proof/camera_capture_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -92,5 +93,15 @@ void main() {
     await pumpListener(tester, customUpdater: initialUpdater);
 
     expect(find.byType(CameraCaptureScreen), findsOneWidget);
+  });
+
+  testWidgets('widget click with cairn://new_habit opens NewHabitScreen',
+      (tester) async {
+    await pumpListener(tester);
+
+    updater.emitClick(Uri.parse('cairn://new_habit'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NewHabitScreen), findsOneWidget);
   });
 }

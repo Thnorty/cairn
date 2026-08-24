@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart' show MaterialPageRoute;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../db/database.dart';
 import '../providers.dart';
+import '../ui/new_habit/new_habit_screen.dart';
 import '../ui/proof/proof_entry.dart';
 
 /// Provider for incoming widget click URIs while running.
@@ -58,6 +60,14 @@ class _WidgetClickListenerState extends ConsumerState<WidgetClickListener> {
     _routing = true;
 
     try {
+      if (uri.scheme == 'cairn' && uri.host == 'new_habit') {
+        if (!mounted) return;
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const NewHabitScreen()),
+        );
+        return;
+      }
+
       if (uri.scheme == 'cairn' && uri.host == 'prove') {
         final taskId = uri.queryParameters['taskId'];
         final slot = int.tryParse(uri.queryParameters['slot'] ?? '0') ?? 0;

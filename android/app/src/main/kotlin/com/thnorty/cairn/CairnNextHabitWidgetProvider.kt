@@ -29,16 +29,27 @@ class CairnNextHabitWidgetProvider : AppWidgetProvider() {
                 val activeStreak = widgetData.getInt("active_streak", 0)
 
                 if (isAllCompleted || (totalCount > 0 && remainingCount == 0)) {
+                    // State 1: All habits completed today
+                    setTextViewText(R.id.widget_header_label, "TODAY")
+                    setTextViewText(R.id.widget_remaining_badge, "Done ✓")
                     setViewVisibility(R.id.widget_habit_content, View.GONE)
+                    setViewVisibility(R.id.widget_empty_content, View.GONE)
                     setViewVisibility(R.id.widget_all_done_content, View.VISIBLE)
-                    setTextViewText(R.id.widget_remaining_badge, "Done")
                     setTextViewText(
                         R.id.widget_all_done_streak,
                         if (activeStreak > 0) "🔥 ${activeStreak}d streak safe" else "Altitude climbing"
                     )
                 } else if (nextTaskId.isNotEmpty() && nextTaskTitle.isNotEmpty()) {
-                    setViewVisibility(R.id.widget_habit_content, View.VISIBLE)
+                    // State 2: Active habit due for proof
+                    setTextViewText(R.id.widget_header_label, "NEXT HABIT")
+                    setTextViewText(
+                        R.id.widget_remaining_badge,
+                        if (remainingCount == 1) "1 left" else "$remainingCount left"
+                    )
                     setViewVisibility(R.id.widget_all_done_content, View.GONE)
+                    setViewVisibility(R.id.widget_empty_content, View.GONE)
+                    setViewVisibility(R.id.widget_habit_content, View.VISIBLE)
+
                     setTextViewText(R.id.widget_habit_title, nextTaskTitle)
 
                     val metaText = buildString {
@@ -51,10 +62,6 @@ class CairnNextHabitWidgetProvider : AppWidgetProvider() {
                         }
                     }
                     setTextViewText(R.id.widget_cairn_meta, metaText.ifEmpty { "Ready to prove" })
-                    setTextViewText(
-                        R.id.widget_remaining_badge,
-                        if (remainingCount == 1) "1 left" else "$remainingCount left"
-                    )
 
                     // Prove button click -> launches direct to camera for this taskId & slot
                     val proveIntent = HomeWidgetLaunchIntent.getActivity(
@@ -64,17 +71,19 @@ class CairnNextHabitWidgetProvider : AppWidgetProvider() {
                     )
                     setOnClickPendingIntent(R.id.widget_btn_prove, proveIntent)
                 } else {
-                    setViewVisibility(R.id.widget_habit_content, View.VISIBLE)
+                    // State 3: Empty / No habits scheduled
+                    setTextViewText(R.id.widget_header_label, "CAIRN")
+                    setTextViewText(R.id.widget_remaining_badge, "0 scheduled")
+                    setViewVisibility(R.id.widget_habit_content, View.GONE)
                     setViewVisibility(R.id.widget_all_done_content, View.GONE)
-                    setTextViewText(R.id.widget_habit_title, "No habits due today")
-                    setTextViewText(R.id.widget_cairn_meta, "Tap to open Cairn")
-                    setTextViewText(R.id.widget_remaining_badge, "0 left")
-                    val openIntent = HomeWidgetLaunchIntent.getActivity(
+                    setViewVisibility(R.id.widget_empty_content, View.VISIBLE)
+
+                    val addHabitIntent = HomeWidgetLaunchIntent.getActivity(
                         context,
                         MainActivity::class.java,
-                        Uri.parse("cairn://today")
+                        Uri.parse("cairn://new_habit")
                     )
-                    setOnClickPendingIntent(R.id.widget_btn_prove, openIntent)
+                    setOnClickPendingIntent(R.id.widget_btn_add_habit, addHabitIntent)
                 }
 
                 // Widget root click -> launches Today screen
