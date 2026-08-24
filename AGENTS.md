@@ -115,6 +115,7 @@ Full rationale for every decision below lives in `docs/proof-todo-app-guideline.
 - Use conventional-commit style (`feat:`, `fix:`, `test:`, `chore:`), a concise subject line, and a short body listing what changed and why.
 - Ensure all tests pass (`flutter analyze` and `flutter test`) before committing and pushing.
 - **Provide Play Console Release Notes whenever building an `.aab` bundle.** (Decided 2026-08-24). Format with clear, user-facing bullet points ready for pasting into the release track notes.
+- **Increment version/build number on every new `.aab` build.** (Decided 2026-08-24). Bump the build number in `pubspec.yaml` (e.g. `1.0.0+9` -> `1.0.0+10`) before building release bundles so Google Play accepts the upload.
 
 ## Character restriction
 
