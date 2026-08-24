@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:padding="15dp">
 
-    <!-- Top Row: Big Altitude Hero & Rank Pill (Left) + Streak Badge (Right) -->
+    <!-- 1. Unlocked Top Row: Altitude & Rank Pill (Left) + Streak Badge (Right) -->
     <LinearLayout
         android:id="@+id/widget_glance_top_row"
         android:layout_width="match_parent"
@@ -64,11 +64,12 @@
     </LinearLayout>
 
     <FrameLayout
+        android:id="@+id/widget_glance_spacer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- 1. Normal Mode: Habit Info (Top) + PROVE Button (Bottom Row) -->
+    <!-- Unlocked State A: Normal Mode (Habit Info + PROVE Button) -->
     <LinearLayout
         android:id="@+id/widget_glance_habit_content"
         android:layout_width="match_parent"
@@ -120,7 +121,7 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- 2. All Done Mode -->
+    <!-- Unlocked State B: All Done Mode -->
     <LinearLayout
         android:id="@+id/widget_glance_all_done_content"
         android:layout_width="match_parent"
@@ -155,7 +156,7 @@
             android:textSize="11sp" />
     </LinearLayout>
 
-    <!-- 3. Empty Mode -->
+    <!-- Unlocked State C: Empty Mode -->
     <LinearLayout
         android:id="@+id/widget_glance_empty_content"
         android:layout_width="match_parent"
@@ -203,36 +204,36 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- 4. Locked Mode (Cairn Pro Teaser) -->
+    <!-- 2. Simple Locked State (Shown when not premium) -->
     <LinearLayout
         android:id="@+id/widget_glance_locked_content"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center"
         android:orientation="vertical"
         android:visibility="gone">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CAIRN PRO"
-            android:textColor="#887E6E"
-            android:textSize="10sp"
-            android:textStyle="bold" />
+            android:text="🔒"
+            android:textSize="26sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:text="🔒 Glance &amp; Prove"
+            android:layout_marginTop="4dp"
+            android:text="Cairn Pro"
             android:textColor="#33302B"
-            android:textSize="15sp"
+            android:textSize="17sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:text="Home widgets are a Pro feature"
+            android:layout_marginTop="3dp"
+            android:gravity="center"
+            android:text="Widgets are a Cairn Pro feature"
             android:textColor="#6E6556"
             android:textSize="11sp" />
 
@@ -240,7 +241,7 @@
             android:id="@+id/widget_glance_btn_unlock"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/widget_button_terracotta"
             android:gravity="center"
             android:paddingTop="9dp"

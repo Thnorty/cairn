@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../clock.dart';
 import '../models/local_date.dart';
 import '../providers.dart';

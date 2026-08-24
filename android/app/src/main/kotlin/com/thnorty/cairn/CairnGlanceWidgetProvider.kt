@@ -31,14 +31,10 @@ class CairnGlanceWidgetProvider : AppWidgetProvider() {
                 val nextTaskSlot = widgetData.getInt("next_task_slot", 0)
                 val nextTime = widgetData.getString("next_task_due_time", "") ?: ""
 
-                // 1. Top row: Big Altitude & Rank + Streak
-                setTextViewText(R.id.widget_glance_altitude, "$altitude m")
-                setTextViewText(R.id.widget_glance_rank, "🏔️ $rankName")
-                setTextViewText(R.id.widget_glance_streak, "🔥 ${streak}d")
-
-                // 2. Middle Section: Premium Gated
                 if (!isPremium) {
-                    // Locked state for Free users
+                    // Locked state: clean, simple lock card only
+                    setViewVisibility(R.id.widget_glance_top_row, View.GONE)
+                    setViewVisibility(R.id.widget_glance_spacer, View.GONE)
                     setViewVisibility(R.id.widget_glance_habit_content, View.GONE)
                     setViewVisibility(R.id.widget_glance_all_done_content, View.GONE)
                     setViewVisibility(R.id.widget_glance_empty_content, View.GONE)
@@ -53,7 +49,15 @@ class CairnGlanceWidgetProvider : AppWidgetProvider() {
                     setOnClickPendingIntent(R.id.widget_glance_root, unlockIntent)
                 } else {
                     setViewVisibility(R.id.widget_glance_locked_content, View.GONE)
+                    setViewVisibility(R.id.widget_glance_top_row, View.VISIBLE)
+                    setViewVisibility(R.id.widget_glance_spacer, View.VISIBLE)
 
+                    // 1. Top row: Big Altitude & Rank + Streak
+                    setTextViewText(R.id.widget_glance_altitude, "$altitude m")
+                    setTextViewText(R.id.widget_glance_rank, "🏔️ $rankName")
+                    setTextViewText(R.id.widget_glance_streak, "🔥 ${streak}d")
+
+                    // 2. Middle Section
                     if (isAllCompleted || (total > 0 && remaining == 0)) {
                         // All completed
                         setViewVisibility(R.id.widget_glance_habit_content, View.GONE)

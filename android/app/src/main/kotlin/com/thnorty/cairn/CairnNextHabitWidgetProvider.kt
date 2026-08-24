@@ -33,25 +33,10 @@ class CairnNextHabitWidgetProvider : AppWidgetProvider() {
                 val nextTaskDueTime = widgetData.getString("next_task_due_time", "") ?: ""
                 val nextTaskCairnLabel = widgetData.getString("next_task_cairn_label", "") ?: ""
 
-                // 1. Top Header Bar
-                setTextViewText(R.id.widget_header_altitude, "$altitude m")
-                setTextViewText(R.id.widget_header_rank, "🏔️ $rankName")
-                setTextViewText(
-                    R.id.widget_header_week,
-                    if (stonesThisWeek == 1) "1 stone this week" else "$stonesThisWeek stones this week"
-                )
-                setTextViewText(R.id.widget_header_streak, "🔥 ${activeStreak}d")
-
-                val badgeText = when {
-                    totalCount == 0 -> "0 scheduled"
-                    isAllCompleted || remainingCount == 0 -> "Done ✓"
-                    else -> "$doneCount/$totalCount done"
-                }
-                setTextViewText(R.id.widget_remaining_badge, badgeText)
-
-                // 2. Main Section: Premium Gated
                 if (!isPremium) {
-                    // Locked state for Free users
+                    // Locked state: clean, simple lock card only
+                    setViewVisibility(R.id.widget_next_top_row, View.GONE)
+                    setViewVisibility(R.id.widget_next_spacer, View.GONE)
                     setViewVisibility(R.id.widget_habit_content, View.GONE)
                     setViewVisibility(R.id.widget_all_done_content, View.GONE)
                     setViewVisibility(R.id.widget_empty_content, View.GONE)
@@ -66,7 +51,26 @@ class CairnNextHabitWidgetProvider : AppWidgetProvider() {
                     setOnClickPendingIntent(R.id.widget_next_root, unlockIntent)
                 } else {
                     setViewVisibility(R.id.widget_next_locked_content, View.GONE)
+                    setViewVisibility(R.id.widget_next_top_row, View.VISIBLE)
+                    setViewVisibility(R.id.widget_next_spacer, View.VISIBLE)
 
+                    // 1. Top Header Bar
+                    setTextViewText(R.id.widget_header_altitude, "$altitude m")
+                    setTextViewText(R.id.widget_header_rank, "🏔️ $rankName")
+                    setTextViewText(
+                        R.id.widget_header_week,
+                        if (stonesThisWeek == 1) "1 stone this week" else "$stonesThisWeek stones this week"
+                    )
+                    setTextViewText(R.id.widget_header_streak, "🔥 ${activeStreak}d")
+
+                    val badgeText = when {
+                        totalCount == 0 -> "0 scheduled"
+                        isAllCompleted || remainingCount == 0 -> "Done ✓"
+                        else -> "$doneCount/$totalCount done"
+                    }
+                    setTextViewText(R.id.widget_remaining_badge, badgeText)
+
+                    // 2. Main Section
                     if (isAllCompleted || (totalCount > 0 && remainingCount == 0)) {
                         // State 1: All habits completed today
                         setViewVisibility(R.id.widget_habit_content, View.GONE)
