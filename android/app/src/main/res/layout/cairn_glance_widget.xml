@@ -45,16 +45,6 @@
                 android:textColor="#445929"
                 android:textSize="11sp"
                 android:textStyle="bold" />
-
-            <!-- Week stones moved to top below Pebble pill -->
-            <TextView
-                android:id="@+id/widget_glance_week_stones"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:text="0 stones this week"
-                android:textColor="#887E6E"
-                android:textSize="11sp" />
         </LinearLayout>
 
         <TextView

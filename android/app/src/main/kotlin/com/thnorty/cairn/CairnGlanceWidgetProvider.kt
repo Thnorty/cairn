@@ -76,10 +76,6 @@ class CairnGlanceWidgetProvider : AppWidgetProvider() {
                     setOnClickPendingIntent(R.id.widget_glance_btn_add, addHabitIntent)
                 }
 
-                // 3. Bottom row: Weekly stones
-                val weekText = if (stonesThisWeek == 1) "1 stone this week" else "$stonesThisWeek stones this week"
-                setTextViewText(R.id.widget_glance_week_stones, weekText)
-
                 // Launch App on card click
                 val rootIntent = HomeWidgetLaunchIntent.getActivity(
                     context,
