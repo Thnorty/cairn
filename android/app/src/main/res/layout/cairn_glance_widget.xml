@@ -216,16 +216,18 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🔒"
-            android:textSize="26sp" />
+            android:text="CAIRN PRO"
+            android:textColor="#887E6E"
+            android:textSize="10sp"
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Cairn Pro"
+            android:layout_marginTop="2dp"
+            android:text="🔒 Widgets Locked"
             android:textColor="#33302B"
-            android:textSize="17sp"
+            android:textSize="16sp"
             android:textStyle="bold" />
 
         <TextView
@@ -233,7 +235,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="3dp"
             android:gravity="center"
-            android:text="Widgets are a Cairn Pro feature"
+            android:text="Upgrade to Cairn Pro to use home-screen widgets"
             android:textColor="#6E6556"
             android:textSize="11sp" />
 
