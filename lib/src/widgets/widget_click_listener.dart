@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../db/database.dart';
 import '../providers.dart';
 import '../ui/new_habit/new_habit_screen.dart';
+import '../ui/premium/premium_screen.dart' show openPremiumScreen;
 import '../ui/proof/proof_entry.dart';
 
 /// Provider for incoming widget click URIs while running.
@@ -15,8 +16,13 @@ final widgetClicksProvider = StreamProvider<Uri?>((ref) {
   return updater.widgetClicks;
 });
 
-/// Listens for native home-screen widget click events and routes to the
-/// appropriate flow (such as direct tap-to-camera for habit proofing).
+/// Wraps [child] (the app shell) and listens for widget click deep links.
+///
+/// Handles:
+/// - `cairn://prove?taskId=<id>&slot=<slot>` -> opens [CameraCaptureScreen]
+/// - `cairn://new_habit` -> opens [NewHabitScreen]
+/// - `cairn://premium` -> opens [PremiumScreen]
+/// - `cairn://today` -> focuses Today screen (default launch)
 class WidgetClickListener extends ConsumerStatefulWidget {
   const WidgetClickListener({super.key, required this.child});
 
@@ -33,12 +39,10 @@ class _WidgetClickListenerState extends ConsumerState<WidgetClickListener> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkInitialLaunch();
-    });
+    unawaited(_checkInitialUri());
   }
 
-  Future<void> _checkInitialLaunch() async {
+  Future<void> _checkInitialUri() async {
     final updater = ref.read(widgetUpdaterProvider);
     final initialUri = await updater.initiallyLaunchedUri();
     if (initialUri != null && mounted) {
@@ -60,6 +64,12 @@ class _WidgetClickListenerState extends ConsumerState<WidgetClickListener> {
     _routing = true;
 
     try {
+      if (uri.scheme == 'cairn' && uri.host == 'premium') {
+        if (!mounted) return;
+        openPremiumScreen(context);
+        return;
+      }
+
       if (uri.scheme == 'cairn' && uri.host == 'new_habit') {
         if (!mounted) return;
         await Navigator.of(context).push(

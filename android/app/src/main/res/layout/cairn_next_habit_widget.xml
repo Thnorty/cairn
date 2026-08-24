@@ -9,6 +9,7 @@
 
     <!-- Top Row: Altitude & Rank Pill (Left) + Week Total + Streak + Today (Right) -->
     <LinearLayout
+        android:id="@+id/widget_next_top_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="top"
@@ -269,6 +270,64 @@
             android:text="+ HABIT"
             android:textColor="#FFFFFF"
             android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- 4. Locked Mode (Cairn Pro Teaser) -->
+    <LinearLayout
+        android:id="@+id/widget_next_locked_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CAIRN PRO"
+                android:textColor="#887E6E"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="🔒 Unlock Home Widgets"
+                android:textColor="#33302B"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:text="Prove habits and track your altitude directly from your home screen"
+                android:textColor="#6E6556"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/widget_btn_unlock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:background="@drawable/widget_button_terracotta"
+            android:gravity="center"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:text="UNLOCK PRO"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
             android:textStyle="bold" />
     </LinearLayout>
 </LinearLayout>

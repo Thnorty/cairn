@@ -49,6 +49,8 @@ import 'sync/supabase_sync_transport.dart';
 import 'sync/sync_service.dart';
 import 'sync/sync_transport.dart';
 import 'sync/sync_trigger.dart';
+import 'widgets/widget_trigger.dart';
+import 'widgets/widget_updater.dart';
 
 export 'widgets/widget_click_listener.dart';
 export 'widgets/widget_snapshot.dart';
@@ -777,6 +779,28 @@ final notificationTriggerProvider = Provider<NotificationTrigger>((ref) {
     () => ref.read(notificationSchedulerProvider),
   );
   trigger.start();
+  ref.onDispose(trigger.dispose);
+  return trigger;
+});
+
+/// Provider for the reactive home-screen widget updater.
+final widgetTriggerProvider = Provider<WidgetTrigger>((ref) {
+  final trigger = WidgetTrigger(
+    updater: ref.watch(widgetUpdaterProvider),
+    homeService: ref.watch(homeServiceProvider),
+    completionRepo: ref.watch(completionRepositoryProvider),
+    streakService: ref.watch(streakServiceProvider),
+    taskRepo: ref.watch(taskRepositoryProvider),
+    clock: ref.watch(clockProvider),
+    isPremium: () => ref.read(premiumStatusProvider),
+  );
+  trigger.start();
+
+  // Keep widgets in sync when the user purchases or restores Premium
+  ref.listen(premiumStatusProvider, (_, isPrem) {
+    unawaited(trigger.updateNow());
+  });
+
   ref.onDispose(trigger.dispose);
   return trigger;
 });

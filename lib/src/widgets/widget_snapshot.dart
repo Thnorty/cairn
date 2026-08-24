@@ -15,6 +15,7 @@ class WidgetSnapshot {
     this.nextTaskDueTime,
     this.nextTaskCairnLabel,
     this.isAllCompleted = false,
+    this.isPremium = false,
   });
 
   /// The number of scheduled occurrences remaining to be proven today.
@@ -56,6 +57,9 @@ class WidgetSnapshot {
   /// Whether all scheduled habits for today have been completed.
   final bool isAllCompleted;
 
+  /// Whether the user currently holds a valid Cairn Pro subscription entitlement.
+  final bool isPremium;
+
   /// Converts snapshot fields to a Key-Value map for `HomeWidget.saveWidgetData`.
   Map<String, Object> toWidgetData() {
     return {
@@ -72,6 +76,7 @@ class WidgetSnapshot {
       'next_task_due_time': nextTaskDueTime ?? '',
       'next_task_cairn_label': nextTaskCairnLabel ?? '',
       'is_all_completed': isAllCompleted,
+      'is_premium': isPremium,
     };
   }
 
@@ -92,7 +97,8 @@ class WidgetSnapshot {
           nextTaskSlot == other.nextTaskSlot &&
           nextTaskDueTime == other.nextTaskDueTime &&
           nextTaskCairnLabel == other.nextTaskCairnLabel &&
-          isAllCompleted == other.isAllCompleted;
+          isAllCompleted == other.isAllCompleted &&
+          isPremium == other.isPremium;
 
   @override
   int get hashCode => Object.hash(
@@ -109,5 +115,6 @@ class WidgetSnapshot {
         nextTaskDueTime,
         nextTaskCairnLabel,
         isAllCompleted,
+        isPremium,
       );
 }

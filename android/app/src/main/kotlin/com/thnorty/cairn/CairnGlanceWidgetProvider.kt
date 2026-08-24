@@ -18,13 +18,13 @@ class CairnGlanceWidgetProvider : AppWidgetProvider() {
         for (appWidgetId in appWidgetIds) {
             val widgetData = HomeWidgetPlugin.getData(context)
             val views = RemoteViews(context.packageName, R.layout.cairn_glance_widget).apply {
+                val isPremium = widgetData.getBoolean("is_premium", false)
                 val altitude = widgetData.getInt("altitude", 0)
                 val rankName = widgetData.getString("rank_name", "Pebble") ?: "Pebble"
                 val streak = widgetData.getInt("active_streak", 0)
                 val remaining = widgetData.getInt("remaining_count", 0)
                 val total = widgetData.getInt("total_count", 0)
                 val done = widgetData.getInt("done_count", 0)
-                val stonesThisWeek = widgetData.getInt("stones_this_week", 0)
                 val isAllCompleted = widgetData.getBoolean("is_all_completed", false)
                 val nextTaskId = widgetData.getString("next_task_id", "") ?: ""
                 val nextTaskTitle = widgetData.getString("next_task_title", "") ?: ""
@@ -36,53 +36,71 @@ class CairnGlanceWidgetProvider : AppWidgetProvider() {
                 setTextViewText(R.id.widget_glance_rank, "🏔️ $rankName")
                 setTextViewText(R.id.widget_glance_streak, "🔥 ${streak}d")
 
-                // 2. Middle Section: Actionable or Status
-                if (isAllCompleted || (total > 0 && remaining == 0)) {
-                    // All completed
+                // 2. Middle Section: Premium Gated
+                if (!isPremium) {
+                    // Locked state for Free users
                     setViewVisibility(R.id.widget_glance_habit_content, View.GONE)
-                    setViewVisibility(R.id.widget_glance_empty_content, View.GONE)
-                    setViewVisibility(R.id.widget_glance_all_done_content, View.VISIBLE)
-                    setTextViewText(
-                        R.id.widget_glance_all_done_sub,
-                        if (streak > 0) "🔥 ${streak}d streak safe · $done/$total done" else "All $total habits proven today"
-                    )
-                } else if (nextTaskId.isNotEmpty() && nextTaskTitle.isNotEmpty()) {
-                    // Habit ready to prove
                     setViewVisibility(R.id.widget_glance_all_done_content, View.GONE)
                     setViewVisibility(R.id.widget_glance_empty_content, View.GONE)
-                    setViewVisibility(R.id.widget_glance_habit_content, View.VISIBLE)
+                    setViewVisibility(R.id.widget_glance_locked_content, View.VISIBLE)
 
-                    val habitWithTime = if (nextTime.isNotEmpty()) "$nextTaskTitle ($nextTime)" else nextTaskTitle
-                    setTextViewText(R.id.widget_glance_next_preview, habitWithTime)
-                    setTextViewText(R.id.widget_glance_today_progress, "$done of $total done · $remaining left")
-
-                    val proveIntent = HomeWidgetLaunchIntent.getActivity(
+                    val unlockIntent = HomeWidgetLaunchIntent.getActivity(
                         context,
                         MainActivity::class.java,
-                        Uri.parse("cairn://prove?taskId=$nextTaskId&slot=$nextTaskSlot")
+                        Uri.parse("cairn://premium")
                     )
-                    setOnClickPendingIntent(R.id.widget_glance_btn_prove, proveIntent)
+                    setOnClickPendingIntent(R.id.widget_glance_btn_unlock, unlockIntent)
+                    setOnClickPendingIntent(R.id.widget_glance_root, unlockIntent)
                 } else {
-                    // Empty state
-                    setViewVisibility(R.id.widget_glance_habit_content, View.GONE)
-                    setViewVisibility(R.id.widget_glance_all_done_content, View.GONE)
-                    setViewVisibility(R.id.widget_glance_empty_content, View.VISIBLE)
+                    setViewVisibility(R.id.widget_glance_locked_content, View.GONE)
 
-                    val addHabitIntent = HomeWidgetLaunchIntent.getActivity(
+                    if (isAllCompleted || (total > 0 && remaining == 0)) {
+                        // All completed
+                        setViewVisibility(R.id.widget_glance_habit_content, View.GONE)
+                        setViewVisibility(R.id.widget_glance_empty_content, View.GONE)
+                        setViewVisibility(R.id.widget_glance_all_done_content, View.VISIBLE)
+                        setTextViewText(
+                            R.id.widget_glance_all_done_sub,
+                            if (streak > 0) "🔥 ${streak}d streak safe · $done/$total done" else "All $total habits proven today"
+                        )
+                    } else if (nextTaskId.isNotEmpty() && nextTaskTitle.isNotEmpty()) {
+                        // Habit ready to prove
+                        setViewVisibility(R.id.widget_glance_all_done_content, View.GONE)
+                        setViewVisibility(R.id.widget_glance_empty_content, View.GONE)
+                        setViewVisibility(R.id.widget_glance_habit_content, View.VISIBLE)
+
+                        val habitWithTime = if (nextTime.isNotEmpty()) "$nextTaskTitle ($nextTime)" else nextTaskTitle
+                        setTextViewText(R.id.widget_glance_next_preview, habitWithTime)
+                        setTextViewText(R.id.widget_glance_today_progress, "$done of $total done · $remaining left")
+
+                        val proveIntent = HomeWidgetLaunchIntent.getActivity(
+                            context,
+                            MainActivity::class.java,
+                            Uri.parse("cairn://prove?taskId=$nextTaskId&slot=$nextTaskSlot")
+                        )
+                        setOnClickPendingIntent(R.id.widget_glance_btn_prove, proveIntent)
+                    } else {
+                        // Empty state
+                        setViewVisibility(R.id.widget_glance_habit_content, View.GONE)
+                        setViewVisibility(R.id.widget_glance_all_done_content, View.GONE)
+                        setViewVisibility(R.id.widget_glance_empty_content, View.VISIBLE)
+
+                        val addHabitIntent = HomeWidgetLaunchIntent.getActivity(
+                            context,
+                            MainActivity::class.java,
+                            Uri.parse("cairn://new_habit")
+                        )
+                        setOnClickPendingIntent(R.id.widget_glance_btn_add, addHabitIntent)
+                    }
+
+                    // Launch App on card click
+                    val rootIntent = HomeWidgetLaunchIntent.getActivity(
                         context,
                         MainActivity::class.java,
-                        Uri.parse("cairn://new_habit")
+                        Uri.parse("cairn://today")
                     )
-                    setOnClickPendingIntent(R.id.widget_glance_btn_add, addHabitIntent)
+                    setOnClickPendingIntent(R.id.widget_glance_root, rootIntent)
                 }
-
-                // Launch App on card click
-                val rootIntent = HomeWidgetLaunchIntent.getActivity(
-                    context,
-                    MainActivity::class.java,
-                    Uri.parse("cairn://today")
-                )
-                setOnClickPendingIntent(R.id.widget_glance_root, rootIntent)
             }
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }

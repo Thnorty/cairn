@@ -78,6 +78,7 @@ void main() {
         nextTaskDueTime: '09:00',
         nextTaskCairnLabel: 'Cairn 1 · 2 stones',
         isAllCompleted: false,
+        isPremium: true,
       );
 
       final map = snapshot.toWidgetData();
@@ -94,6 +95,7 @@ void main() {
       expect(map['next_task_due_time'], '09:00');
       expect(map['next_task_cairn_label'], 'Cairn 1 · 2 stones');
       expect(map['is_all_completed'], false);
+      expect(map['is_premium'], true);
     });
 
     test('equality and hashCode match identical fields', () {
@@ -181,6 +183,29 @@ void main() {
       expect(updated.doneCount, 1);
       expect(updated.isAllCompleted, isTrue);
       expect(updated.altitude, greaterThan(0));
+    });
+
+    test('passes isPremium flag to snapshot', () async {
+      var isPrem = false;
+      final customTrigger = WidgetTrigger(
+        updater: updater,
+        homeService: homeService,
+        completionRepo: completionRepo,
+        streakService: streakService,
+        taskRepo: taskRepo,
+        clock: clock,
+        isPremium: () => isPrem,
+      );
+      customTrigger.start();
+
+      await customTrigger.updateNow();
+      expect(updater.latestSnapshot?.isPremium, isFalse);
+
+      isPrem = true;
+      await customTrigger.updateNow();
+      expect(updater.latestSnapshot?.isPremium, isTrue);
+
+      customTrigger.dispose();
     });
   });
 }

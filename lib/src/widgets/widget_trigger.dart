@@ -11,6 +11,8 @@ import '../services/home_service.dart';
 import '../services/points_service.dart';
 import '../services/streak_service.dart';
 
+bool _defaultNotPremium() => false;
+
 /// Listens to database updates via [HomeService] and pushes refreshed
 /// [WidgetSnapshot]s to native home screen widgets via [WidgetUpdater].
 class WidgetTrigger {
@@ -20,6 +22,7 @@ class WidgetTrigger {
   final StreakService _streakService;
   final TaskRepository _taskRepo;
   final Clock _clock;
+  final bool Function() _isPremium;
 
   StreamSubscription<HomeSnapshot>? _sub;
 
@@ -30,12 +33,14 @@ class WidgetTrigger {
     required StreakService streakService,
     required TaskRepository taskRepo,
     required Clock clock,
+    bool Function()? isPremium,
   })  : _updater = updater,
         _homeService = homeService,
         _completionRepo = completionRepo,
         _streakService = streakService,
         _taskRepo = taskRepo,
-        _clock = clock;
+        _clock = clock,
+        _isPremium = isPremium ?? _defaultNotPremium;
 
   /// Starts listening to today's occurrences stream to keep widgets fresh.
   void start() {
@@ -104,6 +109,7 @@ class WidgetTrigger {
           ? 'Cairn ${nextCard.currentCairnIndex} · ${nextCard.stoneCount} stones'
           : null,
       isAllCompleted: isAllCompleted,
+      isPremium: _isPremium(),
     );
 
     await _updater.updateSnapshot(snapshot);
@@ -114,18 +120,3 @@ class WidgetTrigger {
     _sub = null;
   }
 }
-
-/// Provider for [WidgetTrigger].
-final widgetTriggerProvider = Provider<WidgetTrigger>((ref) {
-  final trigger = WidgetTrigger(
-    updater: ref.watch(widgetUpdaterProvider),
-    homeService: ref.watch(homeServiceProvider),
-    completionRepo: ref.watch(completionRepositoryProvider),
-    streakService: ref.watch(streakServiceProvider),
-    taskRepo: ref.watch(taskRepositoryProvider),
-    clock: ref.watch(clockProvider),
-  );
-  trigger.start();
-  ref.onDispose(trigger.dispose);
-  return trigger;
-});
